@@ -1,0 +1,49 @@
+# .cursorule for Viral Together UI (Next.js 14)
+
+# Project Overview
+This is a Next.js 14 UI application for the Viral Together influencer marketing platform.
+It connects to the API repository at ../viral-together and provides a modern web interface.
+
+# Tech Stack
+- Next.js 14 with App Router
+- TypeScript
+- Tailwind CSS
+- React Hook Form
+- Axios for API calls
+- Lucide React for icons
+
+# Development Commands
+dev: npm run dev
+build: npm run build
+start: npm run start
+lint: npm run lint
+type-check: npm run type-check
+
+# Environment Variables
+API_URL: http://localhost:8000 (points to the viral-together API)
+NODE_ENV: development
+
+# Key Directories
+- src/app: Next.js 14 App Router pages
+- src/components: Reusable React components
+- src/lib: Utility functions and API client
+- src/types: TypeScript type definitions
+- src/hooks: Custom React hooks
+
+# API Integration
+The app integrates with the viral-together API for:
+- Authentication (JWT tokens)
+- Influencer management
+- Rate card management
+- Subscription handling
+- Search and analytics
+
+# Specify the test command for running tests
+test: npm run test
+
+# Specify any ignored files or directories
+ignore:
+  - node_modules
+  - .next
+  - .git
+  - .env.local  # Ignore local environment variables
