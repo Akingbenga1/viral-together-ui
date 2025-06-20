@@ -13,7 +13,8 @@ import {
   CreateSubscriptionPlanData,
   UserSubscription,
   CheckoutSessionData,
-  PortalSessionData
+  PortalSessionData,
+  SocialMediaPlatform
 } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -173,6 +174,12 @@ class ApiClient {
 
   async getRateCardsByPlatform(platformId: number): Promise<RateCard[]> {
     const response: AxiosResponse<RateCard[]> = await this.client.get(`/rate_card/platform/${platformId}/rate_cards`);
+    return response.data;
+  }
+
+  // Social Media Platform endpoints
+  async getSocialMediaPlatforms(): Promise<SocialMediaPlatform[]> {
+    const response: AxiosResponse<SocialMediaPlatform[]> = await this.client.get('/social_media_platform/list');
     return response.data;
   }
 

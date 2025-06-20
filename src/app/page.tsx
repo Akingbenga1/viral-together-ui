@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, Users, TrendingUp, Star, Shield } from 'lucide-react';
+import InfluencerRateForm from '@/components/InfluencerRateForm';
 
 export default function HomePage() {
   return (
@@ -47,6 +48,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Influencer Rate Form Section */}
+      <InfluencerRateForm />
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-gray-50">

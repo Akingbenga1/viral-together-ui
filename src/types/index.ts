@@ -168,3 +168,12 @@ export interface PaginatedResponse<T> {
   limit: number;
   totalPages: number;
 } 
+
+export interface SocialMediaPlatform {
+  id: number;
+  name: string;
+  icon_url?: string;
+  description?: string;
+  created_at?: string;
+  updated_at?: string;
+} 
