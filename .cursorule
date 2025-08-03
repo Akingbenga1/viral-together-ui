@@ -41,6 +41,91 @@ The app integrates with the viral-together API for:
 # Specify the test command for running tests
 test: npm run test
 
+# Design System & Theme Guidelines
+# The following design system MUST be maintained throughout UI development:
+
+## Color Schema
+Primary Colors (Blue Gradient):
+  - primary-50: #f0f9ff (lightest blue)
+  - primary-500: #0ea5e9 (main blue)
+  - primary-600: #0284c7 (primary brand color)
+  - primary-700: #0369a1 (hover states)
+
+Secondary Colors (Purple Gradient):
+  - secondary-500: #d946ef (accent purple)
+  - secondary-600: #c026d3 (secondary brand color)
+
+Neutral Colors:
+  - gray-50: #f9fafb (backgrounds)
+  - gray-100: #f3f4f6 (subtle backgrounds)
+  - gray-200: #e5e7eb (borders)
+  - gray-300: #d1d5db (borders/dividers)
+  - gray-600: #4b5563 (secondary text)
+  - gray-900: #111827 (primary text)
+  - white: #ffffff (cards/surfaces)
+
+## Typography
+Font Family: Inter (Google Fonts)
+- Primary font for all text content
+- Weights: 300, 400, 500, 600, 700
+- System fallback: system-ui, sans-serif
+
+## Component Patterns
+Button Variants:
+  - .btn-primary: primary-600 background, white text
+  - .btn-secondary: gray-200 background, gray-900 text
+  - .btn-outline: transparent with gray-300 border
+  - .btn-ghost: transparent with hover gray-100
+
+Button Sizes:
+  - .btn-sm: h-9 px-3 (small)
+  - .btn-md: h-10 px-4 py-2 (default)
+  - .btn-lg: h-11 px-8 (large)
+
+Form Elements:
+  - .input: Standard input styling with primary-500 focus ring
+  - Border: gray-300, Focus: primary-500 ring
+
+Cards:
+  - .card: rounded-lg border bg-white p-6 shadow-sm
+  - Consistent 6-unit padding, subtle shadow
+
+## Gradient System
+Signature Gradient:
+  - .gradient-bg: bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-600
+  - Used for: Hero sections, CTAs, feature icons, brand elements
+
+## Layout Patterns
+Container: container mx-auto px-4 (responsive container)
+Spacing: Consistent use of Tailwind spacing scale (4, 6, 8, 12, 16, 20)
+Grid: CSS Grid and Flexbox for layouts
+Responsive: Mobile-first approach with md: and lg: breakpoints
+
+## Animation Standards
+Transitions: transition-colors for interactive elements
+Custom Animations:
+  - fade-in: 0.5s ease-in-out
+  - slide-up: 0.3s ease-out
+Loading States: Spin animation for loading indicators
+
+## Icon System
+Library: Lucide React
+Style: Consistent sizing (w-4 h-4, w-5 h-5, w-6 h-6)
+Usage: Semantic icons for navigation, actions, and features
+
+## Accessibility Standards
+Focus States: focus-visible:ring-2 focus-visible:ring-primary-500
+Color Contrast: WCAG AA compliant color combinations
+Interactive Elements: Proper hover and disabled states
+
+## Development Rules
+- ALWAYS use the cn() utility for className merging
+- MAINTAIN consistent spacing using Tailwind scale
+- USE semantic color names (primary, secondary, gray)
+- FOLLOW component composition patterns
+- ENSURE responsive design with mobile-first approach
+- PRESERVE gradient branding throughout the application
+
 # Specify any ignored files or directories
 ignore:
   - node_modules

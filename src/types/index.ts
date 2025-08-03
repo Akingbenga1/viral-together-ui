@@ -24,18 +24,31 @@ export interface RegisterData {
 
 export interface Influencer {
   id: number;
-  name?: string;
-  bio: string;
-  profile_image_url: string;
+  bio?: string;
+  profile_image_url?: string;
   website_url?: string;
-  location: string;
-  languages: string;
+  languages?: string;
   availability: boolean;
-  rate_per_post: number;
-  total_posts: number;
-  growth_rate: number;
-  successful_campaigns: number;
-  user_id: number;
+  rate_per_post?: number;
+  total_posts?: number;
+  growth_rate?: number;
+  successful_campaigns?: number;
+  user: {
+    id: number;
+    username: string;
+    first_name?: string;
+    last_name?: string;
+  };
+  base_country: {
+    id: number;
+    name: string;
+    code: string;
+  };
+  collaboration_countries: Array<{
+    id: number;
+    name: string;
+    code: string;
+  }>;
   created_at?: string;
   updated_at?: string;
 }
@@ -176,4 +189,96 @@ export interface SocialMediaPlatform {
   description?: string;
   created_at?: string;
   updated_at?: string;
+} 
+
+// Business types
+export interface Business {
+  id: number;
+  name: string;
+  description: string;
+  website_url?: string;
+  industry: string;
+  owner_id: number;
+  contact_email: string;
+  contact_phone: string;
+  contact_name: string;
+  base_country_id: number;
+  collaboration_country_ids: number[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateBusinessData {
+  name: string;
+  description: string;
+  website_url?: string;
+  industry: string;
+  owner_id: number;
+  contact_email: string;
+  contact_phone: string;
+  first_name: string;
+  last_name: string;
+  base_country_id: number;
+  collaboration_country_ids: number[];
+}
+
+export interface CreateBusinessPublicData {
+  name: string;
+  description: string;
+  website_url?: string;
+  industry: string;
+  contact_email: string;
+  contact_phone: string;
+  first_name: string;
+  last_name: string;
+  username: string;
+  base_country_id: number;
+  collaboration_country_ids: number[];
+}
+
+// Document generation types
+export interface CollaborationRequestGeneralData {
+  business_id: number;
+  campaign_title: string;
+  campaign_description: string;
+  target_audience: string;
+  target_follower_range: string;
+  preferred_niches: string[];
+  deliverables: string[];
+  compensation_range: string;
+  campaign_duration: string;
+  content_requirements: string;
+  brand_guidelines: string;
+  deadline: string;
+  target_countries: string[];
+  file_format: string;
+}
+
+export interface DocumentGenerationResponse {
+  message: string;
+  job_id: string;
+  document_id: number;
+  status: string;
+  estimated_completion: string;
+  check_status_url: string;
+  download_url: string;
+}
+
+// Country types
+export interface Country {
+  id: number;
+  name: string;
+  code: string;
+  code3?: string;
+  numeric_code?: string;
+  phone_code?: string;
+  capital?: string;
+  currency?: string;
+  currency_name?: string;
+  currency_symbol?: string;
+  tld?: string;
+  region?: string;
+  timezones?: string;
+  latitude?: number;
+  longitude?: number;
 } 

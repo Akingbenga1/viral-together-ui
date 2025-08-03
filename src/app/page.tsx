@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { ArrowRight, Users, TrendingUp, Star, Shield } from 'lucide-react';
 import InfluencerRateForm from '@/components/InfluencerRateForm';
+import BusinessProfileForm from '@/components/BusinessProfileForm';
+import InfluencerSearchForm from '@/components/InfluencerSearchForm';
 
 export default function HomePage() {
   return (
@@ -48,6 +50,25 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Find Influencers Section */}
+      <section className="py-20 bg-gradient-to-br from-purple-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Find Influencers near you
+            </h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Discover talented creators in your area and connect with influencers who can help grow your brand.
+            </p>
+          </div>
+          
+          <InfluencerSearchForm />
+        </div>
+      </section>
+
+      {/* Business Profile Form Section */}
+      <BusinessProfileForm />
 
       {/* Influencer Rate Form Section */}
       <InfluencerRateForm />

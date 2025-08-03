@@ -5,8 +5,9 @@ import { useForm } from 'react-hook-form';
 import { Button } from './ui/Button';
 import { Plus, X, DollarSign, User, Mail, MessageSquare } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { SocialMediaPlatform } from '@/types';
+import { SocialMediaPlatform, Country } from '@/types';
 import toast from 'react-hot-toast';
+import CountrySelect from './CountrySelect';
 
 interface SocialMediaAccount {
   platform_id: number;
@@ -15,8 +16,10 @@ interface SocialMediaAccount {
 
 interface InfluencerRateFormData {
   email: string;
+  first_name?: string;
+  last_name?: string;
   bio?: string;
-  location?: string;
+  base_country_id?: number;
   languages?: string;
   website_url?: string;
   social_accounts: SocialMediaAccount[];
@@ -32,6 +35,7 @@ const InfluencerRateForm: React.FC = () => {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingSocialMediaPlan, setIsGeneratingSocialMediaPlan] = useState(false);
 
   const {
     register,
@@ -95,9 +99,159 @@ const InfluencerRateForm: React.FC = () => {
     toast.success('Business Proposal generation feature coming soon!');
   };
 
-  const handleGenerateSocialMediaPlan = () => {
-    console.log('Generate Social Media Plan clicked');
-    toast.success('Social Media Plan generation feature coming soon!');
+  const handleGenerateSocialMediaPlan = async () => {
+    const formData = watch();
+    
+    // Validate required fields
+    const requiredFields = {
+      email: formData.email,
+      content_type: formData.content_type,
+      base_rate: formData.base_rate
+    };
+
+    // Check for empty or missing required fields
+    const emptyFields = Object.entries(requiredFields)
+      .filter(([key, value]) => {
+        if (key === 'base_rate') {
+          return !value || (typeof value === 'number' && value <= 0);
+        }
+        return !value || value.toString().trim() === '';
+      })
+      .map(([key]) => key);
+
+    if (emptyFields.length > 0) {
+      const fieldNames = {
+        email: 'Email Address',
+        content_type: 'Content Type',
+        base_rate: 'Base Rate'
+      };
+
+      const missingFields = emptyFields.map(field => fieldNames[field as keyof typeof fieldNames]).join(', ');
+      toast.error(`Please fill in the following required fields: ${missingFields}`);
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    if (!emailRegex.test(formData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    // Validate base rate
+    if (typeof formData.base_rate === 'number' && formData.base_rate <= 0) {
+      toast.error('Please enter a valid base rate greater than 0');
+      return;
+    }
+
+    setIsGeneratingSocialMediaPlan(true);
+    try {
+      // Prepare the influencer profile data for social media plan generation
+      const socialMediaPlanData = {
+        influencer_profile: {
+          email: formData.email,
+          first_name: formData.first_name || 'Anonymous',
+          last_name: formData.last_name || 'User',
+          bio: formData.bio || '',
+          website_url: formData.website_url || '',
+          languages: formData.languages || 'English',
+          base_country_id: formData.base_country_id || 1,
+          content_type: formData.content_type,
+          base_rate: formData.base_rate,
+          description: formData.description || '',
+          file_format: 'pdf' // Default to PDF format
+        }
+      };
+
+      const response = await apiClient.generateSocialMediaPlanPublic(socialMediaPlanData);
+      
+      // Poll for status
+      const pollStatus = async () => {
+        try {
+          const statusResponse = await apiClient.checkDocumentStatus(response.document_id);
+          
+          if (statusResponse.status === 'completed') {
+            await apiClient.downloadDocument(response.document_id);
+            toast.success('Social media plan document downloaded successfully!');
+            setIsGeneratingSocialMediaPlan(false);
+          } else if (statusResponse.status === 'failed') {
+            toast.error('Social media plan document generation failed');
+            setIsGeneratingSocialMediaPlan(false);
+          } else {
+            // Continue polling
+            setTimeout(pollStatus, 2000);
+          }
+        } catch (error) {
+          console.error('Error checking document status:', error);
+          toast.error('Error checking document status');
+          setIsGeneratingSocialMediaPlan(false);
+        }
+      };
+
+      pollStatus();
+    } catch (error) {
+      console.error('Error generating social media plan:', error);
+      toast.error('Failed to generate social media plan document');
+      setIsGeneratingSocialMediaPlan(false);
+    }
+  };
+
+  const generateUsername = (firstName?: string, lastName?: string): string => {
+    if (firstName && lastName) {
+      const cleanFirstName = firstName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const cleanLastName = lastName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const randomNumber = Math.floor(Math.random() * 1000);
+      return `${cleanFirstName}${cleanLastName}${randomNumber}`;
+    } else {
+      const randomString = Math.random().toString(36).substring(2, 8);
+      const randomNumber = Math.floor(Math.random() * 1000);
+      return `influencer_${randomString}${randomNumber}`;
+    }
+  };
+
+  const handleCreateProfile = async () => {
+    try {
+      setIsSubmitting(true);
+      const formData = watch();
+      
+      // Generate username
+      const username = generateUsername(formData.first_name, formData.last_name);
+      
+      // Prepare data for the API
+      const influencerData = {
+        first_name: formData.first_name || 'Anonymous',
+        last_name: formData.last_name || 'User',
+        username: username,
+        email: formData.email,
+        bio: formData.bio || '',
+        profile_image_url: '',
+        website_url: formData.website_url || '',
+        languages: formData.languages || '',
+        availability: true,
+        rate_per_post: formData.base_rate || 0,
+        total_posts: 0,
+        growth_rate: 0,
+        successful_campaigns: 0,
+        base_country_id: formData.base_country_id || 1, // Default to first country if not selected
+        collaboration_country_ids: []
+      };
+
+      // Call the API
+      const response = await apiClient.createInfluencerPublic(influencerData);
+      
+      toast.success('Influencer profile created successfully!');
+      console.log('Created influencer:', response);
+      
+      // Reset form
+      reset();
+      setSocialAccounts([{ platform_id: 0, username: '' }]);
+      
+    } catch (error) {
+      console.error('Profile creation error:', error);
+      toast.error('Failed to create profile. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const onSubmit = async (data: InfluencerRateFormData) => {
@@ -124,7 +278,6 @@ const InfluencerRateForm: React.FC = () => {
       // Create influencer profile
       const influencerData = {
         bio: data.bio || '',
-        location: data.location || '',
         languages: data.languages || '',
         website_url: data.website_url || '',
         availability: true,
@@ -181,7 +334,7 @@ const InfluencerRateForm: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Set Your Influencer Rates
+            Create Your Influencer or Professional Influencer Profile
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Join our platform and connect with brands. Set your rates and let businesses find you!
@@ -222,13 +375,40 @@ const InfluencerRateForm: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Location
+                      First Name
                     </label>
                     <input
                       type="text"
-                      {...register('location')}
+                      {...register('first_name')}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="City, Country"
+                      placeholder="Your first name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      {...register('last_name')}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="Your last name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Base Country
+                    </label>
+                    <CountrySelect
+                      value={(() => {
+                        const countryId = watch('base_country_id');
+                        return countryId && countryId > 0 ? [countryId] : [];
+                      })()}
+                      onChange={(countryIds) => setValue('base_country_id', countryIds.length > 0 ? countryIds[0] : undefined)}
+                      placeholder="Select base country..."
+                      multiple={false}
                     />
                   </div>
 
@@ -270,8 +450,8 @@ const InfluencerRateForm: React.FC = () => {
                 </div>
               </div>
 
-              {/* Social Media Accounts */}
-              <div className="space-y-6">
+              {/* Social Media Accounts - Temporarily Hidden */}
+              {/* <div className="space-y-6">
                 <h3 className="text-2xl font-semibold text-gray-900 flex items-center">
                   <MessageSquare className="w-6 h-6 mr-2 text-primary-600" />
                   Social Media Accounts *
@@ -343,13 +523,13 @@ const InfluencerRateForm: React.FC = () => {
                 <p className="text-sm text-gray-500">
                   Add at least one social media account. You can add multiple platforms.
                 </p>
-              </div>
+              </div> */}
 
               {/* Rate Information */}
               <div className="space-y-6">
                 <h3 className="text-2xl font-semibold text-gray-900 flex items-center">
                   <DollarSign className="w-6 h-6 mr-2 text-primary-600" />
-                  Rate Information
+                  How much will you be charging for promoting for brands?
                 </h3>
                 
                 <div className="grid md:grid-cols-2 gap-6">
@@ -413,19 +593,30 @@ const InfluencerRateForm: React.FC = () => {
                   type="button"
                   variant="secondary"
                   size="lg"
-                  onClick={handleGenerateBusinessProposal}
-                  className="px-12 bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={handleCreateProfile}
+                  isLoading={isSubmitting}
+                  className="px-12 bg-green-600 hover:bg-green-700 text-white"
                 >
-                  Get Business Proposal
+                  Create Profile
                 </Button>
                 <Button
                   type="button"
                   variant="secondary"
                   size="lg"
                   onClick={handleGenerateSocialMediaPlan}
+                  isLoading={isGeneratingSocialMediaPlan}
                   className="px-12 bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   Get Social Media Plan
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="lg"
+                  onClick={handleGenerateBusinessProposal}
+                  className="px-12 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Get Business Proposal
                 </Button>
                 <Button
                   type="submit"
@@ -437,6 +628,21 @@ const InfluencerRateForm: React.FC = () => {
                 </Button>
               </div>
             </form>
+
+            {/* Social Media Plan Generation Status */}
+            {isGeneratingSocialMediaPlan && (
+              <div className="flex flex-col items-center justify-center py-6 space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                  <span className="text-lg font-medium text-gray-700">
+                    Generating Social Media Plan document...
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 text-center max-w-md">
+                  Please wait while we analyze your influencer profile and generate a comprehensive 1-month social media plan.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
