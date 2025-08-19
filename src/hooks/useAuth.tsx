@@ -4,16 +4,23 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { apiClient } from '@/lib/api';
-import { LoginCredentials, RegisterData, User } from '@/types';
+import { LoginCredentials, RegisterData, User, Role } from '@/types';
+import { getHighestRole, getDashboardPath, hasRole, hasAnyRole, hasRoleLevel } from '@/lib/roleUtils';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  userRoles: Role[];
+  highestRole: string;
+  hasRole: (role: string) => boolean;
+  hasAnyRole: (roles: string[]) => boolean;
+  hasRoleLevel: (requiredRole: string) => boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
+  redirectToRoleDashboard: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,15 +31,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   const isAuthenticated = !!user;
+  const userRoles = user?.roles || [];
+  const highestRole = getHighestRole(userRoles);
 
   useEffect(() => {
-    const token = Cookies.get('access_token');
-    if (token) {
-      // In a real app, you'd validate the token with the server
-      // For now, we'll assume the token is valid if it exists
-      setUser({ id: 1, username: 'user' }); // Mock user data
-    }
-    setIsLoading(false);
+    const init = async () => {
+      try {
+        const token = Cookies.get('access_token');
+        if (token) {
+          const currentUser = await apiClient.getCurrentUser();
+          setUser(currentUser);
+        }
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    init();
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
@@ -43,11 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Store token in cookie
       Cookies.set('access_token', tokens.access_token, { expires: 7 });
       
-      // Set user data (in a real app, you'd get this from the API)
-      setUser({ id: 1, username: credentials.username });
+      const currentUser = await apiClient.getCurrentUser();
+      setUser(currentUser);
       
       toast.success('Login successful!');
-      router.push('/dashboard');
+      redirectToRoleDashboard();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Login failed');
       throw error;
@@ -70,6 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const redirectToRoleDashboard = () => {
+    const dashboardPath = getDashboardPath(user);
+    router.push(dashboardPath);
+  };
+
   const logout = () => {
     Cookies.remove('access_token');
     setUser(null);
@@ -83,9 +104,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         isAuthenticated,
+        userRoles,
+        highestRole,
+        hasRole: (role: string) => hasRole(user, role),
+        hasAnyRole: (roles: string[]) => hasAnyRole(user, roles),
+        hasRoleLevel: (requiredRole: string) => hasRoleLevel(user, requiredRole),
         login,
         register,
         logout,
+        redirectToRoleDashboard,
       }}
     >
       {children}

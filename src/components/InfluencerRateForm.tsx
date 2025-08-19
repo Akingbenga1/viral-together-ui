@@ -38,6 +38,7 @@ const InfluencerRateForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingSocialMediaPlan, setIsGeneratingSocialMediaPlan] = useState(false);
+  const [isGeneratingBusinessPlan, setIsGeneratingBusinessPlan] = useState(false);
 
   const {
     register,
@@ -96,9 +97,110 @@ const InfluencerRateForm: React.FC = () => {
     setSocialAccounts(updated);
   };
 
-  const handleGenerateBusinessProposal = () => {
-    console.log('Generate Business Proposal clicked');
-    toast.success('Business Proposal generation feature coming soon!');
+  const handleGenerateBusinessProposal = async () => {
+    const formData = watch();
+    
+    // Validate required fields
+    const requiredFields = {
+      email: formData.email,
+      content_type: formData.content_type,
+      base_rate: formData.base_rate
+    };
+
+    // Check for empty or missing required fields
+    const emptyFields = Object.entries(requiredFields)
+      .filter(([key, value]) => {
+        if (key === 'base_rate') {
+          return !value || (typeof value === 'number' && value <= 0);
+        }
+        return !value || value.toString().trim() === '';
+      })
+      .map(([key]) => key);
+
+    if (emptyFields.length > 0) {
+      const fieldNames = {
+        email: 'Email Address',
+        content_type: 'Content Type',
+        base_rate: 'Base Rate'
+      };
+
+      const missingFields = emptyFields.map(field => fieldNames[field as keyof typeof fieldNames]).join(', ');
+      toast.error(`Please fill in the following required fields: ${missingFields}`);
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    if (!emailRegex.test(formData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    // Validate base rate
+    if (typeof formData.base_rate === 'number' && formData.base_rate <= 0) {
+      toast.error('Please enter a valid base rate greater than 0');
+      return;
+    }
+
+    setIsGeneratingBusinessPlan(true);
+    try {
+      // Prepare the influencer profile data for business plan generation
+      const businessPlanData = {
+        influencer_profile: {
+          email: formData.email,
+          first_name: formData.first_name || 'Anonymous',
+          last_name: formData.last_name || 'User',
+          bio: formData.bio || '',
+          website_url: formData.website_url || '',
+          languages: formData.languages || 'English',
+          base_country_id: formData.base_country_id || 1,
+          content_type: formData.content_type,
+          base_rate: formData.base_rate,
+          description: formData.description || '',
+          file_format: 'pdf' // Default to PDF format
+        }
+      };
+
+      const response = await apiClient.generateBusinessPlanPublic(businessPlanData);
+      
+      // Poll for status
+      const pollStatus = async () => {
+        try {
+          const statusResponse = await apiClient.checkDocumentStatus(response.document_id);
+          
+          if (statusResponse.status === 'completed') {
+            const blob = await apiClient.downloadDocument(response.document_id);
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `business-plan-${Date.now()}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            toast.success('Business plan document downloaded successfully!');
+            setIsGeneratingBusinessPlan(false);
+          } else if (statusResponse.status === 'failed') {
+            toast.error('Business plan document generation failed');
+            setIsGeneratingBusinessPlan(false);
+          } else {
+            // Continue polling
+            setTimeout(pollStatus, 2000);
+          }
+        } catch (error) {
+          console.error('Error checking document status:', error);
+          toast.error('Error checking document status');
+          setIsGeneratingBusinessPlan(false);
+        }
+      };
+
+      pollStatus();
+    } catch (error) {
+      console.error('Error generating business plan:', error);
+      toast.error('Failed to generate business plan document');
+      setIsGeneratingBusinessPlan(false);
+    }
   };
 
   const handleGenerateSocialMediaPlan = async () => {
@@ -173,7 +275,16 @@ const InfluencerRateForm: React.FC = () => {
           const statusResponse = await apiClient.checkDocumentStatus(response.document_id);
           
           if (statusResponse.status === 'completed') {
-            await apiClient.downloadDocument(response.document_id);
+            const blob = await apiClient.downloadDocument(response.document_id);
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `social-media-plan-${Date.now()}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
             toast.success('Social media plan document downloaded successfully!');
             setIsGeneratingSocialMediaPlan(false);
           } else if (statusResponse.status === 'failed') {
@@ -216,25 +327,86 @@ const InfluencerRateForm: React.FC = () => {
       setIsSubmitting(true);
       const formData = watch();
       
+      // Validate required fields
+      const requiredFields = {
+        email: formData.email,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        base_country_id: formData.base_country_id,
+        languages: formData.languages,
+        bio: formData.bio,
+        content_type: formData.content_type,
+        base_rate: formData.base_rate
+      };
+
+      // Check for empty or missing required fields
+      const emptyFields = Object.entries(requiredFields)
+        .filter(([key, value]) => {
+          if (key === 'base_rate') {
+            return !value || (typeof value === 'number' && value <= 0);
+          }
+          if (key === 'base_country_id') {
+            return !value || (typeof value === 'number' && value <= 0);
+          }
+          return !value || value.toString().trim() === '';
+        })
+        .map(([key]) => key);
+
+      if (emptyFields.length > 0) {
+        const fieldNames = {
+          email: 'Email Address',
+          first_name: 'First Name',
+          last_name: 'Last Name',
+          base_country_id: 'Base Country',
+          languages: 'Languages',
+          bio: 'Bio',
+          content_type: 'Content Type',
+          base_rate: 'Base Rate'
+        };
+
+        const missingFields = emptyFields.map(field => fieldNames[field as keyof typeof fieldNames]).join(', ');
+        toast.error(`Please fill in the following required fields: ${missingFields}`);
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+      if (!emailRegex.test(formData.email)) {
+        toast.error('Please enter a valid email address');
+        return;
+      }
+
+      // Validate base rate
+      if (typeof formData.base_rate === 'number' && formData.base_rate <= 0) {
+        toast.error('Please enter a valid base rate greater than 0');
+        return;
+      }
+
+      // Validate base country
+      if (!formData.base_country_id || formData.base_country_id <= 0) {
+        toast.error('Please select a valid base country');
+        return;
+      }
+      
       // Generate username
       const username = generateUsername(formData.first_name, formData.last_name);
       
       // Prepare data for the API
       const influencerData = {
-        first_name: formData.first_name || 'Anonymous',
-        last_name: formData.last_name || 'User',
+        first_name: formData.first_name,
+        last_name: formData.last_name,
         username: username,
         email: formData.email,
-        bio: formData.bio || '',
+        bio: formData.bio,
         profile_image_url: '',
         website_url: formData.website_url || '',
-        languages: formData.languages || '',
+        languages: formData.languages,
         availability: true,
-        rate_per_post: formData.base_rate || 0,
+        rate_per_post: formData.base_rate,
         total_posts: 0,
         growth_rate: 0,
         successful_campaigns: 0,
-        base_country_id: formData.base_country_id || 1, // Default to first country if not selected
+        base_country_id: formData.base_country_id,
         collaboration_country_ids: []
       };
 
@@ -256,63 +428,7 @@ const InfluencerRateForm: React.FC = () => {
     }
   };
 
-  const onSubmit = async (data: InfluencerRateFormData) => {
-    try {
-      setIsSubmitting(true);
 
-      // Validate social accounts
-      const validSocialAccounts = socialAccounts.filter(
-        account => account.platform_id > 0 && account.username.trim() !== ''
-      );
-
-      if (validSocialAccounts.length === 0) {
-        toast.error('Please add at least one social media account');
-        return;
-      }
-
-      // Create user account (simplified - in real app, this would be more complex)
-      const userData = {
-        email: data.email,
-        password: 'temp_password', // In real app, this would be handled differently
-        full_name: 'Influencer User', // This would come from the form
-      };
-
-      // Create influencer profile
-      const influencerData = {
-        bio: data.bio || '',
-        languages: data.languages || '',
-        website_url: data.website_url || '',
-        availability: true,
-        rate_per_post: data.base_rate,
-        user_id: 1, // This would come from the created user
-      };
-
-      // Create rate card for the first platform (in real app, you might create multiple)
-      const rateCardData = {
-        influencer_id: 1, // This would come from the created influencer
-        platform_id: validSocialAccounts[0].platform_id,
-        content_type: data.content_type,
-        base_rate: data.base_rate,
-        description: data.description || '',
-      };
-
-      // For demo purposes, we'll just show success message
-      // In real implementation, you'd make actual API calls
-      console.log('Form data:', { userData, influencerData, rateCardData, socialAccounts: validSocialAccounts });
-      
-      toast.success('Rate card submitted successfully! We will contact you soon.');
-      
-      // Reset form
-      reset();
-      setSocialAccounts([{ platform_id: 0, username: '' }]);
-
-    } catch (error) {
-      console.error('Submission error:', error);
-      toast.error('Failed to submit rate card. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const contentTypes = [
     'Instagram Post',
@@ -345,7 +461,7 @@ const InfluencerRateForm: React.FC = () => {
 
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-8">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <form className="space-y-8">
               {/* Basic Information */}
               <div className="space-y-6">
                 <h3 className="text-2xl font-semibold text-gray-900 flex items-center">
@@ -616,18 +732,12 @@ const InfluencerRateForm: React.FC = () => {
                   variant="secondary"
                   size="lg"
                   onClick={handleGenerateBusinessProposal}
+                  isLoading={isGeneratingBusinessPlan}
                   className="px-12 bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   Get Business Proposal
                 </Button>
-                <Button
-                  type="submit"
-                  size="lg"
-                  isLoading={isSubmitting}
-                  className="px-12"
-                >
-                  Submit Rate Card
-                </Button>
+
               </div>
             </form>
 
@@ -642,6 +752,21 @@ const InfluencerRateForm: React.FC = () => {
                 </div>
                 <p className="text-sm text-gray-500 text-center max-w-md">
                   Please wait while we analyze your influencer profile and generate a comprehensive 1-month social media plan.
+                </p>
+              </div>
+            )}
+
+            {/* Business Plan Generation Status */}
+            {isGeneratingBusinessPlan && (
+              <div className="flex flex-col items-center justify-center py-6 space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="text-lg font-medium text-gray-700">
+                    Generating Business Plan document...
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 text-center max-w-md">
+                  Please wait while we analyze your influencer profile and generate a comprehensive business plan.
                 </p>
               </div>
             )}

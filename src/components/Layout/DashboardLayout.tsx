@@ -13,7 +13,8 @@ import {
   X,
   Home,
   TrendingUp,
-  Star
+  Star,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -22,20 +23,34 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Influencers', href: '/dashboard/influencers', icon: Users },
-  { name: 'Search', href: '/dashboard/search', icon: Search },
-  { name: 'Rate Cards', href: '/dashboard/rate-cards', icon: CreditCard },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: TrendingUp },
-  { name: 'Subscription', href: '/dashboard/subscription', icon: Star },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-];
+const getNavigation = (isSuperAdmin: boolean) => {
+  const baseNavigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Influencers', href: '/dashboard/influencers', icon: Users },
+    { name: 'Search', href: '/dashboard/search', icon: Search },
+    { name: 'Rate Cards', href: '/dashboard/rate-cards', icon: CreditCard },
+    { name: 'Analytics', href: '/dashboard/analytics', icon: TrendingUp },
+    { name: 'Subscription', href: '/dashboard/subscription', icon: Star },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  ];
+
+  // Add blog management for super admins
+  if (isSuperAdmin) {
+    const blogItem = { name: 'Blog', href: '/dashboard/blog', icon: FileText };
+    // Insert blog item before settings
+    baseNavigation.splice(-1, 0, blogItem);
+  }
+
+  return baseNavigation;
+};
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  
+  const isSuperAdmin = !!user?.roles?.some(r => r.name === 'super_admin');
+  const navigation = getNavigation(isSuperAdmin);
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">

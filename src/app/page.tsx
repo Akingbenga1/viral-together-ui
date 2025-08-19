@@ -1,32 +1,13 @@
 import Link from 'next/link';
-import { ArrowRight, Users, TrendingUp, Star, Shield } from 'lucide-react';
+import { ArrowRight, TrendingUp, Star, Shield, Users } from 'lucide-react';
 import InfluencerRateForm from '@/components/InfluencerRateForm';
 import BusinessProfileForm from '@/components/BusinessProfileForm';
 import InfluencerSearchForm from '@/components/InfluencerSearchForm';
+import UnauthenticatedLayout from '@/components/UnauthenticatedLayout';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
-              <Users className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900">Viral Together</span>
-          </div>
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link href="#features" className="text-gray-600 hover:text-gray-900">Features</Link>
-            <Link href="#pricing" className="text-gray-600 hover:text-gray-900">Pricing</Link>
-            <Link href="#about" className="text-gray-600 hover:text-gray-900">About</Link>
-          </nav>
-          <div className="flex items-center space-x-4">
-            <Link href="/auth/login" className="text-gray-600 hover:text-gray-900">Login</Link>
-            <Link href="/auth/register" className="btn btn-primary btn-sm">Get Started</Link>
-          </div>
-        </div>
-      </header>
+    <UnauthenticatedLayout>
 
       {/* Hero Section */}
       <section className="py-20 px-4">
@@ -173,51 +154,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold">Viral Together</span>
-              </div>
-              <p className="text-gray-400">
-                The ultimate platform for influencer marketing and brand partnerships.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="#" className="hover:text-white">Features</Link></li>
-                <li><Link href="#" className="hover:text-white">Pricing</Link></li>
-                <li><Link href="#" className="hover:text-white">API</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="#" className="hover:text-white">About</Link></li>
-                <li><Link href="#" className="hover:text-white">Blog</Link></li>
-                <li><Link href="#" className="hover:text-white">Careers</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="#" className="hover:text-white">Help Center</Link></li>
-                <li><Link href="#" className="hover:text-white">Contact</Link></li>
-                <li><Link href="#" className="hover:text-white">Privacy</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Viral Together. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
+
+    </UnauthenticatedLayout>
   );
 } 

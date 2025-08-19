@@ -1,9 +1,22 @@
+export interface Role {
+  id: number;
+  name: string;
+  description?: string;
+}
+
 export interface User {
   id: number;
   username: string;
   email?: string;
+  first_name?: string;
+  last_name?: string;
   created_at?: string;
   updated_at?: string;
+  roles?: Role[];
+}
+
+export interface UserWithRoles extends User {
+  roles: Role[];
 }
 
 export interface AuthTokens {
@@ -12,14 +25,14 @@ export interface AuthTokens {
 }
 
 export interface LoginCredentials {
-  username: string;
+  username_or_email: string;
   password: string;
 }
 
 export interface RegisterData {
   username: string;
   password: string;
-  email?: string;
+  email: string;
 }
 
 export interface Influencer {

@@ -4,6 +4,7 @@ import {
   AuthTokens, 
   LoginCredentials, 
   RegisterData, 
+  User,
   Influencer, 
   CreateInfluencerData, 
   UpdateInfluencerData,
@@ -67,7 +68,7 @@ class ApiClient {
   // Auth endpoints
   async login(credentials: LoginCredentials): Promise<AuthTokens> {
     const formData = new URLSearchParams();
-    formData.append('username', credentials.username);
+    formData.append('username', credentials.username_or_email);
     formData.append('password', credentials.password);
     
     const response: AxiosResponse<AuthTokens> = await this.client.post('/auth/token', formData, {
@@ -80,6 +81,11 @@ class ApiClient {
 
   async register(data: RegisterData): Promise<any> {
     const response = await this.client.post('/auth/register', data);
+    return response.data;
+  }
+
+  async getCurrentUser(): Promise<User> {
+    const response = await this.client.post('/auth/user');
     return response.data;
   }
 
@@ -301,6 +307,11 @@ class ApiClient {
     return response.data;
   }
 
+  async generateBusinessPlanPublic(data: any): Promise<DocumentGenerationResponse> {
+    const response: AxiosResponse<DocumentGenerationResponse> = await this.client.post('/documents/generate-business-plan-public', data);
+    return response.data;
+  }
+
   async checkDocumentStatus(documentId: number): Promise<any> {
     const response = await this.client.get(`/documents/${documentId}/status`);
     return response.data;
@@ -333,6 +344,102 @@ class ApiClient {
     const response: AxiosResponse<Country> = await this.client.get(`/api/countries/${id}`);
     return response.data;
   }
+
+  // Blog endpoints
+  async createBlog(data: {
+    author_id: number;
+    topic: string;
+    description?: string;
+    body: string;
+    images?: string[];
+    cover_image_url?: string;
+  }): Promise<any> {
+    const response = await this.client.post('/blog/create', data);
+    return response.data;
+  }
+
+  async updateBlog(id: number, data: Partial<{
+    topic: string;
+    description: string;
+    body: string;
+    images: string[];
+    cover_image_url: string;
+  }>): Promise<any> {
+    const response = await this.client.put(`/blog/update/${id}`, data);
+    return response.data;
+  }
+
+  async getBlogs(): Promise<any[]> {
+    const response = await this.client.get('/blog/blogs');
+    return response.data;
+  }
+
+  async getBlogBySlug(slug: string): Promise<any> {
+    const response = await this.client.get(`/blog/blogs/${slug}`);
+    return response.data;
+  }
+
+  async getBlogsAdmin(): Promise<any[]> {
+    const response = await this.client.get('/blog/admin/blogs');
+    return response.data;
+  }
+
+  async deleteBlog(id: number): Promise<void> {
+    await this.client.delete(`/blog/delete/${id}`);
+  }
+
+  // Generic HTTP methods for custom endpoints
+  async get(url: string, config?: any): Promise<any> {
+    const response = await this.client.get(url, config);
+    return response;
+  }
+
+  async post(url: string, data?: any, config?: any): Promise<any> {
+    const response = await this.client.post(url, data, config);
+    return response;
+  }
+
+  async put(url: string, data?: any, config?: any): Promise<any> {
+    const response = await this.client.put(url, data, config);
+    return response;
+  }
+
+  async delete(url: string, config?: any): Promise<any> {
+    const response = await this.client.delete(url, config);
+    return response;
+  }
+
+  // Role management endpoints
+  async getUserRoles(userId: number): Promise<Role[]> {
+    const response = await this.client.get(`/role-management/users/${userId}/roles`);
+    return response.data;
+  }
+
+  async assignRoleToUser(userId: number, roleId: number): Promise<any> {
+    const response = await this.client.post(`/role-management/users/${userId}/roles/${roleId}`);
+    return response.data;
+  }
+
+  async removeRoleFromUser(userId: number, roleId: number): Promise<any> {
+    const response = await this.client.delete(`/role-management/users/${userId}/roles/${roleId}`);
+    return response.data;
+  }
+
+  async getAllRoles(): Promise<Role[]> {
+    const response = await this.client.get('/role-management/roles');
+    return response.data;
+  }
+
+  async getAllUsersWithRoles(): Promise<UserWithRoles[]> {
+    const response = await this.client.get('/role-management/users');
+    return response.data;
+  }
+
+  async getUserById(userId: number): Promise<UserWithRoles> {
+    const response = await this.client.get(`/role-management/users/${userId}`);
+    return response.data;
+  }
 }
 
-export const apiClient = new ApiClient(); 
+export const apiClient = new ApiClient();
+export const api = apiClient; // Alias for backward compatibility 
