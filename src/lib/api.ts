@@ -391,22 +391,22 @@ class ApiClient {
   // Generic HTTP methods for custom endpoints
   async get(url: string, config?: any): Promise<any> {
     const response = await this.client.get(url, config);
-    return response;
+    return response.data;
   }
 
   async post(url: string, data?: any, config?: any): Promise<any> {
     const response = await this.client.post(url, data, config);
-    return response;
+    return response.data;
   }
 
   async put(url: string, data?: any, config?: any): Promise<any> {
     const response = await this.client.put(url, data, config);
-    return response;
+    return response.data;
   }
 
   async delete(url: string, config?: any): Promise<any> {
     const response = await this.client.delete(url, config);
-    return response;
+    return response.data;
   }
 
   // Role management endpoints

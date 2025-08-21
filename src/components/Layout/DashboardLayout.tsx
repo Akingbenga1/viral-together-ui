@@ -14,7 +14,8 @@ import {
   Home,
   TrendingUp,
   Star,
-  FileText
+  FileText,
+  Brain
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,7 @@ const getNavigation = (isSuperAdmin: boolean) => {
     { name: 'Search', href: '/dashboard/search', icon: Search },
     { name: 'Rate Cards', href: '/dashboard/rate-cards', icon: CreditCard },
     { name: 'Analytics', href: '/dashboard/analytics', icon: TrendingUp },
+    { name: 'AI Recommendations', href: '/dashboard/recommendations', icon: Brain },
     { name: 'Subscription', href: '/dashboard/subscription', icon: Star },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
