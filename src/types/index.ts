@@ -294,4 +294,33 @@ export interface Country {
   timezones?: string;
   latitude?: number;
   longitude?: number;
-} 
+}
+
+// Influencer targets types
+export interface InfluencersTargets {
+  id: number;
+  user_id: number;
+  posting_frequency?: string;
+  engagement_goals?: string;
+  follower_growth?: string;
+  pricing?: number;
+  pricing_currency: string;
+  estimated_hours_per_week?: string;
+  content_types?: string[];
+  platform_recommendations?: string[];
+  content_creation_tips?: string[];
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface CreateInfluencersTargetsData {
+  posting_frequency?: string;
+  engagement_goals?: string;
+  follower_growth?: string;
+  pricing?: number;
+  pricing_currency?: string;
+  estimated_hours_per_week?: string;
+  content_types?: string[];
+  platform_recommendations?: string[];
+  content_creation_tips?: string[];
+}

@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Brain, ChevronLeft, ChevronRight, Calendar, Target, DollarSign, TrendingUp, Users, Star, Zap, Lightbulb, X } from 'lucide-react';
+import { Brain, ChevronLeft, ChevronRight, Calendar, Target, DollarSign, TrendingUp, Users, Star, Zap, Lightbulb, X, Edit, Check } from 'lucide-react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface InfluencerRecommendation {
   id: number;
@@ -28,6 +29,8 @@ export default function RecommendationsPage() {
   const [currentSection, setCurrentSection] = useState(0);
   const [selectedInsight, setSelectedInsight] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const timelineRef = useRef<HTMLDivElement>(null);
 
   const sections = [
@@ -100,23 +103,63 @@ export default function RecommendationsPage() {
     const fetchRecommendations = async () => {
       if (!user?.id) {
         console.log('No user ID available');
+        setIsLoading(false);
         return;
       }
       
       console.log('Fetching recommendations for user ID:', user.id);
       
-      try {
-        const data = await apiClient.get(`/recommendations/user/${user.id}`);
-        console.log('API Response:', data);
-        setRecommendations(data);
-        if (data.length > 0) {
-          setCurrentRecommendation(data[0]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch recommendations:', error);
-      } finally {
-        setIsLoading(false);
-      }
+             try {
+         const data = await apiClient.get(`/recommendations/user/${user.id}`);
+         console.log('API Response:', data);
+         
+         // Ensure data is an array and has valid structure
+         if (Array.isArray(data)) {
+           setRecommendations(data);
+           if (data.length > 0 && data[0]) {
+             setCurrentRecommendation(data[0]);
+           }
+         } else {
+           console.error('Invalid data format received:', data);
+           toast.error('Invalid data format received from server');
+         }
+             } catch (error: any) {
+         console.error('Failed to fetch recommendations:', error);
+         
+         let errorMessage = 'Failed to load recommendations. Please try again.';
+         
+         if (error.response?.status === 401) {
+           errorMessage = 'Authentication required. Please log in again.';
+         } else if (error.response?.status === 404) {
+           errorMessage = 'No recommendations found for your account.';
+         } else if (error.response?.status === 500) {
+           errorMessage = 'Server error. Please try again later.';
+         } else if (error.message === 'Network Error') {
+           errorMessage = 'Network error. Please check your connection and try again.';
+         } else if (error.response?.data?.detail) {
+           // Ensure we're not trying to render an object
+           if (typeof error.response.data.detail === 'string') {
+             errorMessage = error.response.data.detail;
+           } else if (Array.isArray(error.response.data.detail)) {
+             errorMessage = error.response.data.detail.map((err: any) => 
+               typeof err === 'string' ? err : err.msg || 'Validation error'
+             ).join(', ');
+           } else {
+             errorMessage = 'An unexpected error occurred. Please try again.';
+           }
+         } else if (error.message) {
+           errorMessage = error.message;
+         }
+         
+         // Ensure errorMessage is always a string
+         if (typeof errorMessage !== 'string') {
+           errorMessage = 'An unexpected error occurred. Please try again.';
+         }
+         
+         toast.error(errorMessage);
+       } finally {
+         setIsLoading(false);
+       }
     };
 
     fetchRecommendations();
@@ -155,48 +198,188 @@ export default function RecommendationsPage() {
     document.addEventListener('touchend', handleTouchEnd as any, { once: true });
   };
 
+     const handleSaveBaseStrategy = async () => {
+     if (!currentRecommendation?.base_plan) {
+       toast.error('No base strategy data available to save');
+       return;
+     }
+     
+     // Validate base plan structure
+     const basePlan = currentRecommendation.base_plan;
+     if (typeof basePlan !== 'object' || basePlan === null) {
+       toast.error('Invalid base strategy data structure');
+       return;
+     }
+     
+     setIsSaving(true);
+     const loadingToast = toast.loading('Saving your base strategy...');
+     
+     try {
+      
+      // Extract numeric value from pricing strategy string
+      let pricingValue: number | undefined = undefined;
+      if (basePlan.pricing_strategy) {
+        const numericMatch = basePlan.pricing_strategy.match(/[\d,]+\.?\d*/);
+        if (numericMatch) {
+          pricingValue = parseFloat(numericMatch[0].replace(/,/g, ''));
+        }
+      }
+      
+      await apiClient.saveInfluencerTargets({
+        posting_frequency: basePlan.posting_frequency,
+        engagement_goals: basePlan.engagement_goals,
+        follower_growth: basePlan.follower_growth,
+        pricing: pricingValue,
+        pricing_currency: "USD", // Default to USD
+        estimated_hours_per_week: basePlan.estimated_hours_per_week,
+        content_types: basePlan.content_types,
+        platform_recommendations: basePlan.platform_recommendations,
+        content_creation_tips: basePlan.content_creation_tips,
+      });
+      
+      toast.success('Base strategy saved successfully! Your influencer targets have been updated.', { id: loadingToast });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+         } catch (error: any) {
+       console.error('Failed to save base strategy:', error);
+       
+       // Handle different types of errors
+       let errorMessage = 'Failed to save base strategy. Please try again.';
+       
+       if (error.response?.status === 401) {
+         errorMessage = 'Authentication required. Please log in again.';
+       } else if (error.response?.status === 400) {
+         // Handle validation errors properly
+         if (error.response.data?.detail) {
+           if (Array.isArray(error.response.data.detail)) {
+             // Handle multiple validation errors
+             errorMessage = error.response.data.detail.map((err: any) => 
+               typeof err === 'string' ? err : err.msg || 'Validation error'
+             ).join(', ');
+           } else if (typeof error.response.data.detail === 'string') {
+             errorMessage = error.response.data.detail;
+           } else {
+             errorMessage = 'Invalid data provided. Please check your strategy details.';
+           }
+         } else {
+           errorMessage = 'Invalid data provided. Please check your strategy details.';
+         }
+       } else if (error.response?.status === 500) {
+         errorMessage = 'Server error. Please try again later.';
+       } else if (error.message === 'Network Error') {
+         errorMessage = 'Network error. Please check your connection and try again.';
+       } else if (error.response?.data?.detail) {
+         // Ensure we're not trying to render an object
+         if (typeof error.response.data.detail === 'string') {
+           errorMessage = error.response.data.detail;
+         } else {
+           errorMessage = 'An unexpected error occurred. Please try again.';
+         }
+       } else if (error.message) {
+         errorMessage = error.message;
+       }
+       
+       // Ensure errorMessage is always a string
+       if (typeof errorMessage !== 'string') {
+         errorMessage = 'An unexpected error occurred. Please try again.';
+       }
+       
+       toast.error(errorMessage, { id: loadingToast });
+     } finally {
+       setIsSaving(false);
+     }
+  };
+
   const renderBasePlan = () => {
-    if (!currentRecommendation?.base_plan) return null;
+    if (!currentRecommendation?.base_plan) {
+      return (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-blue-900">Base Strategy</h3>
+              <button
+                disabled={true}
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-400 text-gray-200 cursor-not-allowed"
+                title="No strategy data available to save"
+              >
+                <Edit className="w-4 h-4" />
+                <span className="text-sm font-medium">Save Strategy</span>
+              </button>
+            </div>
+            <div className="text-center py-8">
+              <Target className="mx-auto h-12 w-12 text-blue-400 mb-4" />
+              <p className="text-blue-700">No base strategy data available</p>
+              <p className="text-blue-600 text-sm mt-2">Please generate recommendations first</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
     const plan = currentRecommendation.base_plan;
     
     return (
       <div className="space-y-6">
         <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg">
-          <h3 className="text-xl font-bold text-blue-900 mb-4">Base Strategy</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-blue-900">Base Strategy</h3>
+            <button
+              onClick={handleSaveBaseStrategy}
+              disabled={isSaving || !currentRecommendation?.base_plan}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                saveSuccess
+                  ? 'bg-green-500 text-white'
+                  : !currentRecommendation?.base_plan
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={!currentRecommendation?.base_plan ? 'No strategy data available to save' : 'Save your base strategy'}
+            >
+              {isSaving ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : saveSuccess ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                <Edit className="w-4 h-4" />
+              )}
+              <span className="text-sm font-medium">
+                {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Strategy'}
+              </span>
+            </button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Target className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold">Level:</span>
-                <span className="capitalize">{plan.level}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Calendar className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold">Posting Frequency:</span>
-                <span>{plan.posting_frequency}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold">Engagement Goal:</span>
-                <span>{plan.engagement_goals}</span>
-              </div>
+                             <div className="flex items-center space-x-2">
+                 <Target className="w-5 h-5 text-blue-600" />
+                 <span className="font-semibold">Level:</span>
+                 <span className="capitalize">{typeof plan.level === 'string' ? plan.level : 'N/A'}</span>
+               </div>
+                             <div className="flex items-center space-x-2">
+                 <Calendar className="w-5 h-5 text-blue-600" />
+                 <span className="font-semibold">Posting Frequency:</span>
+                 <span>{typeof plan.posting_frequency === 'string' ? plan.posting_frequency : 'N/A'}</span>
+               </div>
+               <div className="flex items-center space-x-2">
+                 <Users className="w-5 h-5 text-blue-600" />
+                 <span className="font-semibold">Engagement Goal:</span>
+                 <span>{typeof plan.engagement_goals === 'string' ? plan.engagement_goals : 'N/A'}</span>
+               </div>
             </div>
             <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold">Follower Growth:</span>
-                <span>{plan.follower_growth}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <DollarSign className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold">Pricing Strategy:</span>
-                <span>{plan.pricing_strategy}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Zap className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold">Hours/Week:</span>
-                <span>{plan.estimated_hours_per_week}</span>
-              </div>
+                             <div className="flex items-center space-x-2">
+                 <TrendingUp className="w-5 h-5 text-blue-600" />
+                 <span className="font-semibold">Follower Growth:</span>
+                 <span>{typeof plan.follower_growth === 'string' ? plan.follower_growth : 'N/A'}</span>
+               </div>
+               <div className="flex items-center space-x-2">
+                 <DollarSign className="w-5 h-5 text-blue-600" />
+                 <span className="font-semibold">Pricing Strategy:</span>
+                 <span>{typeof plan.pricing_strategy === 'string' ? plan.pricing_strategy : 'N/A'}</span>
+               </div>
+               <div className="flex items-center space-x-2">
+                 <Zap className="w-5 h-5 text-blue-600" />
+                 <span className="font-semibold">Hours/Week:</span>
+                 <span>{typeof plan.estimated_hours_per_week === 'string' ? plan.estimated_hours_per_week : 'N/A'}</span>
+               </div>
             </div>
           </div>
         </div>
@@ -248,11 +431,11 @@ export default function RecommendationsPage() {
           <h3 className="text-xl font-bold text-purple-900 mb-4">AI Enhanced Strategy</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Brain className="w-5 h-5 text-purple-600" />
-                <span className="font-semibold">Level:</span>
-                <span className="capitalize">{plan.level}</span>
-              </div>
+                             <div className="flex items-center space-x-2">
+                 <Brain className="w-5 h-5 text-purple-600" />
+                 <span className="font-semibold">Level:</span>
+                 <span className="capitalize">{typeof plan.level === 'string' ? plan.level : 'N/A'}</span>
+               </div>
               <div className="flex items-center space-x-2">
                 <Calendar className="w-5 h-5 text-purple-600" />
                 <span className="font-semibold">Posting Frequency:</span>
@@ -655,8 +838,35 @@ export default function RecommendationsPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 3000,
+              iconTheme: {
+                primary: '#10B981',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              duration: 5000,
+              iconTheme: {
+                primary: '#EF4444',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
         <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500"></div>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500 mx-auto mb-4"></div>
+            <p className="text-gray-600 text-lg">Loading your AI recommendations...</p>
+          </div>
         </div>
       </DashboardLayout>
     );
@@ -665,6 +875,30 @@ export default function RecommendationsPage() {
   if (recommendations.length === 0) {
     return (
       <DashboardLayout>
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 3000,
+              iconTheme: {
+                primary: '#10B981',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              duration: 5000,
+              iconTheme: {
+                primary: '#EF4444',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
         <div className="py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <div className="text-center py-12">
@@ -682,6 +916,30 @@ export default function RecommendationsPage() {
 
   return (
     <DashboardLayout>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10B981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: '#EF4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       <div className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
           {/* Header */}

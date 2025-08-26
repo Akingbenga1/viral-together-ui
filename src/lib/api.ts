@@ -21,7 +21,9 @@ import {
   CreateBusinessPublicData,
   CollaborationRequestGeneralData,
   DocumentGenerationResponse,
-  Country
+  Country,
+  InfluencersTargets,
+  CreateInfluencersTargetsData
 } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -437,6 +439,17 @@ class ApiClient {
 
   async getUserById(userId: number): Promise<UserWithRoles> {
     const response = await this.client.get(`/role-management/users/${userId}`);
+    return response.data;
+  }
+
+  // Influencer targets endpoints
+  async saveInfluencerTargets(targets: CreateInfluencersTargetsData): Promise<InfluencersTargets> {
+    const response = await this.client.post('/api/v1/influencers-targets/', targets);
+    return response.data;
+  }
+
+  async getInfluencerTargets(): Promise<InfluencersTargets[]> {
+    const response = await this.client.get('/api/v1/influencers-targets/');
     return response.data;
   }
 }
