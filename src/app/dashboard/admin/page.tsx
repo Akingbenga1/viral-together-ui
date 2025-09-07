@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, Settings, Shield, BarChart3, UserPlus, UserCheck } from 'lucide-react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+import { Users, Settings, Shield, BarChart3, UserPlus, UserCheck, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
 import { UserWithRoles, Role } from '@/types';
@@ -75,102 +75,126 @@ export default function AdminDashboardPage() {
       name: 'Total Users',
       value: users.length,
       icon: Users,
-      color: 'bg-blue-500',
+      gradient: 'from-cyan-400 to-teal-500',
+      description: 'Registered users',
+      change: '+12',
+      changeType: 'increase',
     },
     {
       name: 'Total Roles',
       value: roles.length,
       icon: Shield,
-      color: 'bg-green-500',
+      gradient: 'from-emerald-400 to-cyan-500',
+      description: 'System roles',
+      change: '+2',
+      changeType: 'increase',
     },
     {
       name: 'Active Users',
       value: users.filter(u => u.roles && u.roles.length > 0).length,
       icon: UserCheck,
-      color: 'bg-purple-500',
+      gradient: 'from-purple-400 to-pink-500',
+      description: 'Users with roles',
+      change: '+8',
+      changeType: 'increase',
     },
     {
       name: 'System Health',
-      value: 'Good',
+      value: 'Excellent',
       icon: BarChart3,
-      color: 'bg-orange-500',
+      gradient: 'from-amber-400 to-orange-500',
+      description: 'All systems operational',
+      change: '100%',
+      changeType: 'increase',
     },
   ];
 
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="py-6">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+      <UnifiedDashboardLayout>
+        <div className="min-h-full w-full overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-none">
             <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="h-8 bg-slate-700/50 rounded-xl w-1/4 mb-6"></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="bg-white shadow rounded-lg p-6">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                  <div key={i} className="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
+                    <div className="h-4 bg-slate-700/50 rounded w-3/4 mb-3"></div>
+                    <div className="h-8 bg-slate-700/50 rounded w-1/2"></div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
-      </DashboardLayout>
+      </UnifiedDashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+    <UnifiedDashboardLayout>
+      <div className="min-h-full w-full overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-none">
           {/* Header */}
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                Admin Dashboard
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                System administration and user management
-              </p>
-            </div>
-            <div className="mt-4 flex md:mt-0 md:ml-4">
-              <button
-                onClick={() => setShowRoleModal(true)}
-                className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Manage Roles
-              </button>
+          <div className="mb-8">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-3xl font-bold text-white mb-2 leading-tight tracking-tight">
+                  Admin Dashboard 🛡️
+                </h1>
+                <p className="text-slate-300 text-lg leading-relaxed">
+                  System administration and user management
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0">
+                <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl px-4 py-2 border border-slate-700/50">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-slate-300 whitespace-nowrap">System Online</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowRoleModal(true)}
+                  className="btn-dark-primary px-6 h-12 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 whitespace-nowrap"
+                >
+                  <UserPlus className="h-5 w-5" />
+                  <span>Manage Roles</span>
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Stats Grid */}
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
+            {stats.map((stat, index) => (
               <div
                 key={stat.name}
-                className="bg-white overflow-hidden shadow rounded-lg"
+                className="relative bg-slate-800/30 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 group overflow-hidden min-w-0"
               >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <stat.icon className="h-6 w-6 text-white" />
+                {/* Background gradient */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center shadow-lg flex-shrink-0`}>
+                      <stat.icon className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
                     </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          {stat.name}
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {stat.value}
-                        </dd>
-                      </dl>
+                    <div className={`flex items-center space-x-1 text-xs lg:text-sm flex-shrink-0 ${
+                      stat.changeType === 'increase' ? 'text-emerald-400' : 'text-rose-400'
+                    }`}>
+                      {stat.changeType === 'increase' ? (
+                        <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4" />
+                      ) : (
+                        <ArrowDownRight className="w-3 h-3 lg:w-4 lg:h-4" />
+                      )}
+                      <span className="font-medium whitespace-nowrap">{stat.change}</span>
                     </div>
                   </div>
-                </div>
-                <div className={`${stat.color} px-5 py-3`}>
-                  <div className="text-sm">
-                    <span className="text-white">View details</span>
+                  
+                  <div className="min-w-0">
+                    <h3 className="text-xl lg:text-2xl font-bold text-white mb-1 truncate">{stat.value}</h3>
+                    <p className="text-slate-400 text-sm truncate">{stat.name}</p>
+                    <p className="text-slate-500 text-xs mt-1 truncate">{stat.description}</p>
                   </div>
                 </div>
               </div>
@@ -178,81 +202,87 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Users Table */}
-          <div className="mt-8">
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">User Management</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
+            <div className="p-4 lg:p-6">
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <Users className="w-5 h-5 mr-2 text-cyan-400" />
+                User Management
+              </h3>
+              <div className="overflow-x-auto -mx-4 lg:-mx-6">
+                <div className="inline-block min-w-full px-4 lg:px-6 align-middle">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-slate-700/50">
+                        <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider min-w-0">
                           User
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider hidden sm:table-cell min-w-0">
                           Email
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider min-w-0">
                           Roles
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider min-w-0">
                           Actions
                         </th>
                       </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {users.map((user) => (
-                        <tr key={user.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                  <span className="text-sm font-medium text-gray-700">
-                                    {user.first_name?.[0] || user.username[0]}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">
-                                  {user.first_name} {user.last_name}
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  @{user.username}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {user.email}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex flex-wrap gap-1">
-                              {user.roles?.map((role) => (
-                                <span
-                                  key={role.id}
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(role.name)}`}
-                                >
-                                  {getRoleDisplayName(role.name)}
+                  </thead>
+                  <tbody className="divide-y divide-slate-700/30">
+                    {users.map((user) => (
+                      <tr key={user.id} className="hover:bg-slate-700/20 transition-colors">
+                        <td className="px-3 lg:px-6 py-4">
+                          <div className="flex items-center min-w-0">
+                            <div className="flex-shrink-0 h-10 w-10 lg:h-12 lg:w-12">
+                              <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center shadow-lg">
+                                <span className="text-xs lg:text-sm font-bold text-white">
+                                  {user.first_name?.[0]?.toUpperCase() || user.username[0]?.toUpperCase()}
                                 </span>
-                              ))}
-                              {(!user.roles || user.roles.length === 0) && (
-                                <span className="text-gray-500 text-xs">No roles</span>
-                              )}
+                              </div>
                             </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setShowRoleModal(true);
-                              }}
-                              className="text-indigo-600 hover:text-indigo-900"
-                            >
-                              Manage Roles
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                            <div className="ml-3 lg:ml-4 min-w-0 flex-1">
+                              <div className="text-sm font-semibold text-white leading-relaxed truncate">
+                                {user.first_name} {user.last_name}
+                              </div>
+                              <div className="text-xs lg:text-sm text-slate-400 leading-relaxed truncate">
+                                @{user.username}
+                              </div>
+                              <div className="text-xs text-slate-400 leading-relaxed truncate sm:hidden">
+                                {user.email}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-3 lg:px-6 py-4 text-sm text-slate-300 leading-relaxed hidden sm:table-cell">
+                          <div className="truncate max-w-xs">{user.email}</div>
+                        </td>
+                        <td className="px-3 lg:px-6 py-4">
+                          <div className="flex flex-wrap gap-1 lg:gap-2 max-w-xs">
+                            {user.roles?.map((role) => (
+                              <span
+                                key={role.id}
+                                className="inline-flex items-center px-2 py-1 lg:px-3 lg:py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/20"
+                              >
+                                {getRoleDisplayName(role.name)}
+                              </span>
+                            ))}
+                            {(!user.roles || user.roles.length === 0) && (
+                              <span className="text-slate-500 text-xs px-2 py-1 lg:px-3 lg:py-1.5 bg-slate-700/30 rounded-lg">No roles</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3 lg:px-6 py-4 text-sm font-medium">
+                          <button
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setShowRoleModal(true);
+                            }}
+                            className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors whitespace-nowrap"
+                          >
+                            Manage
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                     </tbody>
                   </table>
                 </div>
@@ -264,48 +294,48 @@ export default function AdminDashboardPage() {
 
       {/* Role Management Modal */}
       {showRoleModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+          <div className="form-container-dark w-full max-w-md">
+            <div>
+              <h3 className="text-xl font-bold text-white mb-6 leading-tight tracking-tight">
                 Manage Roles - {selectedUser?.first_name} {selectedUser?.last_name}
               </h3>
               
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Current Roles:</h4>
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-white">Current Roles:</h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedUser?.roles?.map((role) => (
                       <div key={role.id} className="flex items-center gap-2">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(role.name)}`}>
+                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/20">
                           {getRoleDisplayName(role.name)}
                         </span>
                         <button
                           onClick={() => handleRemoveRole(selectedUser.id, role.id)}
-                          className="text-red-600 hover:text-red-800 text-xs"
+                          className="text-rose-400 hover:text-rose-300 text-sm w-6 h-6 rounded-full bg-rose-500/10 hover:bg-rose-500/20 flex items-center justify-center transition-colors"
                         >
                           ×
                         </button>
                       </div>
                     ))}
                     {(!selectedUser?.roles || selectedUser.roles.length === 0) && (
-                      <span className="text-gray-500 text-sm">No roles assigned</span>
+                      <span className="text-slate-400 text-sm px-3 py-1.5 bg-slate-700/30 rounded-lg">No roles assigned</span>
                     )}
                   </div>
                 </div>
 
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Available Roles:</h4>
-                  <div className="space-y-2">
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-white">Available Roles:</h4>
+                  <div className="space-y-3">
                     {roles.map((role) => {
                       const hasRole = selectedUser?.roles?.some(r => r.id === role.id);
                       return (
-                        <div key={role.id} className="flex items-center justify-between">
-                          <span className="text-sm text-gray-900">{getRoleDisplayName(role.name)}</span>
+                        <div key={role.id} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                          <span className="text-sm text-white font-medium">{getRoleDisplayName(role.name)}</span>
                           {!hasRole && (
                             <button
                               onClick={() => handleAssignRole(selectedUser!.id, role.id)}
-                              className="text-indigo-600 hover:text-indigo-800 text-sm"
+                              className="text-cyan-400 hover:text-cyan-300 text-sm font-medium px-3 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors"
                             >
                               Add
                             </button>
@@ -317,13 +347,13 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <div className="mt-6 flex justify-end">
+              <div className="mt-8 flex justify-end">
                 <button
                   onClick={() => {
                     setShowRoleModal(false);
                     setSelectedUser(null);
                   }}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  className="btn-dark px-6 h-12 rounded-xl font-medium"
                 >
                   Close
                 </button>
@@ -332,6 +362,6 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </UnifiedDashboardLayout>
   );
 }

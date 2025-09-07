@@ -324,3 +324,9 @@ export interface CreateInfluencersTargetsData {
   platform_recommendations?: string[];
   content_creation_tips?: string[];
 }
+
+// Export influencer coaching types
+export * from './influencerCoaching';
+
+// Export location types
+export * from './location';

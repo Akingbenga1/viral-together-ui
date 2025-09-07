@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TrendingUp, Users, DollarSign, Eye, BarChart3, Activity, Target } from 'lucide-react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+import { TrendingUp, Users, DollarSign, Eye, BarChart3, Activity, Target, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
 import { Influencer, Business, UserSubscription } from '@/types';
@@ -91,34 +91,38 @@ export default function AnalyticsPage() {
     {
       name: 'Total Users',
       value: totalInfluencers + totalBusinesses,
-      change: '+12%',
-      changeType: 'positive',
       icon: Users,
-      color: 'bg-blue-500',
+      gradient: 'from-cyan-400 to-teal-500',
+      description: 'All registered users',
+      change: '+12%',
+      changeType: 'increase',
     },
     {
       name: 'Active Influencers',
       value: activeInfluencers,
-      change: '+8%',
-      changeType: 'positive',
       icon: TrendingUp,
-      color: 'bg-green-500',
+      gradient: 'from-emerald-400 to-cyan-500',
+      description: 'Available for campaigns',
+      change: '+8%',
+      changeType: 'increase',
     },
     {
       name: 'Total Revenue',
       value: `£${totalRevenue.toLocaleString()}`,
-      change: '+15%',
-      changeType: 'positive',
       icon: DollarSign,
-      color: 'bg-purple-500',
+      gradient: 'from-amber-400 to-orange-500',
+      description: 'Monthly recurring revenue',
+      change: '+15%',
+      changeType: 'increase',
     },
     {
       name: 'Active Subscriptions',
       value: activeSubscriptions,
-      change: '+5%',
-      changeType: 'positive',
       icon: Target,
-      color: 'bg-orange-500',
+      gradient: 'from-purple-400 to-pink-500',
+      description: 'Current subscribers',
+      change: '+5%',
+      changeType: 'increase',
     },
   ];
 
@@ -151,83 +155,93 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="py-6">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+      <UnifiedDashboardLayout>
+        <div className="min-h-full w-full overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-none">
             <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="h-8 bg-slate-700/50 rounded-xl w-1/4 mb-6"></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="bg-white shadow rounded-lg p-6">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                  <div key={i} className="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
+                    <div className="h-4 bg-slate-700/50 rounded w-3/4 mb-3"></div>
+                    <div className="h-8 bg-slate-700/50 rounded w-1/2"></div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
-      </DashboardLayout>
+      </UnifiedDashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+    <UnifiedDashboardLayout>
+      <div className="min-h-full w-full overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-none">
           {/* Header */}
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                Analytics
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Platform performance and user insights
-              </p>
-            </div>
-            <div className="mt-4 flex md:mt-0 md:ml-4">
-              <select
-                value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d' | '1y')}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              >
-                <option value="7d">Last 7 days</option>
-                <option value="30d">Last 30 days</option>
-                <option value="90d">Last 90 days</option>
-                <option value="1y">Last year</option>
-              </select>
+          <div className="mb-8">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-3xl font-bold text-white mb-2 leading-tight tracking-tight">
+                  Analytics Dashboard 📊
+                </h1>
+                <p className="text-slate-300 text-lg leading-relaxed">
+                  Platform performance and user insights
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0">
+                <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl px-4 py-2 border border-slate-700/50">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-slate-300 whitespace-nowrap">Real-time Data</span>
+                  </div>
+                </div>
+                <select
+                  value={timeRange}
+                  onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d' | '1y')}
+                  className="select-dark px-4 py-2 rounded-xl font-medium whitespace-nowrap"
+                >
+                  <option value="7d">Last 7 days</option>
+                  <option value="30d">Last 30 days</option>
+                  <option value="90d">Last 90 days</option>
+                  <option value="1y">Last year</option>
+                </select>
+              </div>
             </div>
           </div>
 
           {/* Stats Grid */}
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
+            {stats.map((stat, index) => (
               <div
                 key={stat.name}
-                className="bg-white overflow-hidden shadow rounded-lg"
+                className="relative bg-slate-800/30 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 group overflow-hidden min-w-0"
               >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <stat.icon className="h-6 w-6 text-white" />
+                {/* Background gradient */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center shadow-lg flex-shrink-0`}>
+                      <stat.icon className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
                     </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          {stat.name}
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {stat.value}
-                        </dd>
-                      </dl>
+                    <div className={`flex items-center space-x-1 text-xs lg:text-sm flex-shrink-0 ${
+                      stat.changeType === 'increase' ? 'text-emerald-400' : 'text-rose-400'
+                    }`}>
+                      {stat.changeType === 'increase' ? (
+                        <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4" />
+                      ) : (
+                        <ArrowDownRight className="w-3 h-3 lg:w-4 lg:h-4" />
+                      )}
+                      <span className="font-medium whitespace-nowrap">{stat.change}</span>
                     </div>
                   </div>
-                </div>
-                <div className={`${stat.color} px-5 py-3`}>
-                  <div className="text-sm">
-                    <span className="text-white">
-                      {stat.change} from last month
-                    </span>
+                  
+                  <div className="min-w-0">
+                    <h3 className="text-xl lg:text-2xl font-bold text-white mb-1 truncate">{stat.value}</h3>
+                    <p className="text-slate-400 text-sm truncate">{stat.name}</p>
+                    <p className="text-slate-500 text-xs mt-1 truncate">{stat.description}</p>
                   </div>
                 </div>
               </div>
@@ -235,30 +249,26 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Metrics Grid */}
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
             {metrics.map((metric) => (
               <div
                 key={metric.name}
-                className="bg-white overflow-hidden shadow rounded-lg"
+                className="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 min-w-0"
               >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <metric.icon className="h-6 w-6 text-primary-500" />
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          {metric.name}
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {metric.value}
-                        </dd>
-                        <dd className="text-sm text-gray-500">
-                          {metric.description}
-                        </dd>
-                      </dl>
-                    </div>
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center shadow-lg">
+                    <metric.icon className="w-5 h-5 lg:w-6 lg:h-6 text-cyan-400" />
+                  </div>
+                  <div className="ml-4 min-w-0 flex-1">
+                    <h4 className="text-sm font-semibold text-white truncate">
+                      {metric.name}
+                    </h4>
+                    <p className="text-xl lg:text-2xl font-bold text-white truncate">
+                      {metric.value}
+                    </p>
+                    <p className="text-xs text-slate-400 truncate">
+                      {metric.description}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -266,26 +276,29 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Charts Section */}
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8">
             {/* User Growth Chart */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">User Growth</h3>
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2 text-cyan-400" />
+                User Growth
+              </h3>
               <div className="space-y-4">
                 {mockChartData.userGrowth.map((data) => (
-                  <div key={data.month} className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">{data.month}</span>
-                    <div className="flex space-x-4">
+                  <div key={data.month} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                    <span className="text-sm font-medium text-white">{data.month}</span>
+                    <div className="flex flex-wrap gap-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                        <span className="text-sm text-gray-600">{data.users} users</span>
+                        <div className="w-3 h-3 bg-cyan-500 rounded-full"></div>
+                        <span className="text-xs text-slate-300">{data.users} users</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                        <span className="text-sm text-gray-600">{data.influencers} influencers</span>
+                        <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                        <span className="text-xs text-slate-300">{data.influencers} influencers</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                        <span className="text-sm text-gray-600">{data.businesses} businesses</span>
+                        <span className="text-xs text-slate-300">{data.businesses} businesses</span>
                       </div>
                     </div>
                   </div>
@@ -294,15 +307,18 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Revenue Chart */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Monthly Revenue</h3>
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <DollarSign className="w-5 h-5 mr-2 text-cyan-400" />
+                Monthly Revenue
+              </h3>
               <div className="space-y-4">
                 {mockChartData.revenue.map((data) => (
-                  <div key={data.month} className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">{data.month}</span>
+                  <div key={data.month} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                    <span className="text-sm font-medium text-white">{data.month}</span>
                     <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-gray-900">£{data.revenue.toLocaleString()}</span>
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                      <span className="text-sm font-semibold text-emerald-400">£{data.revenue.toLocaleString()}</span>
                     </div>
                   </div>
                 ))}
@@ -311,47 +327,51 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Platform Engagement */}
-          <div className="mt-8">
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Platform Engagement Rates</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {mockChartData.engagement.map((data) => (
-                  <div key={data.platform} className="text-center">
-                    <div className="text-2xl font-bold text-primary-600">{data.engagement}%</div>
-                    <div className="text-sm text-gray-600">{data.platform}</div>
-                  </div>
-                ))}
-              </div>
+          <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-8">
+            <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+              <Activity className="w-5 h-5 mr-2 text-cyan-400" />
+              Platform Engagement Rates
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {mockChartData.engagement.map((data) => (
+                <div key={data.platform} className="text-center p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                  <div className="text-2xl lg:text-3xl font-bold text-cyan-400 mb-2">{data.engagement}%</div>
+                  <div className="text-sm text-slate-300 font-medium">{data.platform}</div>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Top Performers */}
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Top Influencers */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Top Performing Influencers</h3>
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <Target className="w-5 h-5 mr-2 text-cyan-400" />
+                Top Performing Influencers
+              </h3>
               <div className="space-y-4">
                 {influencers
                   .sort((a, b) => (b.successful_campaigns || 0) - (a.successful_campaigns || 0))
                   .slice(0, 5)
                   .map((influencer) => (
-                    <div key={influencer.id} className="flex items-center justify-between">
+                    <div key={influencer.id} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl border border-slate-600/30 hover:bg-slate-700/50 transition-colors">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-medium">
-                            {influencer.user.first_name?.[0] || influencer.user.username[0]}
+                        <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+                          <span className="text-white text-sm font-bold">
+                            {influencer.user.first_name?.[0]?.toUpperCase() || influencer.user.username[0]?.toUpperCase()}
                           </span>
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-semibold text-white">
                             {influencer.user.first_name} {influencer.user.last_name}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-xs text-slate-400">
                             {influencer.successful_campaigns || 0} campaigns
                           </div>
                         </div>
                       </div>
-                      <div className="text-sm font-medium text-primary-600">
+                      <div className="text-sm font-bold text-emerald-400">
                         £{influencer.rate_per_post || 0}
                       </div>
                     </div>
@@ -360,50 +380,53 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <Activity className="w-5 h-5 mr-2 text-cyan-400" />
+                Recent Activity
+              </h3>
               <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <div className="text-sm text-gray-600">
+                <div className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full flex-shrink-0"></div>
+                  <div className="text-sm text-slate-300 flex-1">
                     New influencer joined the platform
                   </div>
-                  <div className="text-xs text-gray-400">2h ago</div>
+                  <div className="text-xs text-slate-500">2h ago</div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <div className="text-sm text-gray-600">
+                <div className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                  <div className="w-3 h-3 bg-cyan-500 rounded-full flex-shrink-0"></div>
+                  <div className="text-sm text-slate-300 flex-1">
                     Business created a new campaign
                   </div>
-                  <div className="text-xs text-gray-400">4h ago</div>
+                  <div className="text-xs text-slate-500">4h ago</div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <div className="text-sm text-gray-600">
+                <div className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full flex-shrink-0"></div>
+                  <div className="text-sm text-slate-300 flex-1">
                     New subscription activated
                   </div>
-                  <div className="text-xs text-gray-400">6h ago</div>
+                  <div className="text-xs text-slate-500">6h ago</div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                  <div className="text-sm text-gray-600">
+                <div className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full flex-shrink-0"></div>
+                  <div className="text-sm text-slate-300 flex-1">
                     Rate card updated
                   </div>
-                  <div className="text-xs text-gray-400">8h ago</div>
+                  <div className="text-xs text-slate-500">8h ago</div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <div className="text-sm text-gray-600">
+                <div className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full flex-shrink-0"></div>
+                  <div className="text-sm text-slate-300 flex-1">
                     Collaboration completed
                   </div>
-                  <div className="text-xs text-gray-400">12h ago</div>
+                  <div className="text-xs text-slate-500">12h ago</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </UnifiedDashboardLayout>
   );
 }
 

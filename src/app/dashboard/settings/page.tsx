@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { User, Mail, Lock, Bell, Shield, Globe, Save, Eye, EyeOff } from 'lucide-react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -141,175 +141,207 @@ export default function SettingsPage() {
   ];
 
   return (
-    <DashboardLayout>
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+    <UnifiedDashboardLayout>
+      <div className="min-h-full w-full overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-none">
           {/* Header */}
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                Settings
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Manage your account settings and preferences
-              </p>
+          <div className="mb-8">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center shadow-lg">
+                    <User className="w-6 h-6 text-slate-400" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold text-white mb-1 leading-tight tracking-tight">
+                      Settings ⚙️
+                    </h1>
+                    <p className="text-slate-300 text-lg leading-relaxed">
+                      Manage your account settings and preferences
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Settings Tabs */}
-          <div className="mt-8">
-            <div className="border-b border-gray-200">
-              <nav className="-mb-px flex space-x-8">
+          <div className="mb-8">
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-4">
+              <nav className="flex space-x-4">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
                       activeTab === tab.id
-                        ? 'border-primary-500 text-primary-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? 'bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/30'
+                        : 'bg-slate-700/30 text-slate-300 border border-slate-600/30 hover:bg-slate-700/50 hover:text-slate-200'
                     }`}
                   >
-                    <tab.icon className="h-4 w-4 inline mr-2" />
-                    {tab.name}
+                    <tab.icon className="h-4 w-4" />
+                    <span>{tab.name}</span>
                   </button>
                 ))}
               </nav>
             </div>
 
             {/* Tab Content */}
-            <div className="mt-8">
+            <div>
               {activeTab === 'profile' && (
-                <div className="bg-white shadow rounded-lg p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-6">Profile Information</h3>
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                  <div className="flex items-center mb-6">
+                    <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center mr-3">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white">Profile Information</h3>
+                  </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-dark mb-3">
                         First Name
                       </label>
                       <input
                         type="text"
                         value={profileForm.first_name}
                         onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="input-dark w-full text-white placeholder:text-slate-400"
+                        placeholder="Enter your first name"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-dark mb-3">
                         Last Name
                       </label>
                       <input
                         type="text"
                         value={profileForm.last_name}
                         onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="input-dark w-full text-white placeholder:text-slate-400"
+                        placeholder="Enter your last name"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-dark mb-3">
                         Email
                       </label>
-                      <input
-                        type="email"
-                        value={profileForm.email}
-                        onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                      />
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <input
+                          type="email"
+                          value={profileForm.email}
+                          onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                          className="input-dark w-full pl-10 text-white placeholder:text-slate-400"
+                          placeholder="Enter your email"
+                        />
+                      </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-dark mb-3">
                         Username
                       </label>
                       <input
                         type="text"
                         value={profileForm.username}
                         onChange={(e) => setProfileForm({ ...profileForm, username: e.target.value })}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="input-dark w-full font-mono tracking-wider text-white placeholder:text-slate-400"
+                        placeholder="Enter your username"
                       />
                     </div>
                   </div>
 
-                  <div className="mt-6 flex justify-end">
+                  <div className="mt-8 flex justify-end">
                     <button
                       onClick={handleProfileUpdate}
                       disabled={isLoading}
-                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                      className="btn-dark-primary px-6 h-12 rounded-xl font-medium flex items-center space-x-2 disabled:opacity-50"
                     >
-                      <Save className="h-4 w-4 mr-2" />
-                      {isLoading ? 'Saving...' : 'Save Changes'}
+                      <Save className="h-4 w-4" />
+                      <span>{isLoading ? 'Saving...' : 'Save Changes'}</span>
                     </button>
                   </div>
                 </div>
               )}
 
               {activeTab === 'security' && (
-                <div className="bg-white shadow rounded-lg p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-6">Security Settings</h3>
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                  <div className="flex items-center mb-6">
+                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-green-500 rounded-xl flex items-center justify-center mr-3">
+                      <Lock className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white">Security Settings</h3>
+                  </div>
                   
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-dark mb-3">
                         Current Password
                       </label>
                       <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <input
                           type={showCurrentPassword ? 'text' : 'password'}
                           value={securityForm.current_password}
                           onChange={(e) => setSecurityForm({ ...securityForm, current_password: e.target.value })}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          className="input-dark w-full pl-10 pr-10 text-white placeholder:text-slate-400"
+                          placeholder="Enter current password"
                         />
                         <button
                           type="button"
                           onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200"
                         >
-                          {showCurrentPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
+                          {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-dark mb-3">
                         New Password
                       </label>
                       <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <input
                           type={showNewPassword ? 'text' : 'password'}
                           value={securityForm.new_password}
                           onChange={(e) => setSecurityForm({ ...securityForm, new_password: e.target.value })}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          className="input-dark w-full pl-10 pr-10 text-white placeholder:text-slate-400"
+                          placeholder="Enter new password"
                         />
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200"
                         >
-                          {showNewPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
+                          {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-dark mb-3">
                         Confirm New Password
                       </label>
                       <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <input
                           type={showConfirmPassword ? 'text' : 'password'}
                           value={securityForm.confirm_password}
                           onChange={(e) => setSecurityForm({ ...securityForm, confirm_password: e.target.value })}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          className="input-dark w-full pl-10 pr-10 text-white placeholder:text-slate-400"
+                          placeholder="Confirm new password"
                         />
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200"
                         >
-                          {showConfirmPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                     </div>
@@ -318,35 +350,45 @@ export default function SettingsPage() {
                       <button
                         onClick={handlePasswordChange}
                         disabled={isLoading}
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                        className="btn-dark-primary px-6 h-12 rounded-xl font-medium flex items-center space-x-2 disabled:opacity-50"
                       >
-                        <Lock className="h-4 w-4 mr-2" />
-                        {isLoading ? 'Updating...' : 'Change Password'}
+                        <Lock className="h-4 w-4" />
+                        <span>{isLoading ? 'Updating...' : 'Change Password'}</span>
                       </button>
                     </div>
                   </div>
 
-                  <div className="mt-8 pt-6 border-t border-gray-200">
-                    <h4 className="text-sm font-medium text-gray-900 mb-4">Danger Zone</h4>
-                    <button
-                      onClick={handleDeleteAccount}
-                      className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50"
-                    >
-                      Delete Account
-                    </button>
+                  <div className="mt-8 pt-6 border-t border-slate-600/30">
+                    <h4 className="text-lg font-semibold text-white mb-4">Danger Zone</h4>
+                    <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+                      <p className="text-rose-200 text-sm mb-4 leading-relaxed">
+                        Once you delete your account, there is no going back. Please be certain.
+                      </p>
+                      <button
+                        onClick={handleDeleteAccount}
+                        className="inline-flex items-center px-4 py-2 border border-rose-500/30 rounded-xl text-sm font-medium text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition-colors"
+                      >
+                        Delete Account
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
 
               {activeTab === 'notifications' && (
-                <div className="bg-white shadow rounded-lg p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-6">Notification Preferences</h3>
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                  <div className="flex items-center mb-6">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mr-3">
+                      <Bell className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white">Notification Preferences</h3>
+                  </div>
                   
                   <div className="space-y-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Email Notifications</h4>
-                        <p className="text-sm text-gray-500">Receive notifications via email</p>
+                        <h4 className="text-sm font-semibold text-white">Email Notifications</h4>
+                        <p className="text-sm text-slate-400 mt-1">Receive notifications via email</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -355,14 +397,14 @@ export default function SettingsPage() {
                           onChange={(e) => setNotificationSettings({ ...notificationSettings, email_notifications: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-cyan-500 peer-checked:to-teal-500"></div>
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Push Notifications</h4>
-                        <p className="text-sm text-gray-500">Receive push notifications in your browser</p>
+                        <h4 className="text-sm font-semibold text-white">Push Notifications</h4>
+                        <p className="text-sm text-slate-400 mt-1">Receive push notifications in your browser</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -371,14 +413,14 @@ export default function SettingsPage() {
                           onChange={(e) => setNotificationSettings({ ...notificationSettings, push_notifications: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-cyan-500 peer-checked:to-teal-500"></div>
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Marketing Emails</h4>
-                        <p className="text-sm text-gray-500">Receive promotional and marketing emails</p>
+                        <h4 className="text-sm font-semibold text-white">Marketing Emails</h4>
+                        <p className="text-sm text-slate-400 mt-1">Receive promotional and marketing emails</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -387,14 +429,14 @@ export default function SettingsPage() {
                           onChange={(e) => setNotificationSettings({ ...notificationSettings, marketing_emails: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-cyan-500 peer-checked:to-teal-500"></div>
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Campaign Updates</h4>
-                        <p className="text-sm text-gray-500">Get notified about campaign status changes</p>
+                        <h4 className="text-sm font-semibold text-white">Campaign Updates</h4>
+                        <p className="text-sm text-slate-400 mt-1">Get notified about campaign status changes</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -403,14 +445,14 @@ export default function SettingsPage() {
                           onChange={(e) => setNotificationSettings({ ...notificationSettings, campaign_updates: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-cyan-500 peer-checked:to-teal-500"></div>
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">New Messages</h4>
-                        <p className="text-sm text-gray-500">Get notified when you receive new messages</p>
+                        <h4 className="text-sm font-semibold text-white">New Messages</h4>
+                        <p className="text-sm text-slate-400 mt-1">Get notified when you receive new messages</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -419,14 +461,14 @@ export default function SettingsPage() {
                           onChange={(e) => setNotificationSettings({ ...notificationSettings, new_messages: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-cyan-500 peer-checked:to-teal-500"></div>
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Weekly Digest</h4>
-                        <p className="text-sm text-gray-500">Receive a weekly summary of your activity</p>
+                        <h4 className="text-sm font-semibold text-white">Weekly Digest</h4>
+                        <p className="text-sm text-slate-400 mt-1">Receive a weekly summary of your activity</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -435,18 +477,18 @@ export default function SettingsPage() {
                           onChange={(e) => setNotificationSettings({ ...notificationSettings, weekly_digest: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-cyan-500 peer-checked:to-teal-500"></div>
                       </label>
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-end mt-8">
                       <button
                         onClick={handleNotificationSettingsUpdate}
                         disabled={isLoading}
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                        className="btn-dark-primary px-6 h-12 rounded-xl font-medium flex items-center space-x-2 disabled:opacity-50"
                       >
-                        <Bell className="h-4 w-4 mr-2" />
-                        {isLoading ? 'Saving...' : 'Save Preferences'}
+                        <Bell className="h-4 w-4" />
+                        <span>{isLoading ? 'Saving...' : 'Save Preferences'}</span>
                       </button>
                     </div>
                   </div>
@@ -454,29 +496,37 @@ export default function SettingsPage() {
               )}
 
               {activeTab === 'privacy' && (
-                <div className="bg-white shadow rounded-lg p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-6">Privacy Settings</h3>
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                  <div className="flex items-center mb-6">
+                    <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center mr-3">
+                      <Shield className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white">Privacy Settings</h3>
+                  </div>
                   
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-dark mb-3">
                         Profile Visibility
                       </label>
-                      <select
-                        value={privacySettings.profile_visibility}
-                        onChange={(e) => setPrivacySettings({ ...privacySettings, profile_visibility: e.target.value })}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                      >
-                        <option value="public">Public</option>
-                        <option value="private">Private</option>
-                        <option value="friends">Friends Only</option>
-                      </select>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <select
+                          value={privacySettings.profile_visibility}
+                          onChange={(e) => setPrivacySettings({ ...privacySettings, profile_visibility: e.target.value })}
+                          className="select-dark w-full pl-10 text-white"
+                        >
+                          <option value="public">Public</option>
+                          <option value="private">Private</option>
+                          <option value="friends">Friends Only</option>
+                        </select>
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Show Email Address</h4>
-                        <p className="text-sm text-gray-500">Allow others to see your email address</p>
+                        <h4 className="text-sm font-semibold text-white">Show Email Address</h4>
+                        <p className="text-sm text-slate-400 mt-1">Allow others to see your email address</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -485,14 +535,14 @@ export default function SettingsPage() {
                           onChange={(e) => setPrivacySettings({ ...privacySettings, show_email: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-cyan-500 peer-checked:to-teal-500"></div>
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Show Phone Number</h4>
-                        <p className="text-sm text-gray-500">Allow others to see your phone number</p>
+                        <h4 className="text-sm font-semibold text-white">Show Phone Number</h4>
+                        <p className="text-sm text-slate-400 mt-1">Allow others to see your phone number</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -501,14 +551,14 @@ export default function SettingsPage() {
                           onChange={(e) => setPrivacySettings({ ...privacySettings, show_phone: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-cyan-500 peer-checked:to-teal-500"></div>
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Allow Direct Messages</h4>
-                        <p className="text-sm text-gray-500">Allow other users to send you direct messages</p>
+                        <h4 className="text-sm font-semibold text-white">Allow Direct Messages</h4>
+                        <p className="text-sm text-slate-400 mt-1">Allow other users to send you direct messages</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -517,14 +567,14 @@ export default function SettingsPage() {
                           onChange={(e) => setPrivacySettings({ ...privacySettings, allow_messages: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-cyan-500 peer-checked:to-teal-500"></div>
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Allow Search</h4>
-                        <p className="text-sm text-gray-500">Allow your profile to appear in search results</p>
+                        <h4 className="text-sm font-semibold text-white">Allow Search</h4>
+                        <p className="text-sm text-slate-400 mt-1">Allow your profile to appear in search results</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -533,18 +583,18 @@ export default function SettingsPage() {
                           onChange={(e) => setPrivacySettings({ ...privacySettings, allow_search: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-cyan-500 peer-checked:to-teal-500"></div>
                       </label>
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-end mt-8">
                       <button
                         onClick={handlePrivacySettingsUpdate}
                         disabled={isLoading}
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                        className="btn-dark-primary px-6 h-12 rounded-xl font-medium flex items-center space-x-2 disabled:opacity-50"
                       >
-                        <Shield className="h-4 w-4 mr-2" />
-                        {isLoading ? 'Saving...' : 'Save Privacy Settings'}
+                        <Shield className="h-4 w-4" />
+                        <span>{isLoading ? 'Saving...' : 'Save Privacy Settings'}</span>
                       </button>
                     </div>
                   </div>
@@ -554,7 +604,7 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </UnifiedDashboardLayout>
   );
 }
 

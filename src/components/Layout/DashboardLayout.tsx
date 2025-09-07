@@ -15,7 +15,9 @@ import {
   TrendingUp,
   Star,
   FileText,
-  Brain
+  Brain,
+  GraduationCap,
+  MapPin
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -24,7 +26,7 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const getNavigation = (isSuperAdmin: boolean) => {
+const getNavigation = (isSuperAdmin: boolean, isInfluencer: boolean) => {
   const baseNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Influencers', href: '/dashboard/influencers', icon: Users },
@@ -32,9 +34,18 @@ const getNavigation = (isSuperAdmin: boolean) => {
     { name: 'Rate Cards', href: '/dashboard/rate-cards', icon: CreditCard },
     { name: 'Analytics', href: '/dashboard/analytics', icon: TrendingUp },
     { name: 'AI Recommendations', href: '/dashboard/recommendations', icon: Brain },
-    { name: 'Subscription', href: '/dashboard/subscription', icon: Star },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+    { name: 'Location Management', href: '/dashboard/location-management', icon: MapPin },
   ];
+
+  // Add coaching for influencers
+  if (isInfluencer) {
+    baseNavigation.push({ name: 'Coaching', href: '/dashboard/coaching', icon: GraduationCap });
+  }
+
+  baseNavigation.push(
+    { name: 'Subscription', href: '/dashboard/subscription', icon: Star },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings }
+  );
 
   // Add blog management for super admins
   if (isSuperAdmin) {
@@ -52,7 +63,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   
   const isSuperAdmin = !!user?.roles?.some(r => r.name === 'super_admin');
-  const navigation = getNavigation(isSuperAdmin);
+  const isInfluencer = !!user?.roles?.some(r => 
+    ['influencer', 'professional_influencer', 'business_influencer'].includes(r.name)
+  );
+  const navigation = getNavigation(isSuperAdmin, isInfluencer);
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">

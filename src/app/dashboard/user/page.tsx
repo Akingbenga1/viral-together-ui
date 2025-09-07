@@ -1,8 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { User, Settings, Bell, Calendar } from 'lucide-react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+import { 
+  User, 
+  Settings, 
+  Bell, 
+  Calendar, 
+  TrendingUp, 
+  DollarSign, 
+  Target, 
+  Award,
+  ArrowUpRight,
+  ArrowDownRight,
+  Eye,
+  Heart,
+  Share2,
+  Zap
+} from 'lucide-react';
+import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function UserDashboardPage() {
@@ -12,6 +27,8 @@ export default function UserDashboardPage() {
     activeCampaigns: 0,
     completedCampaigns: 0,
     totalEarnings: 0,
+    engagement: 0,
+    followers: 0,
   });
 
   useEffect(() => {
@@ -21,6 +38,8 @@ export default function UserDashboardPage() {
       activeCampaigns: 3,
       completedCampaigns: 9,
       totalEarnings: 2500,
+      engagement: 8.4,
+      followers: 15420,
     });
   }, []);
 
@@ -28,127 +47,226 @@ export default function UserDashboardPage() {
     {
       name: 'Total Campaigns',
       value: stats.totalCampaigns,
-      icon: Calendar,
-      color: 'bg-blue-500',
+      icon: Target,
+      gradient: 'from-cyan-400 to-teal-500',
       description: 'All time campaigns',
+      change: '+12%',
+      changeType: 'increase',
     },
     {
       name: 'Active Campaigns',
       value: stats.activeCampaigns,
-      icon: Bell,
-      color: 'bg-green-500',
+      icon: Zap,
+      gradient: 'from-emerald-400 to-cyan-500',
       description: 'Currently running',
+      change: '+3',
+      changeType: 'increase',
     },
     {
-      name: 'Completed',
-      value: stats.completedCampaigns,
-      icon: User,
-      color: 'bg-purple-500',
-      description: 'Successfully finished',
+      name: 'Engagement Rate',
+      value: `${stats.engagement}%`,
+      icon: Heart,
+      gradient: 'from-pink-400 to-rose-500',
+      description: 'Average engagement',
+      change: '+0.8%',
+      changeType: 'increase',
     },
     {
       name: 'Total Earnings',
-      value: `$${stats.totalEarnings}`,
-      icon: Settings,
-      color: 'bg-orange-500',
+      value: `$${stats.totalEarnings.toLocaleString()}`,
+      icon: DollarSign,
+      gradient: 'from-amber-400 to-orange-500',
       description: 'All time earnings',
+      change: '+$320',
+      changeType: 'increase',
+    },
+  ];
+
+  const recentActivity = [
+    {
+      id: 1,
+      type: 'campaign_completed',
+      title: 'Summer Fashion Campaign',
+      description: 'Campaign completed successfully with 12.5K engagement',
+      time: '2 hours ago',
+      icon: Award,
+      color: 'text-emerald-400',
+    },
+    {
+      id: 2,
+      type: 'new_follower',
+      title: 'New Milestone Reached',
+      description: 'You gained 500+ new followers this week',
+      time: '5 hours ago',
+      icon: TrendingUp,
+      color: 'text-cyan-400',
+    },
+    {
+      id: 3,
+      type: 'payment_received',
+      title: 'Payment Received',
+      description: '$450 payment for Tech Product Review campaign',
+      time: '1 day ago',
+      icon: DollarSign,
+      color: 'text-amber-400',
     },
   ];
 
   return (
-    <DashboardLayout>
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-          {/* Header */}
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                User Dashboard
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Welcome back, {user?.first_name || user?.username}! Here's your activity overview.
+    <UnifiedDashboardLayout>
+      <div className="p-6 lg:p-8">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">
+                Welcome back, {user?.first_name || user?.username}! 👋
+              </h1>
+              <p className="text-slate-400 text-lg">
+                Here's what's happening with your campaigns today
               </p>
+            </div>
+            <div className="hidden lg:flex items-center space-x-4">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl px-4 py-2 border border-slate-700/50">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-slate-300">Online</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {statCards.map((stat, index) => (
+            <div
+              key={stat.name}
+              className="relative bg-slate-800/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 group overflow-hidden"
+            >
+              {/* Background gradient */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-12 h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
+                    <stat.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className={`flex items-center space-x-1 text-sm ${
+                    stat.changeType === 'increase' ? 'text-emerald-400' : 'text-rose-400'
+                  }`}>
+                    {stat.changeType === 'increase' ? (
+                      <ArrowUpRight className="w-4 h-4" />
+                    ) : (
+                      <ArrowDownRight className="w-4 h-4" />
+                    )}
+                    <span className="font-medium">{stat.change}</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-2xl font-bold text-white mb-1">{stat.value}</h3>
+                  <p className="text-slate-400 text-sm">{stat.name}</p>
+                  <p className="text-slate-500 text-xs mt-1">{stat.description}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Recent Activity */}
+          <div className="lg:col-span-2">
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <Bell className="w-5 h-5 mr-2 text-cyan-400" />
+                Recent Activity
+              </h3>
+              
+              <div className="space-y-4">
+                {recentActivity.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-center p-4 bg-slate-700/30 rounded-xl border border-slate-600/30 hover:bg-slate-700/50 transition-colors"
+                  >
+                    <div className={`w-10 h-10 rounded-lg bg-slate-800/50 flex items-center justify-center mr-4`}>
+                      <activity.icon className={`w-5 h-5 ${activity.color}`} />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-white font-medium">{activity.title}</h4>
+                      <p className="text-slate-400 text-sm">{activity.description}</p>
+                      <p className="text-slate-500 text-xs mt-1">{activity.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Stats Grid */}
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {statCards.map((stat) => (
-              <div
-                key={stat.name}
-                className="bg-white overflow-hidden shadow rounded-lg"
-              >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <stat.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          {stat.name}
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {stat.value}
-                        </dd>
-                        <dd className="text-sm text-gray-500">
-                          {stat.description}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-                <div className={`${stat.color} px-5 py-3`}>
-                  <div className="text-sm">
-                    <span className="text-white">View details</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* User Roles */}
-          <div className="mt-8">
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Your Roles</h3>
-              <div className="flex flex-wrap gap-2">
+          {/* Quick Actions & User Info */}
+          <div className="space-y-6">
+            {/* User Roles */}
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                <User className="w-5 h-5 mr-2 text-cyan-400" />
+                Your Roles
+              </h3>
+              <div className="space-y-2">
                 {userRoles.map((role) => (
                   <span
                     key={role.id}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                    className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/20 mr-2 mb-2"
                   >
                     {role.name}
                   </span>
                 ))}
                 {userRoles.length === 0 && (
-                  <span className="text-gray-500">No roles assigned</span>
+                  <span className="text-slate-500 text-sm">No roles assigned</span>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Quick Actions */}
-          <div className="mt-8">
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                  <h4 className="font-medium text-gray-900">View Profile</h4>
-                  <p className="text-sm text-gray-500">Update your information</p>
+            {/* Quick Actions */}
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                <Settings className="w-5 h-5 mr-2 text-cyan-400" />
+                Quick Actions
+              </h3>
+              <div className="space-y-3">
+                <button className="w-full p-4 bg-slate-700/30 hover:bg-slate-700/50 rounded-xl border border-slate-600/30 text-left transition-colors group">
+                  <div className="flex items-center">
+                    <Eye className="w-5 h-5 text-cyan-400 mr-3" />
+                    <div>
+                      <h4 className="font-medium text-white group-hover:text-cyan-400 transition-colors">View Profile</h4>
+                      <p className="text-sm text-slate-400">Update your information</p>
+                    </div>
+                  </div>
                 </button>
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                  <h4 className="font-medium text-gray-900">Browse Campaigns</h4>
-                  <p className="text-sm text-gray-500">Find new opportunities</p>
+                
+                <button className="w-full p-4 bg-slate-700/30 hover:bg-slate-700/50 rounded-xl border border-slate-600/30 text-left transition-colors group">
+                  <div className="flex items-center">
+                    <Target className="w-5 h-5 text-emerald-400 mr-3" />
+                    <div>
+                      <h4 className="font-medium text-white group-hover:text-emerald-400 transition-colors">Browse Campaigns</h4>
+                      <p className="text-sm text-slate-400">Find new opportunities</p>
+                    </div>
+                  </div>
                 </button>
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                  <h4 className="font-medium text-gray-900">Settings</h4>
-                  <p className="text-sm text-gray-500">Manage your preferences</p>
+                
+                <button className="w-full p-4 bg-slate-700/30 hover:bg-slate-700/50 rounded-xl border border-slate-600/30 text-left transition-colors group">
+                  <div className="flex items-center">
+                    <Settings className="w-5 h-5 text-amber-400 mr-3" />
+                    <div>
+                      <h4 className="font-medium text-white group-hover:text-amber-400 transition-colors">Settings</h4>
+                      <p className="text-sm text-slate-400">Manage preferences</p>
+                    </div>
+                  </div>
                 </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </UnifiedDashboardLayout>
   );
 }

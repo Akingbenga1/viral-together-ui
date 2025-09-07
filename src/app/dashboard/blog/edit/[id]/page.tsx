@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 
 // Import Quill styles
 import 'react-quill/dist/quill.snow.css';
@@ -122,11 +122,11 @@ export default function BlogEditPage({ params }: { params: { id: string } }) {
 
   if (isLoading || loading) {
     return (
-      <DashboardLayout>
+      <UnifiedDashboardLayout>
         <div className="flex items-center justify-center min-h-96">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
-      </DashboardLayout>
+      </UnifiedDashboardLayout>
     );
   }
 
@@ -135,7 +135,7 @@ export default function BlogEditPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <DashboardLayout>
+    <UnifiedDashboardLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="sm:flex sm:items-center sm:justify-between">
@@ -324,6 +324,6 @@ export default function BlogEditPage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </UnifiedDashboardLayout>
   );
 }

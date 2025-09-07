@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { TrendingUp, DollarSign, Users, Calendar, Star, MessageCircle } from 'lucide-react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function InfluencerDashboardPage() {
@@ -91,16 +91,16 @@ export default function InfluencerDashboardPage() {
   ];
 
   return (
-    <DashboardLayout>
+    <UnifiedDashboardLayout>
       <div className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
           {/* Header */}
           <div className="md:flex md:items-center md:justify-between">
             <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+              <h2 className="text-2xl font-bold leading-7 text-white sm:text-3xl sm:truncate">
                 Influencer Dashboard
               </h2>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-slate-400">
                 Welcome back, {user?.first_name || user?.username}! Here's your influencer performance overview.
               </p>
             </div>
@@ -229,6 +229,6 @@ export default function InfluencerDashboardPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </UnifiedDashboardLayout>
   );
 }

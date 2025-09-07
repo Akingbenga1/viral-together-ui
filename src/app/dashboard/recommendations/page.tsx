@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Brain, ChevronLeft, ChevronRight, Calendar, Target, DollarSign, TrendingUp, Users, Star, Zap, Lightbulb, X, Edit, Check } from 'lucide-react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
@@ -294,12 +294,12 @@ export default function RecommendationsPage() {
     if (!currentRecommendation?.base_plan) {
       return (
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg">
+          <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-blue-900">Base Strategy</h3>
+              <h3 className="text-xl font-bold text-white">Base Strategy</h3>
               <button
                 disabled={true}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-400 text-gray-200 cursor-not-allowed"
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-slate-600/50 text-slate-400 cursor-not-allowed"
                 title="No strategy data available to save"
               >
                 <Edit className="w-4 h-4" />
@@ -307,9 +307,11 @@ export default function RecommendationsPage() {
               </button>
             </div>
             <div className="text-center py-8">
-              <Target className="mx-auto h-12 w-12 text-blue-400 mb-4" />
-              <p className="text-blue-700">No base strategy data available</p>
-              <p className="text-blue-600 text-sm mt-2">Please generate recommendations first</p>
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Target className="h-8 w-8 text-slate-400" />
+              </div>
+              <p className="text-slate-200">No base strategy data available</p>
+              <p className="text-slate-400 text-sm mt-2">Please generate recommendations first</p>
             </div>
           </div>
         </div>
@@ -319,18 +321,18 @@ export default function RecommendationsPage() {
     
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg">
+        <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold text-blue-900">Base Strategy</h3>
+            <h3 className="text-xl font-bold text-white">Base Strategy</h3>
             <button
               onClick={handleSaveBaseStrategy}
               disabled={isSaving || !currentRecommendation?.base_plan}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors font-medium ${
                 saveSuccess
-                  ? 'bg-green-500 text-white'
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                   : !currentRecommendation?.base_plan
-                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  ? 'bg-slate-600/50 text-slate-400 cursor-not-allowed'
+                  : 'btn-dark-primary'
               } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
               title={!currentRecommendation?.base_plan ? 'No strategy data available to save' : 'Save your base strategy'}
             >
@@ -346,49 +348,49 @@ export default function RecommendationsPage() {
               </span>
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-3">
-                             <div className="flex items-center space-x-2">
-                 <Target className="w-5 h-5 text-blue-600" />
-                 <span className="font-semibold">Level:</span>
-                 <span className="capitalize">{typeof plan.level === 'string' ? plan.level : 'N/A'}</span>
-               </div>
-                             <div className="flex items-center space-x-2">
-                 <Calendar className="w-5 h-5 text-blue-600" />
-                 <span className="font-semibold">Posting Frequency:</span>
-                 <span>{typeof plan.posting_frequency === 'string' ? plan.posting_frequency : 'N/A'}</span>
-               </div>
-               <div className="flex items-center space-x-2">
-                 <Users className="w-5 h-5 text-blue-600" />
-                 <span className="font-semibold">Engagement Goal:</span>
-                 <span>{typeof plan.engagement_goals === 'string' ? plan.engagement_goals : 'N/A'}</span>
-               </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <Target className="w-5 h-5 text-cyan-400" />
+                <span className="font-semibold text-white">Level:</span>
+                <span className="capitalize text-slate-300">{typeof plan.level === 'string' ? plan.level : 'N/A'}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Calendar className="w-5 h-5 text-cyan-400" />
+                <span className="font-semibold text-white">Posting Frequency:</span>
+                <span className="text-slate-300">{typeof plan.posting_frequency === 'string' ? plan.posting_frequency : 'N/A'}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Users className="w-5 h-5 text-cyan-400" />
+                <span className="font-semibold text-white">Engagement Goal:</span>
+                <span className="text-slate-300">{typeof plan.engagement_goals === 'string' ? plan.engagement_goals : 'N/A'}</span>
+              </div>
             </div>
-            <div className="space-y-3">
-                             <div className="flex items-center space-x-2">
-                 <TrendingUp className="w-5 h-5 text-blue-600" />
-                 <span className="font-semibold">Follower Growth:</span>
-                 <span>{typeof plan.follower_growth === 'string' ? plan.follower_growth : 'N/A'}</span>
-               </div>
-               <div className="flex items-center space-x-2">
-                 <DollarSign className="w-5 h-5 text-blue-600" />
-                 <span className="font-semibold">Pricing Strategy:</span>
-                 <span>{typeof plan.pricing_strategy === 'string' ? plan.pricing_strategy : 'N/A'}</span>
-               </div>
-               <div className="flex items-center space-x-2">
-                 <Zap className="w-5 h-5 text-blue-600" />
-                 <span className="font-semibold">Hours/Week:</span>
-                 <span>{typeof plan.estimated_hours_per_week === 'string' ? plan.estimated_hours_per_week : 'N/A'}</span>
-               </div>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <TrendingUp className="w-5 h-5 text-cyan-400" />
+                <span className="font-semibold text-white">Follower Growth:</span>
+                <span className="text-slate-300">{typeof plan.follower_growth === 'string' ? plan.follower_growth : 'N/A'}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <DollarSign className="w-5 h-5 text-cyan-400" />
+                <span className="font-semibold text-white">Pricing Strategy:</span>
+                <span className="text-slate-300">{typeof plan.pricing_strategy === 'string' ? plan.pricing_strategy : 'N/A'}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Zap className="w-5 h-5 text-cyan-400" />
+                <span className="font-semibold text-white">Hours/Week:</span>
+                <span className="text-slate-300">{typeof plan.estimated_hours_per_week === 'string' ? plan.estimated_hours_per_week : 'N/A'}</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Content Types</h4>
+          <h4 className="text-lg font-semibold text-white">Content Types</h4>
           <div className="flex flex-wrap gap-2">
             {plan.content_types?.map((type: string, index: number) => (
-              <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+              <span key={index} className="px-3 py-1 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-full text-sm font-medium">
                 {type.replace('_', ' ')}
               </span>
             ))}
@@ -396,10 +398,10 @@ export default function RecommendationsPage() {
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Platform Recommendations</h4>
+          <h4 className="text-lg font-semibold text-white">Platform Recommendations</h4>
           <div className="flex flex-wrap gap-2">
             {plan.platform_recommendations?.map((platform: string, index: number) => (
-              <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+              <span key={index} className="px-3 py-1 bg-teal-500/20 text-teal-400 border border-teal-500/30 rounded-full text-sm font-medium">
                 {platform}
               </span>
             ))}
@@ -407,12 +409,12 @@ export default function RecommendationsPage() {
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Content Creation Tips</h4>
-          <ul className="space-y-2">
+          <h4 className="text-lg font-semibold text-white">Content Creation Tips</h4>
+          <ul className="space-y-3">
             {plan.content_creation_tips?.map((tip: string, index: number) => (
-              <li key={index} className="flex items-start space-x-2">
-                <Star className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">{tip}</span>
+              <li key={index} className="flex items-start space-x-3">
+                <Star className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
+                <span className="text-slate-300 leading-relaxed">{tip}</span>
               </li>
             ))}
           </ul>
@@ -837,13 +839,13 @@ export default function RecommendationsPage() {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
+      <UnifiedDashboardLayout>
         <Toaster 
           position="top-right"
           toastOptions={{
             duration: 4000,
             style: {
-              background: '#363636',
+              background: '#1e293b',
               color: '#fff',
             },
             success: {
@@ -862,25 +864,32 @@ export default function RecommendationsPage() {
             },
           }}
         />
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500 mx-auto mb-4"></div>
-            <p className="text-gray-600 text-lg">Loading your AI recommendations...</p>
+        <div className="min-h-full w-full overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-none">
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-400"></div>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">Loading AI Recommendations</h3>
+                <p className="text-slate-400 text-lg leading-relaxed">Analyzing your data and generating personalized insights...</p>
+              </div>
+            </div>
           </div>
         </div>
-      </DashboardLayout>
+      </UnifiedDashboardLayout>
     );
   }
 
   if (recommendations.length === 0) {
     return (
-      <DashboardLayout>
+      <UnifiedDashboardLayout>
         <Toaster 
           position="top-right"
           toastOptions={{
             duration: 4000,
             style: {
-              background: '#363636',
+              background: '#1e293b',
               color: '#fff',
             },
             success: {
@@ -899,29 +908,39 @@ export default function RecommendationsPage() {
             },
           }}
         />
-        <div className="py-6">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div className="text-center py-12">
-              <Brain className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No recommendations yet</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Your AI recommendations will appear here once generated.
+        <div className="min-h-full w-full overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-none">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-white mb-2 leading-tight tracking-tight">
+                AI Recommendations 🤖
+              </h1>
+              <p className="text-slate-300 text-lg leading-relaxed">
+                Your personalized influencer strategy recommendations powered by AI
+              </p>
+            </div>
+            <div className="text-center py-16">
+              <div className="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Brain className="h-10 w-10 text-slate-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">No recommendations yet</h3>
+              <p className="text-slate-400 text-lg leading-relaxed mb-8 max-w-md mx-auto">
+                Your AI recommendations will appear here once generated. Please generate recommendations first.
               </p>
             </div>
           </div>
         </div>
-      </DashboardLayout>
+      </UnifiedDashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <UnifiedDashboardLayout>
       <Toaster 
         position="top-right"
         toastOptions={{
           duration: 4000,
           style: {
-            background: '#363636',
+            background: '#1e293b',
             color: '#fff',
           },
           success: {
@@ -940,74 +959,98 @@ export default function RecommendationsPage() {
           },
         }}
       />
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+      <div className="min-h-full w-full overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-none">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">AI Recommendations</h1>
-            <p className="mt-2 text-gray-600">
-              Your personalized influencer strategy recommendations powered by AI
-            </p>
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-3xl font-bold text-white mb-2 leading-tight tracking-tight">
+                  AI Recommendations 🤖
+                </h1>
+                <p className="text-slate-300 text-lg leading-relaxed">
+                  Your personalized influencer strategy recommendations powered by AI
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0">
+                <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl px-4 py-2 border border-slate-700/50">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-slate-300 whitespace-nowrap">
+                      {recommendations.length} Recommendation{recommendations.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="mb-6">
-            <div className="flex flex-wrap gap-2">
-              {sections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => goToSection(section.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                    currentSection === section.id
-                      ? `${section.color} text-white`
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <section.icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{section.name}</span>
-                </button>
-              ))}
+          <div className="mb-8">
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-4">
+              <div className="flex flex-wrap gap-3">
+                {sections.map((section) => (
+                  <button
+                    key={section.id}
+                    onClick={() => goToSection(section.id)}
+                    className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                      currentSection === section.id
+                        ? 'bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/30'
+                        : 'bg-slate-700/30 text-slate-300 border border-slate-600/30 hover:bg-slate-700/50'
+                    }`}
+                  >
+                    <section.icon className="w-4 h-4" />
+                    <span className="text-sm font-medium">{section.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="mb-6">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${((currentSection + 1) / sections.length) * 100}%` }}
-              ></div>
-            </div>
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>Section {currentSection + 1} of {sections.length}</span>
-              <span>{Math.round(((currentSection + 1) / sections.length) * 100)}% Complete</span>
+          <div className="mb-8">
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-white">Progress</span>
+                <span className="text-sm text-slate-300">{Math.round(((currentSection + 1) / sections.length) * 100)}% Complete</span>
+              </div>
+              <div className="w-full bg-slate-700/50 rounded-full h-3 mb-3">
+                <div
+                  className="bg-gradient-to-r from-cyan-400 to-teal-500 h-3 rounded-full transition-all duration-300 shadow-lg"
+                  style={{ width: `${((currentSection + 1) / sections.length) * 100}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between text-xs text-slate-400">
+                <span>Section {currentSection + 1} of {sections.length}</span>
+                <span>{sections[currentSection].name}</span>
+              </div>
             </div>
           </div>
 
           {/* Main Content */}
           <div 
             ref={timelineRef}
-            className="bg-white rounded-lg shadow-lg p-6 min-h-[600px]"
+            className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 min-h-[600px]"
             onTouchStart={handleTouchStart}
           >
             {/* Desktop Navigation */}
             <div className="hidden md:flex justify-between items-center mb-6">
               <button
                 onClick={prevSection}
-                className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex items-center space-x-2 px-4 py-3 btn-dark rounded-xl font-medium"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Previous</span>
               </button>
               
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900">{sections[currentSection].name}</h2>
-                <p className="text-gray-600">Swipe or use arrows to navigate</p>
+                <h2 className="text-2xl font-bold text-white">{sections[currentSection].name}</h2>
+                <p className="text-slate-400">Swipe or use arrows to navigate</p>
               </div>
               
               <button
                 onClick={nextSection}
-                className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex items-center space-x-2 px-4 py-3 btn-dark rounded-xl font-medium"
               >
                 <span>Next</span>
                 <ChevronRight className="w-4 h-4" />
@@ -1018,19 +1061,19 @@ export default function RecommendationsPage() {
             <div className="md:hidden flex justify-between items-center mb-6">
               <button
                 onClick={prevSection}
-                className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="p-3 btn-dark rounded-xl"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               
               <div className="text-center">
-                <h2 className="text-xl font-bold text-gray-900">{sections[currentSection].name}</h2>
-                <p className="text-sm text-gray-600">Swipe to navigate</p>
+                <h2 className="text-xl font-bold text-white">{sections[currentSection].name}</h2>
+                <p className="text-sm text-slate-400">Swipe to navigate</p>
               </div>
               
               <button
                 onClick={nextSection}
-                className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="p-3 btn-dark rounded-xl"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -1043,17 +1086,31 @@ export default function RecommendationsPage() {
           </div>
 
           {/* Recommendation Info */}
-          <div className="mt-6 bg-gray-50 rounded-lg p-4">
-            <div className="flex flex-wrap items-center justify-between text-sm text-gray-600">
-              <div className="flex items-center space-x-4">
-                <span>Recommendation ID: {currentRecommendation?.id}</span>
-                <span>Level: {currentRecommendation?.user_level}</span>
-                <span>Created: {currentRecommendation?.created_at ? new Date(currentRecommendation.created_at).toLocaleDateString() : 'N/A'}</span>
+          <div className="mt-8 bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+            <div className="flex flex-wrap items-center justify-between text-sm text-slate-300">
+              <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-2">
+                  <span className="text-slate-400">ID:</span>
+                  <span className="font-mono text-cyan-400">#{currentRecommendation?.id}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-slate-400">Level:</span>
+                  <span className="capitalize font-medium text-white">{currentRecommendation?.user_level}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-slate-400">Created:</span>
+                  <span className="font-medium text-white">
+                    {currentRecommendation?.created_at ? new Date(currentRecommendation.created_at).toLocaleDateString() : 'N/A'}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <span>User ID: {user?.id}</span>
-                <span>•</span>
-                <span>{user?.email}</span>
+              <div className="flex items-center space-x-4 text-xs">
+                <div className="flex items-center space-x-2">
+                  <span className="text-slate-400">User:</span>
+                  <span className="font-mono text-cyan-400">#{user?.id}</span>
+                </div>
+                <span className="text-slate-600">•</span>
+                <span className="text-slate-300 truncate max-w-xs">{user?.email}</span>
               </div>
             </div>
           </div>
@@ -1063,59 +1120,58 @@ export default function RecommendationsPage() {
       {/* Modal */}
       {isModalOpen && selectedInsight && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={closeModal}
         >
           <div 
-            className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            className="form-container-dark max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center space-x-3">
                 {(() => {
                   const IconComponent = agentIcons[selectedInsight.agent_type as keyof typeof agentIcons] || Brain;
-                  const bgColor = agentColors[selectedInsight.agent_type as keyof typeof agentColors] || 'bg-indigo-500';
                   return (
-                    <div className={`w-10 h-10 ${bgColor} rounded-full flex items-center justify-center`}>
-                      <IconComponent className="w-5 h-5 text-white" />
+                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg">
+                      <IconComponent className="w-6 h-6 text-white" />
                     </div>
                   );
                 })()}
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">
+                  <h3 className="text-xl font-bold text-white">
                     {selectedInsight.agent_type?.replace('_', ' ').toUpperCase()} Advisor
                   </h3>
-                  <p className="text-sm text-gray-600 capitalize">
+                  <p className="text-sm text-slate-400 capitalize">
                     {selectedInsight.focus_area?.replace('_', ' ')}
                   </p>
                 </div>
               </div>
               <button 
                 onClick={closeModal} 
-                className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="text-slate-400 hover:text-slate-200 p-2 hover:bg-slate-700/50 rounded-full transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
             
-            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
               <MarkdownRenderer 
                 content={selectedInsight.response} 
-                className="text-gray-700 leading-relaxed"
+                className="text-slate-200 leading-relaxed"
               />
             </div>
             
             <div className="mt-6 flex items-center justify-between">
               <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                 selectedInsight.status === 'success' 
-                  ? 'bg-green-100 text-green-800 border border-green-200' 
-                  : 'bg-red-100 text-red-800 border border-red-200'
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                  : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
               }`}>
                 {selectedInsight.status}
               </span>
               <button
                 onClick={closeModal}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="btn-dark-primary px-6 h-12 rounded-xl font-medium"
               >
                 Close
               </button>
@@ -1123,6 +1179,6 @@ export default function RecommendationsPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </UnifiedDashboardLayout>
   );
 }

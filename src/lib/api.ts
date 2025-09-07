@@ -23,8 +23,40 @@ import {
   DocumentGenerationResponse,
   Country,
   InfluencersTargets,
-  CreateInfluencersTargetsData
+  CreateInfluencersTargetsData,
+  InfluencerCoachingGroup,
+  CreateInfluencerCoachingGroupData,
+  UpdateInfluencerCoachingGroupData,
+  InfluencerCoachingMember,
+  JoinCoachingGroupData,
+  JoinGroupResponse,
+  GenerateJoinCodeResponse,
+  InfluencerCoachingSession,
+  CreateCoachingSessionData,
+  InfluencerCoachingMessage,
+  SendMessageData
 } from '@/types';
+import {
+  GeocodeRequest,
+  GeocodeResponse,
+  ReverseGeocodeRequest,
+  ReverseGeocodeResponse,
+  LocationSearchResult,
+  InfluencerLocationCreate,
+  InfluencerLocationUpdate,
+  InfluencerLocation,
+  BusinessLocationCreate,
+  BusinessLocationUpdate,
+  BusinessLocation,
+  NearbySearchParams,
+  NearbyInfluencer,
+  NearbyBusiness,
+  NearbyPromotion,
+  LocationPromotionRequestCreate,
+  LocationPromotionRequestUpdate,
+  LocationPromotionRequest,
+  LocationPromotionRequestWithDetails
+} from '@/types/location';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -451,6 +483,204 @@ class ApiClient {
   async getInfluencerTargets(): Promise<InfluencersTargets[]> {
     const response = await this.client.get('/api/v1/influencers-targets/');
     return response.data;
+  }
+
+  // Influencer Coaching endpoints
+  async createCoachingGroup(data: CreateInfluencerCoachingGroupData): Promise<InfluencerCoachingGroup> {
+    const response = await this.client.post('/api/v1/coaching-groups/', data);
+    return response.data;
+  }
+
+  async getMyCoachingGroups(): Promise<InfluencerCoachingGroup[]> {
+    const response = await this.client.get('/api/v1/coaching-groups/');
+    return response.data;
+  }
+
+  async getCoachingGroup(groupId: number): Promise<InfluencerCoachingGroup> {
+    const response = await this.client.get(`/api/v1/coaching-groups/${groupId}`);
+    return response.data;
+  }
+
+  async updateCoachingGroup(groupId: number, data: UpdateInfluencerCoachingGroupData): Promise<InfluencerCoachingGroup> {
+    const response = await this.client.put(`/api/v1/coaching-groups/${groupId}`, data);
+    return response.data;
+  }
+
+  async regenerateJoinCode(groupId: number): Promise<GenerateJoinCodeResponse> {
+    const response = await this.client.post(`/api/v1/coaching-groups/${groupId}/generate-code`);
+    return response.data;
+  }
+
+  async joinCoachingGroup(data: JoinCoachingGroupData): Promise<JoinGroupResponse> {
+    const response = await this.client.post('/api/v1/coaching-groups/join', data);
+    return response.data;
+  }
+
+  async getGroupInfoByCode(joinCode: string): Promise<any> {
+    const response = await this.client.get(`/api/v1/coaching-groups/info/${joinCode}`);
+    return response.data;
+  }
+
+  async getJoinedCoachingGroups(): Promise<InfluencerCoachingGroup[]> {
+    const response = await this.client.get('/api/v1/coaching-groups/joined');
+    return response.data;
+  }
+
+  async createCoachingSession(groupId: number, data: CreateCoachingSessionData): Promise<InfluencerCoachingSession> {
+    const response = await this.client.post(`/api/v1/coaching-groups/${groupId}/sessions`, data);
+    return response.data;
+  }
+
+  async getCoachingSessions(groupId: number): Promise<InfluencerCoachingSession[]> {
+    const response = await this.client.get(`/api/v1/coaching-groups/${groupId}/sessions`);
+    return response.data;
+  }
+
+  async sendMessage(groupId: number, data: SendMessageData): Promise<InfluencerCoachingMessage> {
+    const response = await this.client.post(`/api/v1/coaching-groups/${groupId}/messages`, data);
+    return response.data;
+  }
+
+  async getMessages(groupId: number): Promise<InfluencerCoachingMessage[]> {
+    const response = await this.client.get(`/api/v1/coaching-groups/${groupId}/messages`);
+    return response.data;
+  }
+
+  // ========================================
+  // LOCATION API ENDPOINTS
+  // ========================================
+
+  // Core Location Operations
+  async geocodeAddress(request: GeocodeRequest): Promise<GeocodeResponse> {
+    const response = await this.client.post('/api/v1/geocode', request);
+    return response.data;
+  }
+
+  async reverseGeocode(request: ReverseGeocodeRequest): Promise<ReverseGeocodeResponse> {
+    const response = await this.client.post('/api/v1/reverse-geocode', request);
+    return response.data;
+  }
+
+  async searchLocations(query: string, countryCode?: string, limit: number = 10): Promise<LocationSearchResult[]> {
+    const params = new URLSearchParams({ query, limit: limit.toString() });
+    if (countryCode) params.append('country_code', countryCode);
+    const response = await this.client.get(`/api/v1/search?${params}`);
+    return response.data;
+  }
+
+  // Influencer Location Management
+  async addInfluencerLocation(influencerId: number, location: InfluencerLocationCreate): Promise<InfluencerLocation> {
+    const response = await this.client.post(`/api/v1/influencers/${influencerId}/locations`, location);
+    return response.data;
+  }
+
+  async getInfluencerLocations(influencerId: number): Promise<InfluencerLocation[]> {
+    const response = await this.client.get(`/api/v1/influencers/${influencerId}/locations`);
+    return response.data;
+  }
+
+  async updateInfluencerLocation(locationId: number, location: InfluencerLocationUpdate): Promise<InfluencerLocation> {
+    const response = await this.client.put(`/api/v1/influencers/locations/${locationId}`, location);
+    return response.data;
+  }
+
+  async deleteInfluencerLocation(locationId: number): Promise<void> {
+    await this.client.delete(`/api/v1/influencers/locations/${locationId}`);
+  }
+
+  // Business Location Management
+  async addBusinessLocation(businessId: number, location: BusinessLocationCreate): Promise<BusinessLocation> {
+    const response = await this.client.post(`/api/v1/businesses/${businessId}/locations`, location);
+    return response.data;
+  }
+
+  async getBusinessLocations(businessId: number): Promise<BusinessLocation[]> {
+    const response = await this.client.get(`/api/v1/businesses/${businessId}/locations`);
+    return response.data;
+  }
+
+  async updateBusinessLocation(locationId: number, location: BusinessLocationUpdate): Promise<BusinessLocation> {
+    const response = await this.client.put(`/api/v1/businesses/locations/${locationId}`, location);
+    return response.data;
+  }
+
+  async deleteBusinessLocation(locationId: number): Promise<void> {
+    await this.client.delete(`/api/v1/businesses/locations/${locationId}`);
+  }
+
+  // Location Search (Proximity-based)
+  async findInfluencersNearby(params: NearbySearchParams): Promise<NearbyInfluencer[]> {
+    const queryParams = new URLSearchParams({
+      latitude: params.latitude.toString(),
+      longitude: params.longitude.toString(),
+      radius_km: params.radius_km.toString(),
+    });
+    
+    if (params.category) queryParams.append('category', params.category);
+    if (params.min_followers) queryParams.append('min_followers', params.min_followers.toString());
+    if (params.max_rate) queryParams.append('max_rate', params.max_rate.toString());
+    
+    const response = await this.client.get(`/api/v1/influencers/nearby?${queryParams}`);
+    return response.data;
+  }
+
+  async findBusinessesNearby(params: NearbySearchParams): Promise<NearbyBusiness[]> {
+    const queryParams = new URLSearchParams({
+      latitude: params.latitude.toString(),
+      longitude: params.longitude.toString(),
+      radius_km: params.radius_km.toString(),
+    });
+    
+    if (params.industry) queryParams.append('industry', params.industry);
+    if (params.verified_only) queryParams.append('verified_only', params.verified_only.toString());
+    
+    const response = await this.client.get(`/api/v1/businesses/nearby?${queryParams}`);
+    return response.data;
+  }
+
+  async findPromotionsNearby(params: NearbySearchParams): Promise<NearbyPromotion[]> {
+    const queryParams = new URLSearchParams({
+      latitude: params.latitude.toString(),
+      longitude: params.longitude.toString(),
+      radius_km: params.radius_km.toString(),
+    });
+    
+    if (params.min_budget) queryParams.append('min_budget', params.min_budget.toString());
+    if (params.max_budget) queryParams.append('max_budget', params.max_budget.toString());
+    
+    const response = await this.client.get(`/api/v1/promotions/nearby?${queryParams}`);
+    return response.data;
+  }
+
+  // Location Promotion Requests
+  async createLocationPromotionRequest(request: LocationPromotionRequestCreate): Promise<LocationPromotionRequest> {
+    const response = await this.client.post('/api/v1/location-promotion-requests', request);
+    return response.data;
+  }
+
+  async getLocationPromotionRequests(filters?: {
+    business_id?: number;
+    promotion_id?: number;
+    country_id?: number;
+    city?: string;
+  }): Promise<LocationPromotionRequestWithDetails[]> {
+    const params = new URLSearchParams();
+    if (filters?.business_id) params.append('business_id', filters.business_id.toString());
+    if (filters?.promotion_id) params.append('promotion_id', filters.promotion_id.toString());
+    if (filters?.country_id) params.append('country_id', filters.country_id.toString());
+    if (filters?.city) params.append('city', filters.city);
+    
+    const response = await this.client.get(`/api/v1/location-promotion-requests?${params}`);
+    return response.data;
+  }
+
+  async updateLocationPromotionRequest(requestId: number, request: LocationPromotionRequestUpdate): Promise<LocationPromotionRequest> {
+    const response = await this.client.put(`/api/v1/location-promotion-requests/${requestId}`, request);
+    return response.data;
+  }
+
+  async deleteLocationPromotionRequest(requestId: number): Promise<void> {
+    await this.client.delete(`/api/v1/location-promotion-requests/${requestId}`);
   }
 }
 

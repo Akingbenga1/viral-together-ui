@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { Blog } from '@/types';
 import {
   DndContext,
@@ -71,41 +71,41 @@ function SortableBlogItem({
       <tr 
         ref={setNodeRef} 
         style={style} 
-        className={`hover:bg-gray-50 ${isDragging ? 'bg-blue-50' : ''}`}
+        className={`hover:bg-slate-700/20 transition-colors ${isDragging ? 'bg-cyan-500/10' : ''}`}
       >
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="flex items-center">
             <div 
               {...attributes} 
               {...listeners}
-              className="cursor-grab mr-3 p-1 hover:bg-gray-100 rounded"
+              className="cursor-grab mr-3 p-1 hover:bg-slate-600/30 rounded-lg transition-colors"
             >
-              <GripVertical className="w-4 h-4 text-gray-400" />
+              <GripVertical className="w-4 h-4 text-slate-400" />
             </div>
             <div>
-              <div className="text-sm font-medium text-gray-900">
+              <div className="text-sm font-medium text-white">
                 {blog.topic}
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-slate-400">
                 /{blog.slug}
               </div>
             </div>
           </div>
         </td>
         <td className="px-6 py-4">
-          <div className="text-sm text-gray-900 max-w-xs">
+          <div className="text-sm text-slate-300 max-w-xs">
             {blog.description ? truncateText(blog.description, 100) : 'No description'}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="flex items-center text-sm text-gray-500">
-            <Calendar className="w-4 h-4 mr-1" />
+          <div className="flex items-center text-sm text-slate-400">
+            <Calendar className="w-4 h-4 mr-2 text-cyan-400" />
             {formatDate(blog.created_at)}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="flex items-center text-sm text-gray-500">
-            <Calendar className="w-4 h-4 mr-1" />
+          <div className="flex items-center text-sm text-slate-400">
+            <Calendar className="w-4 h-4 mr-2 text-cyan-400" />
             {formatDate(blog.updated_at)}
           </div>
         </td>
@@ -113,14 +113,14 @@ function SortableBlogItem({
           <div className="flex items-center justify-end space-x-2">
             <button
               onClick={() => onViewPublic(blog.slug)}
-              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+              className="text-cyan-400 hover:text-cyan-300 p-2 rounded-lg hover:bg-slate-700/30 transition-colors"
               title="View public"
             >
               <Eye className="w-4 h-4" />
             </button>
             <button
               onClick={() => onEdit(blog.id)}
-              className="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-50"
+              className="text-purple-400 hover:text-purple-300 p-2 rounded-lg hover:bg-slate-700/30 transition-colors"
               title="Edit blog"
             >
               <Edit className="w-4 h-4" />
@@ -128,11 +128,11 @@ function SortableBlogItem({
             <button
               onClick={() => onDelete(blog.id, blog.topic)}
               disabled={deleteLoading === blog.id}
-              className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 disabled:opacity-50"
+              className="text-rose-400 hover:text-rose-300 p-2 rounded-lg hover:bg-slate-700/30 disabled:opacity-50 transition-colors"
               title="Delete blog"
             >
               {deleteLoading === blog.id ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-rose-400"></div>
               ) : (
                 <Trash2 className="w-4 h-4" />
               )}
@@ -148,26 +148,26 @@ function SortableBlogItem({
     <div 
       ref={setNodeRef} 
       style={style}
-      className={`bg-white border border-gray-200 rounded-lg p-4 shadow-sm ${isDragging ? 'shadow-lg bg-blue-50' : ''}`}
+      className={`bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 shadow-sm hover:border-slate-600/50 transition-all duration-300 ${isDragging ? 'shadow-lg bg-cyan-500/10 border-cyan-500/30' : ''}`}
     >
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between mb-4">
         <div className="flex items-start space-x-3 flex-1">
           <div 
             {...attributes} 
             {...listeners}
-            className="cursor-grab mt-1 p-1 hover:bg-gray-100 rounded"
+            className="cursor-grab mt-1 p-1 hover:bg-slate-600/30 rounded-lg transition-colors"
           >
-            <GripVertical className="w-4 h-4 text-gray-400" />
+            <GripVertical className="w-4 h-4 text-slate-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-medium text-gray-900 truncate">
+            <h3 className="text-sm font-medium text-white truncate">
               {blog.topic}
             </h3>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               /{blog.slug}
             </p>
             {blog.description && (
-              <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+              <p className="text-sm text-slate-300 mt-3 leading-relaxed line-clamp-2">
                 {truncateText(blog.description, 120)}
               </p>
             )}
@@ -175,14 +175,14 @@ function SortableBlogItem({
         </div>
       </div>
       
-      <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+      <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
-            <Calendar className="w-3 h-3 mr-1" />
+            <Calendar className="w-3 h-3 mr-1 text-cyan-400" />
             Created: {formatDate(blog.created_at)}
           </div>
           <div className="flex items-center">
-            <Calendar className="w-3 h-3 mr-1" />
+            <Calendar className="w-3 h-3 mr-1 text-cyan-400" />
             Updated: {formatDate(blog.updated_at)}
           </div>
         </div>
@@ -192,14 +192,14 @@ function SortableBlogItem({
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onViewPublic(blog.slug)}
-            className="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+            className="inline-flex items-center px-3 py-2 text-xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/30 transition-colors font-medium"
           >
             <Eye className="w-3 h-3 mr-1" />
             View
           </button>
           <button
             onClick={() => onEdit(blog.id)}
-            className="inline-flex items-center px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"
+            className="inline-flex items-center px-3 py-2 text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-xl hover:bg-purple-500/30 transition-colors font-medium"
           >
             <Edit className="w-3 h-3 mr-1" />
             Edit
@@ -208,10 +208,10 @@ function SortableBlogItem({
         <button
           onClick={() => onDelete(blog.id, blog.topic)}
           disabled={deleteLoading === blog.id}
-          className="inline-flex items-center px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+          className="inline-flex items-center px-3 py-2 text-xs bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl hover:bg-rose-500/30 disabled:opacity-50 transition-colors font-medium"
         >
           {deleteLoading === blog.id ? (
-            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600 mr-1"></div>
+            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-rose-400 mr-1"></div>
           ) : (
             <Trash2 className="w-3 h-3 mr-1" />
           )}
@@ -336,11 +336,17 @@ export default function BlogListPage() {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-96">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <UnifiedDashboardLayout>
+        <div className="min-h-full w-full overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-none">
+            <div className="flex items-center justify-center min-h-96">
+              <div className="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-400"></div>
+              </div>
+            </div>
+          </div>
         </div>
-      </DashboardLayout>
+      </UnifiedDashboardLayout>
     );
   }
 
@@ -349,81 +355,88 @@ export default function BlogListPage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Blog Management</h1>
-            <p className="mt-2 text-sm text-gray-700">
-              Manage all your blog posts. Create, edit, delete, and view your content. Drag and drop to reorder.
-            </p>
-          </div>
-          <div className="mt-4 sm:mt-0 flex items-center space-x-3">
-            {/* View Toggle */}
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setIsDesktop(true)}
-                className={`flex items-center px-3 py-1 rounded text-sm font-medium transition-colors ${
-                  isDesktop 
-                    ? 'bg-white text-gray-900 shadow-sm' 
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <Monitor className="w-4 h-4 mr-1" />
-                Table
-              </button>
-              <button
-                onClick={() => setIsDesktop(false)}
-                className={`flex items-center px-3 py-1 rounded text-sm font-medium transition-colors ${
-                  !isDesktop 
-                    ? 'bg-white text-gray-900 shadow-sm' 
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <Smartphone className="w-4 h-4 mr-1" />
-                Cards
-              </button>
-            </div>
-            <button
-              onClick={() => router.push('/dashboard/blog')}
-              className="btn btn-primary"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create New Blog
-            </button>
-          </div>
-        </div>
-
-        {/* Blog List */}
-        {loading ? (
-          <div className="card">
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-          </div>
-        ) : blogs.length === 0 ? (
-          <div className="card">
-            <div className="text-center py-12">
-              <div className="mx-auto h-12 w-12 text-gray-400">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+    <UnifiedDashboardLayout>
+      <div className="min-h-full w-full overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-none">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-3xl font-bold text-white mb-2 leading-tight tracking-tight">
+                  Blog Management 📝
+                </h1>
+                <p className="text-slate-300 text-lg leading-relaxed">
+                  Manage all your blog posts. Create, edit, delete, and view your content. Drag and drop to reorder.
+                </p>
               </div>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No blogs</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by creating your first blog post.</p>
-              <div className="mt-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0">
+                {/* View Toggle */}
+                <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-1 border border-slate-700/50">
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => setIsDesktop(true)}
+                      className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        isDesktop 
+                          ? 'bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/30' 
+                          : 'text-slate-300 hover:text-slate-200 hover:bg-slate-700/30'
+                      }`}
+                    >
+                      <Monitor className="w-4 h-4 mr-2" />
+                      Table
+                    </button>
+                    <button
+                      onClick={() => setIsDesktop(false)}
+                      className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        !isDesktop 
+                          ? 'bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/30' 
+                          : 'text-slate-300 hover:text-slate-200 hover:bg-slate-700/30'
+                      }`}
+                    >
+                      <Smartphone className="w-4 h-4 mr-2" />
+                      Cards
+                    </button>
+                  </div>
+                </div>
                 <button
                   onClick={() => router.push('/dashboard/blog')}
-                  className="btn btn-primary"
+                  className="btn-dark-primary px-6 h-12 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 whitespace-nowrap"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create New Blog
+                  <Plus className="w-4 h-4" />
+                  <span>Create New Blog</span>
                 </button>
               </div>
             </div>
           </div>
-        ) : (
+
+          {/* Blog List */}
+          {loading ? (
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <div className="flex items-center justify-center py-12">
+                <div className="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center shadow-lg">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-400"></div>
+                </div>
+              </div>
+            </div>
+          ) : blogs.length === 0 ? (
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <svg className="h-10 w-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">No blogs yet</h3>
+                <p className="text-slate-400 text-lg leading-relaxed mb-8 max-w-md mx-auto">Get started by creating your first blog post to share with your audience.</p>
+                <button
+                  onClick={() => router.push('/dashboard/blog')}
+                  className="btn-dark-primary px-6 h-12 rounded-xl font-medium flex items-center space-x-2 mx-auto"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Create New Blog</span>
+                </button>
+              </div>
+            </div>
+          ) : (
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -432,29 +445,29 @@ export default function BlogListPage() {
             <SortableContext items={blogs.map(blog => blog.id)} strategy={verticalListSortingStrategy}>
               {isDesktop ? (
                 /* Desktop Table View */
-                <div className="card overflow-hidden">
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-slate-600/30">
+                      <thead className="bg-slate-700/30">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                             Title
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                             Description
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                             Created
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                             Updated
                           </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-slate-800/20 divide-y divide-slate-600/20">
                         {blogs.map((blog) => (
                           <SortableBlogItem
                             key={blog.id}
@@ -492,8 +505,9 @@ export default function BlogListPage() {
               )}
             </SortableContext>
           </DndContext>
-        )}
+          )}
+        </div>
       </div>
-    </DashboardLayout>
+    </UnifiedDashboardLayout>
   );
 }

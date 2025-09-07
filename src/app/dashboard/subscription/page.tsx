@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Star, Check, X, CreditCard, Calendar, DollarSign, Users } from 'lucide-react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
 import { SubscriptionPlan, UserSubscription } from '@/types';
@@ -146,60 +146,72 @@ export default function SubscriptionPage() {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="py-6">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+      <UnifiedDashboardLayout>
+        <div className="min-h-full w-full overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-none">
             <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="h-8 bg-slate-700/50 rounded-xl w-1/4 mb-6"></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="bg-white shadow rounded-lg p-6">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                  <div key={i} className="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
+                    <div className="h-4 bg-slate-700/50 rounded w-3/4 mb-3"></div>
+                    <div className="h-8 bg-slate-700/50 rounded w-1/2"></div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
-      </DashboardLayout>
+      </UnifiedDashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+    <UnifiedDashboardLayout>
+      <div className="min-h-full w-full overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-none">
           {/* Header */}
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                Subscription
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Manage your subscription and billing
-              </p>
+          <div className="mb-8">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-3xl font-bold text-white mb-2 leading-tight tracking-tight">
+                  Subscription 💎
+                </h1>
+                <p className="text-slate-300 text-lg leading-relaxed">
+                  Manage your subscription and billing preferences
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0">
+                <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl px-4 py-2 border border-slate-700/50">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-slate-300 whitespace-nowrap">
+                      {userSubscription ? 'Active Plan' : 'No Plan'}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Current Subscription Status */}
           {userSubscription && (
-            <div className="mt-8">
-              <div className="bg-white shadow rounded-lg p-6">
-                <div className="flex items-center justify-between">
+            <div className="mb-8">
+              <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900">Current Subscription</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      You are currently subscribed to the {plans.find(p => p.id === userSubscription.plan_id)?.name || 'Unknown'} plan
+                    <h3 className="text-xl font-semibold text-white mb-2">Current Subscription</h3>
+                    <p className="text-slate-300 leading-relaxed">
+                      You are currently subscribed to the <span className="font-semibold text-cyan-400">{plans.find(p => p.id === userSubscription.plan_id)?.name || 'Unknown'}</span> plan
                     </p>
                   </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <div className="text-sm text-gray-500">Status</div>
-                      <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
+                    <div className="text-center sm:text-right">
+                      <div className="text-sm text-slate-400 mb-1">Status</div>
+                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                         userSubscription.status === 'active' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                       }`}>
                         {userSubscription.status === 'active' ? 'Active' : 'Inactive'}
                       </div>
@@ -207,38 +219,44 @@ export default function SubscriptionPage() {
                     <button
                       onClick={handleManageSubscription}
                       disabled={isProcessing}
-                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                      className="btn-dark-primary px-6 h-12 rounded-xl font-medium flex items-center space-x-2 disabled:opacity-50 whitespace-nowrap"
                     >
-                      <CreditCard className="h-4 w-4 mr-2" />
-                      {isProcessing ? 'Loading...' : 'Manage Subscription'}
+                      <CreditCard className="h-4 w-4" />
+                      <span>{isProcessing ? 'Loading...' : 'Manage Subscription'}</span>
                     </button>
                   </div>
                 </div>
 
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex items-center">
-                    <Calendar className="h-5 w-5 text-gray-400 mr-3" />
+                  <div className="flex items-center p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                    <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center mr-4">
+                      <Calendar className="h-5 w-5 text-white" />
+                    </div>
                     <div>
-                      <div className="text-sm text-gray-500">Current Period</div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm text-slate-400">Current Period</div>
+                      <div className="text-sm font-medium text-white">
                         {formatDate(userSubscription.current_period_start)} - {formatDate(userSubscription.current_period_end)}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center">
-                    <DollarSign className="h-5 w-5 text-gray-400 mr-3" />
+                  <div className="flex items-center p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-green-500 rounded-xl flex items-center justify-center mr-4">
+                      <DollarSign className="h-5 w-5 text-white" />
+                    </div>
                     <div>
-                      <div className="text-sm text-gray-500">Amount</div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm text-slate-400">Amount</div>
+                      <div className="text-sm font-medium text-white">
                         £{plans.find(p => p.id === userSubscription.plan_id)?.price_per_month || 0}/month
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center">
-                    <Users className="h-5 w-5 text-gray-400 mr-3" />
+                  <div className="flex items-center p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mr-4">
+                      <Users className="h-5 w-5 text-white" />
+                    </div>
                     <div>
-                      <div className="text-sm text-gray-500">Plan Features</div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm text-slate-400">Plan Features</div>
+                      <div className="text-sm font-medium text-white">
                         {getPlanFeatures(plans.find(p => p.id === userSubscription.plan_id)?.tier || '').length} features included
                       </div>
                     </div>
@@ -249,8 +267,8 @@ export default function SubscriptionPage() {
           )}
 
           {/* Available Plans */}
-          <div className="mt-8">
-            <h3 className="text-lg font-medium text-gray-900 mb-6">
+          <div className="mb-8">
+            <h3 className="text-2xl font-bold text-white mb-6 leading-tight tracking-tight">
               {userSubscription ? 'Available Plans' : 'Choose Your Plan'}
             </h3>
             
@@ -262,13 +280,17 @@ export default function SubscriptionPage() {
                 return (
                   <div
                     key={plan.id}
-                    className={`relative bg-white rounded-lg shadow-lg border-2 ${getPlanColor(plan.tier)} ${
-                      isCurrentPlan ? 'ring-2 ring-primary-500' : ''
+                    className={`relative bg-slate-800/30 backdrop-blur-sm rounded-2xl border-2 transition-all duration-300 ${
+                      plan.tier.toLowerCase() === 'basic' ? 'border-slate-600/50' :
+                      plan.tier.toLowerCase() === 'pro' ? 'border-cyan-500/50' :
+                      'border-purple-500/50'
+                    } ${
+                      isCurrentPlan ? 'ring-2 ring-cyan-500/50 shadow-lg shadow-cyan-500/20' : 'hover:border-slate-500/50'
                     }`}
                   >
                     {isCurrentPlan && (
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-600 text-white">
+                        <span className="inline-flex items-center px-4 py-2 rounded-full text-xs font-medium bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-lg">
                           Current Plan
                         </span>
                       </div>
@@ -276,18 +298,22 @@ export default function SubscriptionPage() {
 
                     <div className="p-6">
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-xl font-semibold text-gray-900">{plan.name}</h4>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPlanBadgeColor(plan.tier)}`}>
+                        <h4 className="text-xl font-semibold text-white">{plan.name}</h4>
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                          plan.tier.toLowerCase() === 'basic' ? 'bg-slate-700/50 text-slate-300 border border-slate-600/30' :
+                          plan.tier.toLowerCase() === 'pro' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' :
+                          'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                        }`}>
                           {plan.tier}
                         </span>
                       </div>
 
                       <div className="mb-6">
                         <div className="flex items-baseline">
-                          <span className="text-3xl font-bold text-gray-900">£{plan.price_per_month}</span>
-                          <span className="text-gray-500 ml-1">/month</span>
+                          <span className="text-3xl font-bold text-white">£{plan.price_per_month}</span>
+                          <span className="text-slate-400 ml-1">/month</span>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-slate-400 mt-1">
                           Billed {plan.billing_cycle}
                         </p>
                       </div>
@@ -295,8 +321,10 @@ export default function SubscriptionPage() {
                       <div className="space-y-3 mb-6">
                         {features.map((feature, index) => (
                           <div key={index} className="flex items-center">
-                            <Check className="h-4 w-4 text-green-500 mr-3 flex-shrink-0" />
-                            <span className="text-sm text-gray-700">{feature}</span>
+                            <div className="w-5 h-5 bg-emerald-500/20 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                              <Check className="h-3 w-3 text-emerald-400" />
+                            </div>
+                            <span className="text-sm text-slate-300">{feature}</span>
                           </div>
                         ))}
                       </div>
@@ -305,7 +333,7 @@ export default function SubscriptionPage() {
                         {isCurrentPlan ? (
                           <button
                             disabled
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-500 bg-gray-50 cursor-not-allowed"
+                            className="w-full px-4 py-3 border border-slate-600/30 rounded-xl text-sm font-medium text-slate-400 bg-slate-700/30 cursor-not-allowed"
                           >
                             Current Plan
                           </button>
@@ -313,7 +341,11 @@ export default function SubscriptionPage() {
                           <button
                             onClick={() => handleSubscribe(plan.id)}
                             disabled={isProcessing}
-                            className="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className={`w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                              plan.tier.toLowerCase() === 'pro' 
+                                ? 'btn-dark-primary' 
+                                : 'btn-dark border border-slate-600/30 hover:border-slate-500/50'
+                            }`}
                           >
                             {isProcessing ? 'Processing...' : userSubscription ? 'Upgrade Plan' : 'Subscribe Now'}
                           </button>
@@ -328,22 +360,24 @@ export default function SubscriptionPage() {
 
           {/* Billing Information */}
           {userSubscription && (
-            <div className="mt-8">
-              <div className="bg-white shadow rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Billing Information</h3>
+            <div className="mb-8">
+              <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h3 className="text-xl font-semibold text-white mb-6">Billing Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Payment Method</h4>
+                  <div className="p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                    <h4 className="text-sm font-medium text-white mb-3">Payment Method</h4>
                     <div className="flex items-center space-x-3">
-                      <CreditCard className="h-5 w-5 text-gray-400" />
-                      <span className="text-sm text-gray-900">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center">
+                        <CreditCard className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="text-sm text-slate-300">
                         •••• •••• •••• {userSubscription.stripe_customer_id.slice(-4)}
                       </span>
                     </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Next Billing Date</h4>
-                    <div className="text-sm text-gray-900">
+                  <div className="p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                    <h4 className="text-sm font-medium text-white mb-3">Next Billing Date</h4>
+                    <div className="text-sm text-cyan-400 font-medium">
                       {formatDate(userSubscription.current_period_end)}
                     </div>
                   </div>
@@ -353,31 +387,31 @@ export default function SubscriptionPage() {
           )}
 
           {/* FAQ Section */}
-          <div className="mt-8">
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Frequently Asked Questions</h3>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900">Can I cancel my subscription anytime?</h4>
-                  <p className="text-sm text-gray-600 mt-1">
+          <div className="mb-8">
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <h3 className="text-xl font-semibold text-white mb-6">Frequently Asked Questions</h3>
+              <div className="space-y-6">
+                <div className="p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                  <h4 className="text-sm font-semibold text-white mb-2">Can I cancel my subscription anytime?</h4>
+                  <p className="text-sm text-slate-300 leading-relaxed">
                     Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your current billing period.
                   </p>
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900">Can I upgrade or downgrade my plan?</h4>
-                  <p className="text-sm text-gray-600 mt-1">
+                <div className="p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                  <h4 className="text-sm font-semibold text-white mb-2">Can I upgrade or downgrade my plan?</h4>
+                  <p className="text-sm text-slate-300 leading-relaxed">
                     Yes, you can change your plan at any time. Upgrades take effect immediately, while downgrades take effect at the next billing cycle.
                   </p>
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900">What payment methods do you accept?</h4>
-                  <p className="text-sm text-gray-600 mt-1">
+                <div className="p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                  <h4 className="text-sm font-semibold text-white mb-2">What payment methods do you accept?</h4>
+                  <p className="text-sm text-slate-300 leading-relaxed">
                     We accept all major credit cards including Visa, Mastercard, American Express, and Discover.
                   </p>
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900">Is there a free trial available?</h4>
-                  <p className="text-sm text-gray-600 mt-1">
+                <div className="p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                  <h4 className="text-sm font-semibold text-white mb-2">Is there a free trial available?</h4>
+                  <p className="text-sm text-slate-300 leading-relaxed">
                     We offer a 7-day free trial for new subscribers. You can cancel anytime during the trial period without being charged.
                   </p>
                 </div>
@@ -386,7 +420,7 @@ export default function SubscriptionPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </UnifiedDashboardLayout>
   );
 }
 

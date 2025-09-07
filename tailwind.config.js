@@ -32,6 +32,30 @@ module.exports = {
           800: '#86198f',
           900: '#701a75',
         },
+        // Dark form colors matching the uploaded image
+        'form-bg': {
+          DEFAULT: '#1e293b', // slate-800
+          dark: '#0f172a',    // slate-900
+        },
+        'form-surface': {
+          DEFAULT: '#334155', // slate-700
+          dark: '#1e293b',    // slate-800
+        },
+        'form-input': {
+          DEFAULT: '#475569', // slate-600
+          dark: '#334155',    // slate-700
+          focus: '#64748b',   // slate-500
+        },
+        'form-text': {
+          DEFAULT: '#f1f5f9', // slate-100
+          muted: '#cbd5e1',   // slate-300
+          placeholder: '#94a3b8', // slate-400
+        },
+        'form-border': {
+          DEFAULT: '#64748b', // slate-500
+          focus: '#06b6d4',   // cyan-500
+          error: '#ef4444',   // red-500
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -39,6 +63,12 @@ module.exports = {
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
+      },
+      resize: {
+        'none': 'none',
+        'both': 'both',
+        'horizontal': 'horizontal',
+        'vertical': 'vertical',
       },
       keyframes: {
         fadeIn: {
@@ -54,5 +84,7 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/typography'),
+    // Note: Install @tailwindcss/forms for enhanced form styling
+    // require('@tailwindcss/forms'),
   ],
 } 
