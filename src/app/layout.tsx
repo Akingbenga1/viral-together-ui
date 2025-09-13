@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/hooks/useAuth';
 import CookieConsent from '@/components/GDPR/CookieConsent';
+import LoggingProvider from '@/components/LoggingProvider';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -10,6 +11,7 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Viral Together - Influencer Marketing Platform',
   description: 'Connect influencers with brands and businesses for successful marketing campaigns.',
+  viewport: 'width=device-width, initial-scale=1',
 };
 
 export default function RootLayout({
@@ -20,20 +22,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          {children}
-          <CookieConsent />
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-            }}
-          />
-        </AuthProvider>
+        <LoggingProvider>
+          <AuthProvider>
+            {children}
+            <CookieConsent />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
+                },
+              }}
+            />
+          </AuthProvider>
+        </LoggingProvider>
       </body>
     </html>
   );

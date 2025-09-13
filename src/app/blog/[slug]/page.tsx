@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { ArrowLeft, Calendar, Clock, Share2 } from 'lucide-react';
 import UnauthenticatedLayout from '@/components/UnauthenticatedLayout';
 import { useEffect, useState } from 'react';
+import { apiClient } from '@/lib/api';
 
 async function fetchBlog(slug: string) {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/blog/blogs/${slug}`);
-    if (!res.ok) return null;
-    return await res.json();
+    const blog = await apiClient.getBlogBySlug(slug);
+    return blog;
   } catch {
     return null;
   }

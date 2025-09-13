@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Brain, ChevronLeft, ChevronRight, Calendar, Target, DollarSign, TrendingUp, Users, Star, Zap, Lightbulb, X, Edit, Check } from 'lucide-react';
+import { Brain, ChevronLeft, ChevronRight, Calendar, Target, DollarSign, TrendingUp, Users, Star, Zap, Lightbulb, X, Edit, Check, Bot, Settings, Clock, User, MapPin, GraduationCap, Globe } from 'lucide-react';
 import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,6 +21,54 @@ interface InfluencerRecommendation {
   created_at: string;
 }
 
+interface AIAgent {
+  id: number;
+  uuid: string;
+  name: string;
+  agent_type: string;
+  capabilities: any;
+  status: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
+interface InfluencerLocation {
+  id: number;
+  influencer_id: number;
+  location_name: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+  city: string;
+  country: string;
+  is_primary: boolean;
+  created_at: string;
+}
+
+interface InfluencerCoachingGroup {
+  id: number;
+  name: string;
+  description: string;
+  join_code: string;
+  max_members: number;
+  current_members: number;
+  created_at: string;
+}
+
+interface InfluencerCollaborationCountry {
+  id: number;
+  name: string;
+  code: string;
+}
+
+interface UnifiedInfluencerProfile {
+  influencer: any;
+  locations: InfluencerLocation[];
+  coaching_groups: InfluencerCoachingGroup[];
+  collaboration_countries: InfluencerCollaborationCountry[];
+}
+
 export default function RecommendationsPage() {
   const { user } = useAuth();
   const [recommendations, setRecommendations] = useState<InfluencerRecommendation[]>([]);
@@ -32,6 +80,19 @@ export default function RecommendationsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const timelineRef = useRef<HTMLDivElement>(null);
+  
+  // AI Agents state
+  const [aiAgents, setAiAgents] = useState<AIAgent[]>([]);
+  const [isLoadingAgents, setIsLoadingAgents] = useState(true);
+  
+  // AI Agent Settings state
+  const [operationMode, setOperationMode] = useState<'manual' | 'automatic'>('manual');
+  const [scheduleFrequency, setScheduleFrequency] = useState<'hourly' | 'daily' | 'weekly' | 'monthly'>('daily');
+  
+  // Profile Modal state
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [unifiedProfile, setUnifiedProfile] = useState<UnifiedInfluencerProfile | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
   const sections = [
     { id: 0, name: 'Base Plan', icon: Target, color: 'bg-blue-500' },
@@ -164,6 +225,66 @@ export default function RecommendationsPage() {
 
     fetchRecommendations();
   }, [user?.id]);
+
+  // Fetch AI Agents
+  useEffect(() => {
+    const fetchAIAgents = async () => {
+      try {
+        setIsLoadingAgents(true);
+        console.log('Fetching AI agents...');
+        const agents = await apiClient.getAIAgents();
+        console.log('AI agents response:', agents);
+        setAiAgents(agents);
+      } catch (error: any) {
+        console.error('Failed to fetch AI agents:', error);
+        console.error('Error details:', error.response?.data);
+        toast.error('Failed to load AI agents');
+      } finally {
+        setIsLoadingAgents(false);
+      }
+    };
+
+    fetchAIAgents();
+  }, []);
+
+  // Fetch unified influencer profile
+  const fetchUnifiedProfile = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setIsLoadingProfile(true);
+      
+      // Fetch influencer data
+      const influencers = await apiClient.getInfluencers();
+      const currentInfluencer = influencers.find(inf => inf.user?.id === user.id);
+      
+      if (!currentInfluencer) {
+        toast.error('No influencer profile found for your account');
+        return;
+      }
+
+      // Fetch additional data in parallel
+      const [locations, coachingGroups, collaborationCountries] = await Promise.all([
+        apiClient.get(`/api/v1/influencers/${currentInfluencer.id}/locations`).catch(() => []),
+        apiClient.getMyCoachingGroups().catch(() => []),
+        Promise.resolve(currentInfluencer.collaboration_countries || [])
+      ]);
+
+      setUnifiedProfile({
+        influencer: currentInfluencer,
+        locations: locations || [],
+        coaching_groups: coachingGroups || [],
+        collaboration_countries: collaborationCountries || []
+      });
+      
+      setIsProfileModalOpen(true);
+    } catch (error: any) {
+      console.error('Failed to fetch unified profile:', error);
+      toast.error('Failed to load influencer profile');
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  };
 
   const nextSection = () => {
     setCurrentSection((prev) => (prev + 1) % sections.length);
@@ -918,14 +1039,180 @@ export default function RecommendationsPage() {
                 Your personalized influencer strategy recommendations powered by AI
               </p>
             </div>
-            <div className="text-center py-16">
-              <div className="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Brain className="h-10 w-10 text-slate-400" />
+            {/* Main Content Layout for No Recommendations */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Side - No Recommendations Content */}
+              <div className="lg:col-span-2">
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <Brain className="h-10 w-10 text-slate-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">No recommendations yet</h3>
+                  <p className="text-slate-400 text-lg leading-relaxed mb-8 max-w-md mx-auto">
+                    Your AI recommendations will appear here once generated. Please generate recommendations first.
+                  </p>
+                  <button
+                    onClick={fetchUnifiedProfile}
+                    disabled={isLoadingProfile}
+                    className="btn-dark-primary px-6 py-3 rounded-xl font-medium flex items-center space-x-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoadingProfile ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Loading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <User className="h-4 w-4" />
+                        <span>Show your unified Influencer Profile</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">No recommendations yet</h3>
-              <p className="text-slate-400 text-lg leading-relaxed mb-8 max-w-md mx-auto">
-                Your AI recommendations will appear here once generated. Please generate recommendations first.
-              </p>
+
+              {/* Right Side - Floating Panels (same as with recommendations) */}
+              <div className="lg:col-span-1 space-y-6">
+                {/* AI Agents Panel */}
+                <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
+                  <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                    <Bot className="h-5 w-5 mr-2 text-blue-400" />
+                    AI Agents
+                    <span className="ml-2 text-blue-400 font-normal">{aiAgents.length}</span>
+                  </h2>
+                  
+                  {isLoadingAgents ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+                      <span className="ml-3 text-slate-300">Loading AI agents...</span>
+                    </div>
+                  ) : aiAgents.length > 0 ? (
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                      {aiAgents.map((agent) => {
+                        const IconComponent = agentIcons[agent.agent_type as keyof typeof agentIcons] || Bot;
+                        const bgColor = agentColors[agent.agent_type as keyof typeof agentColors] || 'bg-blue-500';
+                        
+                        return (
+                          <div key={agent.id} className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600/30">
+                            <div className={`w-10 h-10 ${bgColor} rounded-full flex items-center justify-center flex-shrink-0`}>
+                              <IconComponent className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="text-sm font-semibold text-white">{agent.name}</h3>
+                              <p className="text-xs text-slate-400 capitalize">
+                                {agent.agent_type?.replace('_', ' ')} • {agent.status}
+                              </p>
+                            </div>
+                            <div className="flex-shrink-0">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                agent.is_active 
+                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                                  : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
+                              }`}>
+                                {agent.is_active ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Bot className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                      <p className="text-slate-400">No AI agents available</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* AI Agent Settings Panel */}
+                <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
+                  <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                    <Settings className="h-5 w-5 mr-2 text-blue-400" />
+                    AI Agent Settings
+                  </h2>
+                  
+                  <div className="space-y-6">
+                    {/* Operation Mode */}
+                    <div>
+                      <label className="text-sm font-medium text-slate-400 mb-3 block">Operation Mode</label>
+                      <div className="space-y-3">
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="operationMode"
+                            value="manual"
+                            checked={operationMode === 'manual'}
+                            onChange={(e) => setOperationMode(e.target.value as 'manual' | 'automatic')}
+                            className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
+                          />
+                          <span className="text-white">Operates manually</span>
+                        </label>
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="operationMode"
+                            value="automatic"
+                            checked={operationMode === 'automatic'}
+                            onChange={(e) => setOperationMode(e.target.value as 'manual' | 'automatic')}
+                            className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
+                          />
+                          <span className="text-white">Operates automatically</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Schedule Frequency (only show when automatic is selected) */}
+                    {operationMode === 'automatic' && (
+                      <div>
+                        <label className="text-sm font-medium text-slate-400 mb-3 block flex items-center">
+                          <Clock className="h-4 w-4 mr-2" />
+                          Schedule Frequency
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {(['hourly', 'daily', 'weekly', 'monthly'] as const).map((frequency) => (
+                            <label key={frequency} className="flex items-center space-x-2 cursor-pointer p-3 bg-slate-700/30 rounded-lg border border-slate-600/30 hover:bg-slate-700/50 transition-colors">
+                              <input
+                                type="radio"
+                                name="scheduleFrequency"
+                                value={frequency}
+                                checked={scheduleFrequency === frequency}
+                                onChange={(e) => setScheduleFrequency(e.target.value as typeof frequency)}
+                                className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
+                              />
+                              <span className="text-white capitalize text-sm">{frequency}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Button */}
+                    <div className="pt-4 border-t border-slate-700/50">
+                      {operationMode === 'manual' ? (
+                        <button
+                          onClick={() => {
+                            toast.success('Generating AI recommendations...');
+                          }}
+                          className="w-full btn-dark-primary px-4 py-3 rounded-xl font-medium flex items-center justify-center space-x-2"
+                        >
+                          <Bot className="h-4 w-4" />
+                          <span>Generate AI Recommendation</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            toast.success('AI Agent settings saved successfully!');
+                          }}
+                          className="w-full btn-dark-primary px-4 py-3 rounded-xl font-medium flex items-center justify-center space-x-2"
+                        >
+                          <Settings className="h-4 w-4" />
+                          <span>Save Settings</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -985,132 +1272,277 @@ export default function RecommendationsPage() {
             </div>
           </div>
 
-          {/* Navigation Tabs */}
-          <div className="mb-8">
-            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-4">
-              <div className="flex flex-wrap gap-3">
-                {sections.map((section) => (
+          {/* Main Content Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Side - Original Content */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Navigation Tabs */}
+              <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-4">
+                <div className="flex flex-wrap gap-3">
+                  {sections.map((section) => (
+                    <button
+                      key={section.id}
+                      onClick={() => goToSection(section.id)}
+                      className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                        currentSection === section.id
+                          ? 'bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/30'
+                          : 'bg-slate-700/30 text-slate-300 border border-slate-600/30 hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <section.icon className="w-4 h-4" />
+                      <span className="text-sm font-medium">{section.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-semibold text-white">Progress</span>
+                  <span className="text-sm text-slate-300">{Math.round(((currentSection + 1) / sections.length) * 100)}% Complete</span>
+                </div>
+                <div className="w-full bg-slate-700/50 rounded-full h-3 mb-3">
+                  <div
+                    className="bg-gradient-to-r from-cyan-400 to-teal-500 h-3 rounded-full transition-all duration-300 shadow-lg"
+                    style={{ width: `${((currentSection + 1) / sections.length) * 100}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>Section {currentSection + 1} of {sections.length}</span>
+                  <span>{sections[currentSection].name}</span>
+                </div>
+              </div>
+
+              {/* Main Content */}
+              <div 
+                ref={timelineRef}
+                className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 min-h-[600px]"
+                onTouchStart={handleTouchStart}
+              >
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex justify-between items-center mb-6">
                   <button
-                    key={section.id}
-                    onClick={() => goToSection(section.id)}
-                    className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                      currentSection === section.id
-                        ? 'bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/30'
-                        : 'bg-slate-700/30 text-slate-300 border border-slate-600/30 hover:bg-slate-700/50'
-                    }`}
+                    onClick={prevSection}
+                    className="flex items-center space-x-2 px-4 py-3 btn-dark rounded-xl font-medium"
                   >
-                    <section.icon className="w-4 h-4" />
-                    <span className="text-sm font-medium">{section.name}</span>
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Previous</span>
                   </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold text-white">Progress</span>
-                <span className="text-sm text-slate-300">{Math.round(((currentSection + 1) / sections.length) * 100)}% Complete</span>
-              </div>
-              <div className="w-full bg-slate-700/50 rounded-full h-3 mb-3">
-                <div
-                  className="bg-gradient-to-r from-cyan-400 to-teal-500 h-3 rounded-full transition-all duration-300 shadow-lg"
-                  style={{ width: `${((currentSection + 1) / sections.length) * 100}%` }}
-                ></div>
-              </div>
-              <div className="flex justify-between text-xs text-slate-400">
-                <span>Section {currentSection + 1} of {sections.length}</span>
-                <span>{sections[currentSection].name}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div 
-            ref={timelineRef}
-            className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 min-h-[600px]"
-            onTouchStart={handleTouchStart}
-          >
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex justify-between items-center mb-6">
-              <button
-                onClick={prevSection}
-                className="flex items-center space-x-2 px-4 py-3 btn-dark rounded-xl font-medium"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Previous</span>
-              </button>
-              
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-white">{sections[currentSection].name}</h2>
-                <p className="text-slate-400">Swipe or use arrows to navigate</p>
-              </div>
-              
-              <button
-                onClick={nextSection}
-                className="flex items-center space-x-2 px-4 py-3 btn-dark rounded-xl font-medium"
-              >
-                <span>Next</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Mobile Navigation */}
-            <div className="md:hidden flex justify-between items-center mb-6">
-              <button
-                onClick={prevSection}
-                className="p-3 btn-dark rounded-xl"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              
-              <div className="text-center">
-                <h2 className="text-xl font-bold text-white">{sections[currentSection].name}</h2>
-                <p className="text-sm text-slate-400">Swipe to navigate</p>
-              </div>
-              
-              <button
-                onClick={nextSection}
-                className="p-3 btn-dark rounded-xl"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Section Content */}
-            <div className="overflow-y-auto max-h-[500px]">
-              {renderCurrentSection()}
-            </div>
-          </div>
-
-          {/* Recommendation Info */}
-          <div className="mt-8 bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-            <div className="flex flex-wrap items-center justify-between text-sm text-slate-300">
-              <div className="flex items-center space-x-6">
-                <div className="flex items-center space-x-2">
-                  <span className="text-slate-400">ID:</span>
-                  <span className="font-mono text-cyan-400">#{currentRecommendation?.id}</span>
+                  
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-white">{sections[currentSection].name}</h2>
+                    <p className="text-slate-400">Swipe or use arrows to navigate</p>
+                  </div>
+                  
+                  <button
+                    onClick={nextSection}
+                    className="flex items-center space-x-2 px-4 py-3 btn-dark rounded-xl font-medium"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-slate-400">Level:</span>
-                  <span className="capitalize font-medium text-white">{currentRecommendation?.user_level}</span>
+
+                {/* Mobile Navigation */}
+                <div className="md:hidden flex justify-between items-center mb-6">
+                  <button
+                    onClick={prevSection}
+                    className="p-3 btn-dark rounded-xl"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  
+                  <div className="text-center">
+                    <h2 className="text-xl font-bold text-white">{sections[currentSection].name}</h2>
+                    <p className="text-sm text-slate-400">Swipe to navigate</p>
+                  </div>
+                  
+                  <button
+                    onClick={nextSection}
+                    className="p-3 btn-dark rounded-xl"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-slate-400">Created:</span>
-                  <span className="font-medium text-white">
-                    {currentRecommendation?.created_at ? new Date(currentRecommendation.created_at).toLocaleDateString() : 'N/A'}
-                  </span>
+
+                {/* Section Content */}
+                <div className="overflow-y-auto max-h-[500px]">
+                  {renderCurrentSection()}
                 </div>
               </div>
-              <div className="flex items-center space-x-4 text-xs">
-                <div className="flex items-center space-x-2">
-                  <span className="text-slate-400">User:</span>
-                  <span className="font-mono text-cyan-400">#{user?.id}</span>
+
+              {/* Recommendation Info */}
+              <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <div className="flex flex-wrap items-center justify-between text-sm text-slate-300">
+                  <div className="flex items-center space-x-6">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-slate-400">ID:</span>
+                      <span className="font-mono text-cyan-400">#{currentRecommendation?.id}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-slate-400">Level:</span>
+                      <span className="capitalize font-medium text-white">{currentRecommendation?.user_level}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-slate-400">Created:</span>
+                      <span className="font-medium text-white">
+                        {currentRecommendation?.created_at ? new Date(currentRecommendation.created_at).toLocaleDateString() : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4 text-xs">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-slate-400">User:</span>
+                      <span className="font-mono text-cyan-400">#{user?.id}</span>
+                    </div>
+                    <span className="text-slate-600">•</span>
+                    <span className="text-slate-300 truncate max-w-xs">{user?.email}</span>
+                  </div>
                 </div>
-                <span className="text-slate-600">•</span>
-                <span className="text-slate-300 truncate max-w-xs">{user?.email}</span>
+              </div>
+            </div>
+
+            {/* Right Side - Floating Panels */}
+            <div className="lg:col-span-1 space-y-6">
+              {/* AI Agents Panel */}
+              <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
+                <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                  <Bot className="h-5 w-5 mr-2 text-blue-400" />
+                  AI Agents
+                  <span className="ml-2 text-blue-400 font-normal">{aiAgents.length}</span>
+                </h2>
+                
+                {isLoadingAgents ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+                    <span className="ml-3 text-slate-300">Loading AI agents...</span>
+                  </div>
+                ) : aiAgents.length > 0 ? (
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {aiAgents.map((agent) => {
+                      const IconComponent = agentIcons[agent.agent_type as keyof typeof agentIcons] || Bot;
+                      const bgColor = agentColors[agent.agent_type as keyof typeof agentColors] || 'bg-blue-500';
+                      
+                      return (
+                        <div key={agent.id} className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600/30">
+                          <div className={`w-10 h-10 ${bgColor} rounded-full flex items-center justify-center flex-shrink-0`}>
+                            <IconComponent className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-sm font-semibold text-white">{agent.name}</h3>
+                            <p className="text-xs text-slate-400 capitalize">
+                              {agent.agent_type?.replace('_', ' ')} • {agent.status}
+                            </p>
+                          </div>
+                          <div className="flex-shrink-0">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              agent.is_active 
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                                : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
+                            }`}>
+                              {agent.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Bot className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                    <p className="text-slate-400">No AI agents available</p>
+                  </div>
+                )}
+              </div>
+
+              {/* AI Agent Settings Panel */}
+              <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
+                <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                  <Settings className="h-5 w-5 mr-2 text-blue-400" />
+                  AI Agent Settings
+                </h2>
+                
+                <div className="space-y-6">
+                  {/* Operation Mode */}
+                  <div>
+                    <label className="text-sm font-medium text-slate-400 mb-3 block">Operation Mode</label>
+                    <div className="space-y-3">
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="operationMode"
+                          value="manual"
+                          checked={operationMode === 'manual'}
+                          onChange={(e) => setOperationMode(e.target.value as 'manual' | 'automatic')}
+                          className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
+                        />
+                        <span className="text-white">Operates manually</span>
+                      </label>
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="operationMode"
+                          value="automatic"
+                          checked={operationMode === 'automatic'}
+                          onChange={(e) => setOperationMode(e.target.value as 'manual' | 'automatic')}
+                          className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
+                        />
+                        <span className="text-white">Operates automatically</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Schedule Frequency (only show when automatic is selected) */}
+                  {operationMode === 'automatic' && (
+                    <div>
+                      <label className="text-sm font-medium text-slate-400 mb-3 block flex items-center">
+                        <Clock className="h-4 w-4 mr-2" />
+                        Schedule Frequency
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {(['hourly', 'daily', 'weekly', 'monthly'] as const).map((frequency) => (
+                          <label key={frequency} className="flex items-center space-x-2 cursor-pointer p-3 bg-slate-700/30 rounded-lg border border-slate-600/30 hover:bg-slate-700/50 transition-colors">
+                            <input
+                              type="radio"
+                              name="scheduleFrequency"
+                              value={frequency}
+                              checked={scheduleFrequency === frequency}
+                              onChange={(e) => setScheduleFrequency(e.target.value as typeof frequency)}
+                              className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
+                            />
+                            <span className="text-white capitalize text-sm">{frequency}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Button */}
+                  <div className="pt-4 border-t border-slate-700/50">
+                    {operationMode === 'manual' ? (
+                      <button
+                        onClick={() => {
+                          toast.success('Generating AI recommendations...');
+                        }}
+                        className="w-full btn-dark-primary px-4 py-3 rounded-xl font-medium flex items-center justify-center space-x-2"
+                      >
+                        <Bot className="h-4 w-4" />
+                        <span>Generate AI Recommendation</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          toast.success('AI Agent settings saved successfully!');
+                        }}
+                        className="w-full btn-dark-primary px-4 py-3 rounded-xl font-medium flex items-center justify-center space-x-2"
+                      >
+                        <Settings className="h-4 w-4" />
+                        <span>Save Settings</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1171,6 +1603,195 @@ export default function RecommendationsPage() {
               </span>
               <button
                 onClick={closeModal}
+                className="btn-dark-primary px-6 h-12 rounded-xl font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unified Influencer Profile Modal */}
+      {isProfileModalOpen && unifiedProfile && (
+        <div 
+          className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setIsProfileModalOpen(false)}
+        >
+          <div 
+            className="form-container-dark max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Unified Influencer Profile</h3>
+                  <p className="text-sm text-slate-400">
+                    {unifiedProfile.influencer.user?.first_name} {unifiedProfile.influencer.user?.last_name}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsProfileModalOpen(false)} 
+                className="text-slate-400 hover:text-slate-200 p-2 hover:bg-slate-700/50 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Basic Information */}
+              <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
+                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <User className="h-5 w-5 mr-2 text-blue-400" />
+                  Basic Information
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Name:</span>
+                    <span className="text-white font-medium">
+                      {unifiedProfile.influencer.user?.first_name} {unifiedProfile.influencer.user?.last_name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Username:</span>
+                    <span className="text-white font-medium">@{unifiedProfile.influencer.user?.username}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Email:</span>
+                    <span className="text-white font-medium">{unifiedProfile.influencer.user?.email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Bio:</span>
+                    <span className="text-white font-medium">{unifiedProfile.influencer.bio || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Languages:</span>
+                    <span className="text-white font-medium">{unifiedProfile.influencer.languages || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Availability:</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      unifiedProfile.influencer.availability 
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                        : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
+                    }`}>
+                      {unifiedProfile.influencer.availability ? 'Available' : 'Unavailable'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Performance Metrics */}
+              <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
+                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2 text-green-400" />
+                  Performance Metrics
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Rate per Post:</span>
+                    <span className="text-white font-medium">${unifiedProfile.influencer.rate_per_post || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Total Posts:</span>
+                    <span className="text-white font-medium">{unifiedProfile.influencer.total_posts || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Growth Rate:</span>
+                    <span className="text-white font-medium">{unifiedProfile.influencer.growth_rate || 'N/A'}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Successful Campaigns:</span>
+                    <span className="text-white font-medium">{unifiedProfile.influencer.successful_campaigns || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Base Country:</span>
+                    <span className="text-white font-medium">{unifiedProfile.influencer.base_country?.name || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Operational Locations */}
+              <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
+                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <MapPin className="h-5 w-5 mr-2 text-orange-400" />
+                  Operational Locations ({unifiedProfile.locations.length})
+                </h4>
+                {unifiedProfile.locations.length > 0 ? (
+                  <div className="space-y-3 max-h-48 overflow-y-auto">
+                    {unifiedProfile.locations.map((location) => (
+                      <div key={location.id} className="p-3 bg-slate-600/30 rounded-lg border border-slate-500/30">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white font-medium">{location.location_name}</span>
+                          {location.is_primary && (
+                            <span className="px-2 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-xs font-medium">
+                              Primary
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-slate-400 text-sm">{location.address}</p>
+                        <p className="text-slate-400 text-sm">{location.city}, {location.country}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-slate-400 text-center py-4">No operational locations added</p>
+                )}
+              </div>
+
+              {/* Coaching Groups */}
+              <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
+                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <GraduationCap className="h-5 w-5 mr-2 text-purple-400" />
+                  Coaching Groups ({unifiedProfile.coaching_groups.length})
+                </h4>
+                {unifiedProfile.coaching_groups.length > 0 ? (
+                  <div className="space-y-3 max-h-48 overflow-y-auto">
+                    {unifiedProfile.coaching_groups.map((group) => (
+                      <div key={group.id} className="p-3 bg-slate-600/30 rounded-lg border border-slate-500/30">
+                        <h5 className="text-white font-medium mb-1">{group.name}</h5>
+                        <p className="text-slate-400 text-sm mb-2">{group.description}</p>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-400">
+                            {group.current_members}/{group.max_members} members
+                          </span>
+                          <span className="text-slate-400">Code: {group.join_code}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-slate-400 text-center py-4">No coaching groups joined</p>
+                )}
+              </div>
+
+              {/* Collaboration Countries */}
+              <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30 lg:col-span-2">
+                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <Globe className="h-5 w-5 mr-2 text-cyan-400" />
+                  Collaboration Countries ({unifiedProfile.collaboration_countries.length})
+                </h4>
+                {unifiedProfile.collaboration_countries.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {unifiedProfile.collaboration_countries.map((country) => (
+                      <span key={country.id} className="px-3 py-1 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-full text-sm font-medium">
+                        {country.name} ({country.code})
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-slate-400 text-center py-4">No collaboration countries specified</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setIsProfileModalOpen(false)}
                 className="btn-dark-primary px-6 h-12 rounded-xl font-medium"
               >
                 Close

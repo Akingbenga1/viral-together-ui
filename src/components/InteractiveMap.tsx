@@ -422,7 +422,7 @@ export default function InteractiveMap({
            
            {/* Autocomplete Dropdown */}
            {showAutocomplete && (
-             <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg z-40 max-h-60 overflow-y-auto">
+             <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg z-40 max-h-60 overflow-y-auto light-scrollbar">
                {isSearching ? (
                  <div className="px-3 py-4 text-center text-gray-500">
                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto mb-2"></div>

@@ -69,8 +69,12 @@ const getNavigationForRole = (user: any, userRoles: any[]) => {
     navigation.push({ name: 'Dashboard', href: '/dashboard/user', icon: Home, roles: ['user'] });
   }
 
-  // Analytics - Available to all users
-  navigation.push({ name: 'Analytics', href: '/dashboard/analytics', icon: TrendingUp, roles: ['user', 'influencer', 'business', 'professional_influencer', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
+  // Analytics - Available to all users, but admins go to admin/analytics
+  if (hasRole('admin') || hasRole('super_admin')) {
+    navigation.push({ name: 'Analytics', href: '/admin/analytics', icon: TrendingUp, roles: ['admin', 'super_admin'] });
+  } else {
+    navigation.push({ name: 'Analytics', href: '/dashboard/analytics', icon: TrendingUp, roles: ['user', 'influencer', 'business', 'professional_influencer', 'business_influencer', 'moderator'] });
+  }
 
   // Influencers Directory - Available to businesses and admins
   if (hasAnyRole(['business', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
@@ -147,7 +151,7 @@ export default function UnifiedDashboardLayout({ children }: UnifiedDashboardLay
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex overflow-x-hidden">
       {/* Background pattern */}
       <div 
         className="fixed inset-0 opacity-10 pointer-events-none"
@@ -300,7 +304,7 @@ export default function UnifiedDashboardLayout({ children }: UnifiedDashboardLay
       </div>
 
       {/* Main content area - Properly positioned with margin */}
-      <div className="flex flex-col flex-1 lg:ml-72 min-h-screen relative z-10">
+      <div className="flex flex-col flex-1 lg:ml-72 min-h-screen relative z-10 overflow-x-hidden">
         {/* Mobile header */}
         <div className="lg:hidden">
           <div className="flex items-center justify-between px-4 py-4 border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
@@ -321,7 +325,7 @@ export default function UnifiedDashboardLayout({ children }: UnifiedDashboardLay
         </div>
         
         {/* Main content */}
-        <main className="flex-1 relative">
+        <main className="flex-1 relative overflow-x-hidden">
           {children}
         </main>
       </div>

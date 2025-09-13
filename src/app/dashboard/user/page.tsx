@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
+import { getRoleDisplayName } from '@/lib/roleUtils';
 
 export default function UserDashboardPage() {
   const { user, userRoles } = useAuth();
@@ -122,9 +123,30 @@ export default function UserDashboardPage() {
               <h1 className="text-3xl font-bold text-white mb-2">
                 Welcome back, {user?.first_name || user?.username}! 👋
               </h1>
-              <p className="text-slate-400 text-lg">
-                Here's what's happening with your campaigns today
-              </p>
+              <div className="text-slate-300 text-lg leading-relaxed">
+                <span>Here's what's happening with your campaigns today</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-slate-300">
+                    {user?.first_name} {user?.last_name}
+                  </span>
+                  {user?.roles && user.roles.length > 0 && (
+                    <>
+                      {user.roles.map((role) => (
+                        <span
+                          key={role.id}
+                          className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/20"
+                        >
+                          {getRoleDisplayName(role.name)}
+                        </span>
+                      ))}
+                      <button className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-400 border border-emerald-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 hover:text-emerald-300 transition-all duration-200">
+                        <Settings className="w-3 h-3 mr-1" />
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
             <div className="hidden lg:flex items-center space-x-4">
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl px-4 py-2 border border-slate-700/50">

@@ -35,17 +35,27 @@ cd viral-together-ui
 ```bash
 npm install
 # or
-yarn install
+yarn install 
 ```
 
 3. Create environment file:
 ```bash
-cp .env.example .env.local
+# Create .env.local from the example file
+# Note: .env.example should be created with the following content:
 ```
 
-4. Update environment variables:
+4. Create `.env.local` with environment variables:
 ```env
+# API Configuration
 NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Application Configuration
+NODE_ENV=development
+PORT=3000
+HOSTNAME=0.0.0.0
+
+# Next.js Configuration
+NEXT_TELEMETRY_DISABLED=1
 ```
 
 5. Run the development server:
@@ -108,6 +118,16 @@ The application integrates with the Viral Together API and supports:
 - **State Management**: React Context
 - **Notifications**: React Hot Toast
 - **Animations**: Framer Motion
+
+## Environment Configuration
+
+For detailed environment setup instructions, see [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md).
+
+### Quick Setup
+
+1. Create `.env.local` file with required variables
+2. Set `NEXT_PUBLIC_API_URL` to your API server URL
+3. Configure other variables as needed for your environment
 
 ## Contributing
 

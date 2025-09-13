@@ -1,9 +1,26 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { TrendingUp, DollarSign, Users, Calendar, Star, MessageCircle } from 'lucide-react';
+import { 
+  TrendingUp, 
+  DollarSign, 
+  Users, 
+  Calendar, 
+  Star, 
+  MessageCircle,
+  Target,
+  Award,
+  Eye,
+  Heart,
+  Share2,
+  Zap,
+  ArrowUpRight,
+  ArrowDownRight,
+  Settings
+} from 'lucide-react';
 import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
+import { getRoleDisplayName } from '@/lib/roleUtils';
 
 export default function InfluencerDashboardPage() {
   const { user, userRoles } = useAuth();
@@ -33,33 +50,37 @@ export default function InfluencerDashboardPage() {
       name: 'Total Followers',
       value: stats.totalFollowers.toLocaleString(),
       icon: Users,
-      color: 'bg-blue-500',
+      gradient: 'from-blue-400 to-cyan-500',
+      description: 'Social media followers',
       change: '+12%',
-      changeType: 'positive',
+      changeType: 'increase',
     },
     {
       name: 'Engagement Rate',
       value: `${stats.engagementRate}%`,
       icon: TrendingUp,
-      color: 'bg-green-500',
+      gradient: 'from-emerald-400 to-teal-500',
+      description: 'Average engagement',
       change: '+0.3%',
-      changeType: 'positive',
+      changeType: 'increase',
     },
     {
       name: 'Total Earnings',
       value: `$${stats.totalEarnings.toLocaleString()}`,
       icon: DollarSign,
-      color: 'bg-purple-500',
+      gradient: 'from-purple-400 to-pink-500',
+      description: 'Lifetime earnings',
       change: '+18%',
-      changeType: 'positive',
+      changeType: 'increase',
     },
     {
       name: 'Active Campaigns',
       value: stats.activeCampaigns,
-      icon: Calendar,
-      color: 'bg-orange-500',
+      icon: Target,
+      gradient: 'from-amber-400 to-orange-500',
+      description: 'Current campaigns',
       change: '+2',
-      changeType: 'positive',
+      changeType: 'increase',
     },
   ];
 
@@ -92,139 +113,192 @@ export default function InfluencerDashboardPage() {
 
   return (
     <UnifiedDashboardLayout>
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-          {/* Header */}
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold leading-7 text-white sm:text-3xl sm:truncate">
-                Influencer Dashboard
-              </h2>
-              <p className="mt-1 text-sm text-slate-400">
-                Welcome back, {user?.first_name || user?.username}! Here's your influencer performance overview.
-              </p>
+      <div className="p-6 lg:p-8">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">
+                Influencer Dashboard 📈
+              </h1>
+              <div className="text-slate-300 text-lg leading-relaxed">
+                <span>Here's your influencer performance overview</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-slate-300">
+                    {user?.first_name} {user?.last_name}
+                  </span>
+                  {user?.roles && user.roles.length > 0 && (
+                    <>
+                      {user.roles.map((role) => (
+                        <span
+                          key={role.id}
+                          className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/20"
+                        >
+                          {getRoleDisplayName(role.name)}
+                        </span>
+                      ))}
+                      <button className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-400 border border-emerald-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 hover:text-emerald-300 transition-all duration-200">
+                        <Settings className="w-3 h-3 mr-1" />
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="mt-4 flex md:mt-0 md:ml-4">
-              <button className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                <MessageCircle className="h-4 w-4 mr-2" />
-                View Campaigns
+            <div className="hidden lg:flex items-center space-x-4">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl px-4 py-2 border border-slate-700/50">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-slate-300 whitespace-nowrap">Performance Active</span>
+                </div>
+              </div>
+              <button className="btn-dark-primary px-6 h-12 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 whitespace-nowrap">
+                <MessageCircle className="h-5 w-5" />
+                <span>View Campaigns</span>
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Stats Grid */}
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {statCards.map((stat) => (
-              <div
-                key={stat.name}
-                className="bg-white overflow-hidden shadow rounded-lg"
-              >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <stat.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          {stat.name}
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {stat.value}
-                        </dd>
-                        <dd className="text-sm text-green-600">
-                          {stat.change}
-                        </dd>
-                      </dl>
-                    </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
+          {statCards.map((stat, index) => (
+            <div
+              key={stat.name}
+              className="relative bg-slate-800/30 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 group overflow-hidden min-w-0"
+            >
+              {/* Background gradient */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center shadow-lg flex-shrink-0`}>
+                    <stat.icon className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                  </div>
+                  <div className={`flex items-center space-x-1 text-xs lg:text-sm flex-shrink-0 ${
+                    stat.changeType === 'increase' ? 'text-emerald-400' : 'text-rose-400'
+                  }`}>
+                    {stat.changeType === 'increase' ? (
+                      <ArrowUpRight className="w-3 h-3 lg:w-4 lg:h-4" />
+                    ) : (
+                      <ArrowDownRight className="w-3 h-3 lg:w-4 lg:h-4" />
+                    )}
+                    <span className="font-medium whitespace-nowrap">{stat.change}</span>
                   </div>
                 </div>
-                <div className={`${stat.color} px-5 py-3`}>
-                  <div className="text-sm">
-                    <span className="text-white">View details</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Recent Campaigns */}
-          <div className="mt-8">
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Campaigns</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Brand
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Type
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Earnings
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Deadline
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {recentCampaigns.map((campaign) => (
-                        <tr key={campaign.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {campaign.brand}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {campaign.type}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              campaign.status === 'Active' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {campaign.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ${campaign.earnings}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(campaign.deadline).toLocaleDateString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                
+                <div className="min-w-0">
+                  <h3 className="text-xl lg:text-2xl font-bold text-white mb-1 truncate">{stat.value}</h3>
+                  <p className="text-slate-400 text-sm truncate">{stat.name}</p>
+                  <p className="text-slate-500 text-xs mt-1 truncate">{stat.description}</p>
                 </div>
               </div>
             </div>
-          </div>
+          ))}
+        </div>
 
-          {/* Quick Actions */}
-          <div className="mt-8">
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                  <h4 className="font-medium text-gray-900">Update Rate Card</h4>
-                  <p className="text-sm text-gray-500">Set your pricing</p>
-                </button>
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                  <h4 className="font-medium text-gray-900">Browse Opportunities</h4>
-                  <p className="text-sm text-gray-500">Find new campaigns</p>
-                </button>
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                  <h4 className="font-medium text-gray-900">Analytics</h4>
-                  <p className="text-sm text-gray-500">View performance data</p>
-                </button>
-              </div>
+        {/* Recent Campaigns */}
+        <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden mb-8">
+          <div className="p-4 lg:p-6">
+            <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+              <Target className="w-5 h-5 mr-2 text-cyan-400" />
+              Recent Campaigns
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="border-b border-slate-700/50">
+                    <th className="px-2 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                      Brand
+                    </th>
+                    <th className="px-2 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-2 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-2 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                      Earnings
+                    </th>
+                    <th className="px-2 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                      Deadline
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700/30">
+                  {recentCampaigns.map((campaign) => (
+                    <tr key={campaign.id} className="hover:bg-slate-700/20 transition-colors">
+                      <td className="px-2 py-3 text-sm font-medium text-white">
+                        {campaign.brand}
+                      </td>
+                      <td className="px-2 py-3 text-sm text-slate-300">
+                        {campaign.type}
+                      </td>
+                      <td className="px-2 py-3">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                          campaign.status === 'Active' 
+                            ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/20' 
+                            : 'bg-gradient-to-r from-slate-500/20 to-slate-600/20 text-slate-400 border border-slate-500/20'
+                        }`}>
+                          {campaign.status}
+                        </span>
+                      </td>
+                      <td className="px-2 py-3 text-sm font-medium text-white">
+                        ${campaign.earnings}
+                      </td>
+                      <td className="px-2 py-3 text-sm text-slate-300">
+                        {new Date(campaign.deadline).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
+          <div className="p-4 lg:p-6">
+            <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+              <Zap className="w-5 h-5 mr-2 text-cyan-400" />
+              Quick Actions
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <button className="p-4 bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-200 text-left group">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
+                    <DollarSign className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-white group-hover:text-cyan-400 transition-colors">Update Rate Card</h4>
+                    <p className="text-sm text-slate-400">Set your pricing</p>
+                  </div>
+                </div>
+              </button>
+              <button className="p-4 bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-200 text-left group">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center shadow-lg">
+                    <Eye className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-white group-hover:text-emerald-400 transition-colors">Browse Opportunities</h4>
+                    <p className="text-sm text-slate-400">Find new campaigns</p>
+                  </div>
+                </div>
+              </button>
+              <button className="p-4 bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-200 text-left group">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
+                    <TrendingUp className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-white group-hover:text-purple-400 transition-colors">Analytics</h4>
+                    <p className="text-sm text-slate-400">View performance data</p>
+                  </div>
+                </div>
+              </button>
             </div>
           </div>
         </div>

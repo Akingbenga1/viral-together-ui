@@ -137,7 +137,7 @@ export default function HelpSearch({ onSearch, placeholder = "Search for help ar
 
       {/* Search Suggestions */}
       {showSuggestions && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto light-scrollbar">
           {query.length < 2 ? (
             /* Popular Searches */
             <div className="p-4">

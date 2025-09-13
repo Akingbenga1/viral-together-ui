@@ -13,6 +13,7 @@ export interface User {
   created_at?: string;
   updated_at?: string;
   roles?: Role[];
+  influencer_id?: number;
 }
 
 export interface UserWithRoles extends User {
@@ -159,6 +160,8 @@ export interface UserSubscription {
   current_period_end: string;
   created_at?: string;
   updated_at?: string;
+  plan?: SubscriptionPlan;
+  user?: User;
 }
 
 export interface CheckoutSessionData {

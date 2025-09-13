@@ -1,10 +1,20 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
+import { uiLogger } from './logger';
+
+// Extend Axios config to include metadata
+declare module 'axios' {
+  interface InternalAxiosRequestConfig {
+    metadata?: { startTime: number };
+  }
+}
 import { 
   AuthTokens, 
   LoginCredentials, 
   RegisterData, 
   User,
+  UserWithRoles,
+  Role,
   Influencer, 
   CreateInfluencerData, 
   UpdateInfluencerData,
@@ -71,24 +81,57 @@ class ApiClient {
       },
     });
 
-    // Add request interceptor to include auth token
+    // Add request interceptor to include auth token and log requests
     this.client.interceptors.request.use(
       (config) => {
         const token = Cookies.get('access_token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        // Log API request
+        const startTime = Date.now();
+        config.metadata = { startTime };
+        
+        uiLogger.logApiRequest(
+          config.method?.toUpperCase() || 'UNKNOWN',
+          config.url || 'UNKNOWN',
+          config.data
+        );
+        
         return config;
       },
       (error) => {
+        uiLogger.logApiError('REQUEST', 'UNKNOWN', error);
         return Promise.reject(error);
       }
     );
 
-    // Add response interceptor to handle errors
+    // Add response interceptor to handle errors and log responses
     this.client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        const duration = Date.now() - (response.config.metadata?.startTime || Date.now());
+        
+        uiLogger.logApiResponse(
+          response.config.method?.toUpperCase() || 'UNKNOWN',
+          response.config.url || 'UNKNOWN',
+          response.status,
+          response.data,
+          duration
+        );
+        
+        return response;
+      },
       (error) => {
+        const duration = Date.now() - (error.config?.metadata?.startTime || Date.now());
+        
+        uiLogger.logApiError(
+          error.config?.method?.toUpperCase() || 'UNKNOWN',
+          error.config?.url || 'UNKNOWN',
+          error,
+          duration
+        );
+        
         if (error.response?.status === 401) {
           // Clear token and redirect to login
           Cookies.remove('access_token');
@@ -226,6 +269,7 @@ class ApiClient {
     await this.client.delete(`/rate_card/delete_rate_card/${id}`);
   }
 
+
   async getInfluencerRateSummary(influencerId: number): Promise<any> {
     const response = await this.client.get(`/rate_card/influencer/${influencerId}/rate_summary`);
     return response.data;
@@ -244,7 +288,7 @@ class ApiClient {
 
   // Social Media Platform endpoints
   async getSocialMediaPlatforms(): Promise<SocialMediaPlatform[]> {
-    const response: AxiosResponse<SocialMediaPlatform[]> = await this.client.get('/social_media_platform/list');
+    const response: AxiosResponse<SocialMediaPlatform[]> = await this.client.get('/social-media-platforms/list');
     return response.data;
   }
 
@@ -292,6 +336,18 @@ class ApiClient {
 
   async getUserSubscriptions(userId: number): Promise<UserSubscription[]> {
     const response: AxiosResponse<UserSubscription[]> = await this.client.get(`/user_subscription/get_user_subscriptions/${userId}`);
+    return response.data;
+  }
+
+  async cancelSubscription(subscriptionId: number): Promise<{
+    success: boolean;
+    message: string;
+    subscription_id: number;
+    status: string;
+    user_id: number;
+    stripe_subscription_id?: string;
+  }> {
+    const response = await this.client.post(`/user_subscription/subscriptions/${subscriptionId}/cancel`);
     return response.data;
   }
 
@@ -474,6 +530,30 @@ class ApiClient {
     return response.data;
   }
 
+  // Admin user profile management endpoints
+  async adminGetAllUsers(): Promise<UserWithRoles[]> {
+    const response = await this.client.get('/admin/users');
+    return response.data;
+  }
+
+  async adminUpdateUserProfile(userId: number, profileData: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    mobile_number?: string;
+    username?: string;
+    new_password?: string;
+    confirm_password?: string;
+  }): Promise<any> {
+    const response = await this.client.put(`/admin/users/${userId}/profile_update`, profileData);
+    return response.data;
+  }
+
+  async adminGetUserProfile(userId: number): Promise<any> {
+    const response = await this.client.get(`/admin/users/${userId}/profile`);
+    return response.data;
+  }
+
   // Influencer targets endpoints
   async saveInfluencerTargets(targets: CreateInfluencersTargetsData): Promise<InfluencersTargets> {
     const response = await this.client.post('/api/v1/influencers-targets/', targets);
@@ -543,6 +623,19 @@ class ApiClient {
 
   async getMessages(groupId: number): Promise<InfluencerCoachingMessage[]> {
     const response = await this.client.get(`/api/v1/coaching-groups/${groupId}/messages`);
+    return response.data;
+  }
+
+  // AI Agents endpoints
+  async getAIAgents(): Promise<any[]> {
+    console.log('Making request to /ai-agents/');
+    const response = await this.client.get('/ai-agents/');
+    console.log('AI agents API response:', response.data);
+    return response.data;
+  }
+
+  async getAIAgent(id: number): Promise<any> {
+    const response = await this.client.get(`/ai-agents/${id}`);
     return response.data;
   }
 
@@ -682,6 +775,7 @@ class ApiClient {
   async deleteLocationPromotionRequest(requestId: number): Promise<void> {
     await this.client.delete(`/api/v1/location-promotion-requests/${requestId}`);
   }
+
 }
 
 export const apiClient = new ApiClient();

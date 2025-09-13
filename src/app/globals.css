@@ -153,11 +153,38 @@
 }
 
 @layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  
   * {
     @apply border-gray-200;
   }
+  
   body {
     @apply bg-white text-gray-900;
+  }
+  
+  /* Ensure images and media don't overflow */
+  img, video, iframe {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Prevent horizontal overflow globally */
+  html, body {
+    overflow-x: hidden;
+  }
+  
+  /* Ensure flex containers don't overflow */
+  .flex {
+    min-width: 0;
+  }
+  
+  /* Prevent long words from causing overflow */
+  * {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
 
@@ -415,6 +442,72 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+}
+
+/* Global custom scrollbar styling for all vertical scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #334155; /* thumb: slate-600, track: slate-700 */
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #334155; /* slate-700 */
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #475569; /* slate-600 */
+  border-radius: 4px;
+  border: 1px solid #334155; /* slate-700 */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #64748b; /* slate-500 */
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: #94a3b8; /* slate-400 */
+}
+
+*::-webkit-scrollbar-corner {
+  background: #334155; /* slate-700 */
+}
+
+/* Light theme scrollbar for light backgrounds */
+.light-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9; /* thumb: slate-300, track: slate-100 */
+}
+
+.light-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.light-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9; /* slate-100 */
+  border-radius: 4px;
+}
+
+.light-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: 4px;
+  border: 1px solid #f1f5f9; /* slate-100 */
+}
+
+.light-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+}
+
+.light-scrollbar::-webkit-scrollbar-thumb:active {
+  background: #64748b; /* slate-500 */
+}
+
+.light-scrollbar::-webkit-scrollbar-corner {
+  background: #f1f5f9; /* slate-100 */
 }
 }
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, DollarSign, Users, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import Link from 'next/link';
 import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
@@ -21,7 +22,6 @@ export default function RateCardsPage() {
 
   // Form states
   const [formData, setFormData] = useState({
-    influencer_id: '',
     content_type: '',
     base_rate: '',
     audience_size_multiplier: '',
@@ -44,22 +44,37 @@ export default function RateCardsPage() {
         setPlatforms(platformsData);
         setInfluencers(influencersData);
         
-        // If user has influencer role, fetch their rate cards
-        if (user?.roles?.some(r => r.name === 'influencer')) {
-          const userInfluencer = influencersData.find(inf => inf.user.id === user.id);
+        // If user has influencer role, fetch their rate cards using influencer_id
+        if (user?.roles?.some(r => r.name === 'influencer') && user.influencer_id) {
+          const userInfluencer = influencersData.find(inf => inf.id === user.influencer_id);
           if (userInfluencer) {
             setSelectedInfluencer(userInfluencer);
-            const rateCardsData = await apiClient.getInfluencerRateCards(userInfluencer.id);
+            const rateCardsData = await apiClient.getInfluencerRateCards(user.influencer_id);
             setRateCards(rateCardsData);
           }
+        } else if (user?.roles?.some(r => r.name === 'super_admin' || r.name === 'admin')) {
+          // For admins, fetch all rate cards from all influencers
+          const allRateCards = [];
+          for (const influencer of influencersData) {
+            try {
+              const rateCardsData = await apiClient.getInfluencerRateCards(influencer.id);
+              allRateCards.push(...rateCardsData);
+            } catch (error) {
+              console.log(`Failed to fetch rate cards for influencer ${influencer.id}:`, error);
+            }
+          }
+          setRateCards(allRateCards);
         } else {
-          // For admins, fetch all rate cards (this would need a new API endpoint)
-          // For now, we'll show empty state
+          // For other users, show empty state
           setRateCards([]);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to fetch data:', error);
-        toast.error('Failed to load rate cards data');
+        if (error.response?.status === 404) {
+          toast.error('Social media platforms endpoint not found. Please check API configuration.');
+        } else {
+          toast.error('Failed to load rate cards data');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -69,9 +84,14 @@ export default function RateCardsPage() {
   }, [user]);
 
   const handleCreateRateCard = async () => {
+    if (!user?.influencer_id) {
+      toast.error('You must have an influencer profile to create rate cards');
+      return;
+    }
+
     try {
       const newRateCard = await apiClient.createRateCard({
-        influencer_id: parseInt(formData.influencer_id),
+        influencer_id: user.influencer_id,
         content_type: formData.content_type,
         base_rate: parseFloat(formData.base_rate),
         audience_size_multiplier: parseFloat(formData.audience_size_multiplier),
@@ -98,7 +118,7 @@ export default function RateCardsPage() {
     if (!selectedRateCard) return;
 
     try {
-      const updatedRateCard = await apiClient.updateRateCard(selectedRateCard.id, {
+      const updateData = {
         content_type: formData.content_type,
         base_rate: parseFloat(formData.base_rate),
         audience_size_multiplier: parseFloat(formData.audience_size_multiplier),
@@ -109,16 +129,24 @@ export default function RateCardsPage() {
         rush_fee: parseFloat(formData.rush_fee),
         description: formData.description,
         platform_id: parseInt(formData.platform_id),
-      });
+      };
+      
+      console.log('=== UPDATE RATE CARD DEBUG ===');
+      console.log('Rate card ID:', selectedRateCard.id);
+      console.log('Update data:', updateData);
+      console.log('Form data:', formData);
+      
+      const updatedRateCard = await apiClient.updateRateCard(selectedRateCard.id, updateData);
 
       setRateCards(rateCards.map(rc => rc.id === selectedRateCard.id ? updatedRateCard : rc));
       setShowEditModal(false);
       setSelectedRateCard(null);
       resetForm();
       toast.success('Rate card updated successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update rate card:', error);
-      toast.error('Failed to update rate card');
+      const errorMessage = error.response?.data?.detail || 'Failed to update rate card';
+      toast.error(errorMessage);
     }
   };
 
@@ -137,7 +165,6 @@ export default function RateCardsPage() {
 
   const resetForm = () => {
     setFormData({
-      influencer_id: '',
       content_type: '',
       base_rate: '',
       audience_size_multiplier: '',
@@ -152,9 +179,12 @@ export default function RateCardsPage() {
   };
 
   const openEditModal = (rateCard: RateCard) => {
+    console.log('=== OPEN EDIT MODAL DEBUG ===');
+    console.log('Rate card data:', rateCard);
+    console.log('Platform ID:', rateCard.platform_id);
+    
     setSelectedRateCard(rateCard);
     setFormData({
-      influencer_id: rateCard.influencer_id.toString(),
       content_type: rateCard.content_type,
       base_rate: rateCard.base_rate.toString(),
       audience_size_multiplier: rateCard.audience_size_multiplier.toString(),
@@ -164,7 +194,7 @@ export default function RateCardsPage() {
       revision_fee: rateCard.revision_fee.toString(),
       rush_fee: rateCard.rush_fee.toString(),
       description: rateCard.description,
-      platform_id: rateCard.platform_id.toString(),
+      platform_id: rateCard.platform_id?.toString() || '',
     });
     setShowEditModal(true);
   };
@@ -354,59 +384,62 @@ export default function RateCardsPage() {
                 Rate Cards
               </h3>
               
-              {rateCards.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                    <DollarSign className="h-10 w-10 text-slate-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">No rate cards</h3>
-                  <p className="text-slate-400 text-lg leading-relaxed mb-8 max-w-md mx-auto">
-                    Get started by creating your first rate card to manage pricing.
-                  </p>
-                  <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="btn-dark-primary px-6 h-12 rounded-xl font-medium flex items-center space-x-2 mx-auto"
-                  >
-                    <Plus className="h-5 w-5" />
-                    <span>Create Rate Card</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="overflow-x-auto -mx-4 lg:-mx-6">
-                  <div className="inline-block min-w-full px-4 lg:px-6 align-middle">
-                    <table className="min-w-full">
+              <div className="overflow-x-auto -mx-4 lg:-mx-6">
+                <div className="inline-block min-w-full px-4 lg:px-6 align-middle">
+                  <table className="min-w-full">
                       <thead>
                         <tr className="border-b border-slate-700/50">
                           <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider min-w-0">
-                            Influencer
+                            Serial Number
                           </th>
-                          <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider hidden sm:table-cell min-w-0">
-                            Platform
+                          <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider min-w-0">
+                            Social Media Platform
                           </th>
                           <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider min-w-0">
                             Content Type
                           </th>
                           <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider min-w-0">
-                            Base Rate
-                          </th>
-                          <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider min-w-0">
-                            Total Rate
+                            Rate($)
                           </th>
                           <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider min-w-0">
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-700/30">
-                        {rateCards.map((rateCard) => (
+                    <tbody className="divide-y divide-slate-700/30">
+                      {rateCards.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="px-3 lg:px-6 py-16 text-center">
+                            <div className="flex flex-col items-center">
+                              <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                                <DollarSign className="h-8 w-8 text-slate-400" />
+                              </div>
+                              <h3 className="text-lg font-semibold text-white mb-2">No rate cards</h3>
+                              <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-md">
+                                Get started by creating your first rate card to manage pricing.
+                              </p>
+                              <button
+                                onClick={() => setShowCreateModal(true)}
+                                className="btn-dark-primary px-6 h-10 rounded-xl font-medium flex items-center space-x-2 text-sm"
+                              >
+                                <Plus className="h-4 w-4" />
+                                <span>Create Rate Card</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        rateCards.map((rateCard, index) => (
                           <tr key={rateCard.id} className="hover:bg-slate-700/20 transition-colors">
                             <td className="px-3 lg:px-6 py-4">
-                              <div className="text-sm font-semibold text-white truncate">
-                                {getInfluencerName(rateCard.influencer_id)}
+                              <div className="text-sm font-semibold text-white">
+                                {index + 1}
                               </div>
                             </td>
-                            <td className="px-3 lg:px-6 py-4 text-sm text-slate-300 hidden sm:table-cell">
-                              <div className="truncate">{getPlatformName(rateCard.platform_id)}</div>
+                            <td className="px-3 lg:px-6 py-4">
+                              <div className="text-sm text-slate-300 truncate">
+                                {getPlatformName(rateCard.platform_id)}
+                              </div>
                             </td>
                             <td className="px-3 lg:px-6 py-4">
                               <div className="text-sm text-slate-300 truncate">
@@ -414,38 +447,42 @@ export default function RateCardsPage() {
                               </div>
                             </td>
                             <td className="px-3 lg:px-6 py-4">
-                              <div className="text-sm font-bold text-white">
-                                £{rateCard.base_rate}
-                              </div>
-                            </td>
-                            <td className="px-3 lg:px-6 py-4">
                               <div className="text-sm font-bold text-emerald-400">
-                                £{calculateTotalRate(rateCard)}
+                                ${calculateTotalRate(rateCard)}
                               </div>
                             </td>
                             <td className="px-3 lg:px-6 py-4 text-sm font-medium">
                               <div className="flex space-x-2">
+                                <Link
+                                  href={`/dashboard/influencer/${rateCard.influencer_id}/rate_card/${rateCard.id}`}
+                                  className="text-blue-400 hover:text-blue-300 px-2 py-1 rounded-lg hover:bg-slate-700/30 transition-colors text-xs"
+                                  title="View Rate Card"
+                                >
+                                  View rate card
+                                </Link>
                                 <button
                                   onClick={() => openEditModal(rateCard)}
                                   className="text-cyan-400 hover:text-cyan-300 p-1 rounded-lg hover:bg-slate-700/30 transition-colors"
+                                  title="Edit Rate Card"
                                 >
                                   <Edit className="h-4 w-4" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteRateCard(rateCard.id)}
                                   className="text-rose-400 hover:text-rose-300 p-1 rounded-lg hover:bg-slate-700/30 transition-colors"
+                                  title="Delete Rate Card"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </button>
                               </div>
                             </td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -453,27 +490,19 @@ export default function RateCardsPage() {
 
       {/* Create Rate Card Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="form-container-dark w-full max-w-md">
+        <div 
+          className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowCreateModal(false);
+              resetForm();
+            }
+          }}
+        >
+          <div className="form-container-dark w-full max-w-md max-h-[90vh] overflow-y-auto my-4">
             <h2 className="text-xl font-semibold text-form-text mb-6">Create Rate Card</h2>
             
             <form className="space-y-6">
-              <div className="space-y-2">
-                <label className="label-dark">Influencer</label>
-                <select
-                  value={formData.influencer_id}
-                  onChange={(e) => setFormData({ ...formData, influencer_id: e.target.value })}
-                  className="select-dark"
-                >
-                  <option value="">Select Influencer</option>
-                  {influencers.map((influencer) => (
-                    <option key={influencer.id} value={influencer.id}>
-                      {influencer.user.first_name} {influencer.user.last_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="space-y-2">
                 <label className="label-dark">Platform</label>
                 <select
@@ -502,7 +531,7 @@ export default function RateCardsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="label-dark">Base Rate (£)</label>
+                <label className="label-dark">Base Rate ($)</label>
                 <input
                   type="number"
                   placeholder="100"
@@ -549,8 +578,17 @@ export default function RateCardsPage() {
 
       {/* Edit Rate Card Modal */}
       {showEditModal && selectedRateCard && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="form-container-dark w-full max-w-md">
+        <div 
+          className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowEditModal(false);
+              setSelectedRateCard(null);
+              resetForm();
+            }
+          }}
+        >
+          <div className="form-container-dark w-full max-w-md max-h-[90vh] overflow-y-auto my-4">
             <h2 className="text-xl font-semibold text-form-text mb-6">Edit Rate Card</h2>
             
             <form className="space-y-6">
@@ -580,7 +618,7 @@ export default function RateCardsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="label-dark">Base Rate (£)</label>
+                <label className="label-dark">Base Rate ($)</label>
                 <input
                   type="number"
                   value={formData.base_rate}

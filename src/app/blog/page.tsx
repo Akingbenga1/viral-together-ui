@@ -1,14 +1,14 @@
 import Link from 'next/link';
 import { Calendar, Clock } from 'lucide-react';
 import UnauthenticatedLayout from '@/components/UnauthenticatedLayout';
+import { apiClient } from '@/lib/api';
 
 export const dynamic = 'force-static';
 
 async function fetchBlogs() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/blog/blogs`, { next: { revalidate: 60 } });
-    if (!res.ok) return [] as any[];
-    return await res.json();
+    const blogs = await apiClient.getBlogs();
+    return blogs;
   } catch {
     return [] as any[];
   }
