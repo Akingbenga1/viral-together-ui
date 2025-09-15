@@ -2,6 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { TrendingUp, Users, DollarSign, Eye, BarChart3, Activity, Target, ArrowUpRight, ArrowDownRight, Settings, Building } from 'lucide-react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar, Line } from 'react-chartjs-2';
 import { useRouter } from 'next/navigation';
 import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,6 +21,18 @@ import { apiClient } from '@/lib/api';
 import { Influencer, Business, UserSubscription } from '@/types';
 import { getRoleDisplayName } from '@/lib/roleUtils';
 import toast from 'react-hot-toast';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function AdminAnalyticsPage() {
   const { user, userRoles, hasRoleLevel } = useAuth();
@@ -28,26 +52,41 @@ export default function AdminAnalyticsPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
+  const [userRegistrationData, setUserRegistrationData] = useState<any>(null);
+  const [businessRegistrationData, setBusinessRegistrationData] = useState<any>(null);
+  const [analyticsSummary, setAnalyticsSummary] = useState<any>(null);
+  const [monthlyRevenueData, setMonthlyRevenueData] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [influencersData, businessesData, subscriptionsData] = await Promise.all([
+        const [influencersData, businessesData, subscriptionsData, userRegData, businessRegData, summaryData, revenueData] = await Promise.all([
           apiClient.getInfluencers(),
           apiClient.getAllBusinesses(),
           apiClient.getAllSubscriptions(),
+          apiClient.getUserRegistrationsByMonth(),
+          apiClient.getBusinessRegistrationsByMonth(),
+          apiClient.getAnalyticsSummary(),
+          apiClient.getMonthlySubscriptionRevenue(),
         ]);
         
         console.log('Analytics Data Fetched:', {
           influencers: influencersData.length,
           businesses: businessesData.length,
           subscriptions: subscriptionsData.length,
-          subscriptionsData: subscriptionsData
+          userRegistrations: userRegData,
+          businessRegistrations: businessRegData,
+          summary: summaryData,
+          monthlyRevenue: revenueData
         });
         
         setInfluencers(influencersData);
         setBusinesses(businessesData);
         setSubscriptions(subscriptionsData);
+        setUserRegistrationData(userRegData);
+        setBusinessRegistrationData(businessRegData);
+        setAnalyticsSummary(summaryData);
+        setMonthlyRevenueData(revenueData);
       } catch (error) {
         console.error('Failed to fetch analytics data:', error);
         toast.error('Failed to load analytics data');
@@ -165,32 +204,125 @@ export default function AdminAnalyticsPage() {
     },
   ];
 
-  const metrics = [
-    {
-      name: 'Average Influencer Rate',
-      value: `$${avgInfluencerRate}`,
-      description: 'Per post across all influencers',
-      icon: DollarSign,
+  // Prepare chart data from API response
+  const userRegistrationChartData = userRegistrationData ? {
+    labels: userRegistrationData.data.map((item: any) => item.month),
+    datasets: [
+      {
+        label: 'New User Registrations',
+        data: userRegistrationData.data.map((item: any) => item.registrations),
+        backgroundColor: 'rgba(34, 197, 94, 0.8)',
+        borderColor: 'rgba(34, 197, 94, 1)',
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false,
+      },
+    ],
+  } : {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    datasets: [
+      {
+        label: 'New User Registrations',
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        backgroundColor: 'rgba(34, 197, 94, 0.8)',
+        borderColor: 'rgba(34, 197, 94, 1)',
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false,
+      },
+    ],
+  };
+
+  // Prepare chart data from API response
+  const businessAccountChartData = businessRegistrationData ? {
+    labels: businessRegistrationData.data.map((item: any) => item.month),
+    datasets: [
+      {
+        label: 'New Business Accounts',
+        data: businessRegistrationData.data.map((item: any) => item.registrations),
+        borderColor: 'rgba(59, 130, 246, 1)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+      },
+    ],
+  } : {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    datasets: [
+      {
+        label: 'New Business Accounts',
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        borderColor: 'rgba(59, 130, 246, 1)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          color: '#e2e8f0',
+          font: {
+            size: 12,
+            weight: '500',
+          },
+        },
+      },
+      tooltip: {
+        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+        titleColor: '#f1f5f9',
+        bodyColor: '#e2e8f0',
+        borderColor: 'rgba(71, 85, 105, 0.5)',
+        borderWidth: 1,
+        cornerRadius: 8,
+        displayColors: false,
+      },
     },
-    {
-      name: 'Average Growth Rate',
-      value: `${avgGrowthRate}%`,
-      description: 'Monthly follower growth',
-      icon: TrendingUp,
+    scales: {
+      x: {
+        grid: {
+          color: 'rgba(71, 85, 105, 0.3)',
+          drawBorder: false,
+        },
+        ticks: {
+          color: '#94a3b8',
+          font: {
+            size: 11,
+          },
+        },
+      },
+      y: {
+        grid: {
+          color: 'rgba(71, 85, 105, 0.3)',
+          drawBorder: false,
+        },
+        ticks: {
+          color: '#94a3b8',
+          font: {
+            size: 11,
+          },
+        },
+      },
     },
-    {
-      name: 'Average Campaigns',
-      value: avgSuccessfulCampaigns,
-      description: 'Successful campaigns per influencer',
-      icon: Target,
-    },
-    {
-      name: 'Platform Engagement',
-      value: '4.2%',
-      description: 'Average engagement rate',
-      icon: Activity,
-    },
-  ];
+  };
 
   if (isLoading) {
     return (
@@ -319,31 +451,29 @@ export default function AdminAnalyticsPage() {
             ))}
           </div>
 
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
-            {metrics.map((metric) => (
-              <div
-                key={metric.name}
-                className="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 min-w-0"
-              >
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center shadow-lg">
-                    <metric.icon className="w-5 h-5 lg:w-6 lg:h-6 text-cyan-400" />
-                  </div>
-                  <div className="ml-4 min-w-0 flex-1">
-                    <h4 className="text-sm font-semibold text-white truncate">
-                      {metric.name}
-                    </h4>
-                    <p className="text-xl lg:text-2xl font-bold text-white truncate">
-                      {metric.value}
-                    </p>
-                    <p className="text-xs text-slate-400 truncate">
-                      {metric.description}
-                    </p>
-                  </div>
-                </div>
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8">
+            {/* New User Registrations - Bar Chart */}
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <BarChart3 className="w-5 h-5 mr-2 text-emerald-400" />
+                New User Registrations
+              </h3>
+              <div className="h-80">
+                <Bar data={userRegistrationChartData} options={chartOptions} />
               </div>
-            ))}
+            </div>
+
+            {/* New Business Accounts - Line Chart */}
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2 text-blue-400" />
+                New Business Accounts
+              </h3>
+              <div className="h-80">
+                <Line data={businessAccountChartData} options={chartOptions} />
+              </div>
+            </div>
           </div>
 
           {/* Charts Section */}
@@ -384,15 +514,22 @@ export default function AdminAnalyticsPage() {
                 Monthly Revenue
               </h3>
               <div className="space-y-4">
-                {mockChartData.revenue.map((data) => (
-                  <div key={data.month} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
-                    <span className="text-sm font-medium text-white">{data.month}</span>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                      <span className="text-sm font-semibold text-emerald-400">${data.revenue.toLocaleString()}</span>
+                {monthlyRevenueData?.data ? (
+                  monthlyRevenueData.data.map((data: any) => (
+                    <div key={data.month} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                      <span className="text-sm font-medium text-white">{data.month}</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                        <span className="text-sm font-semibold text-emerald-400">${data.revenue.toLocaleString()}</span>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+                    <p className="text-slate-400">Loading revenue data...</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

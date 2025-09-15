@@ -7,6 +7,7 @@ import { apiClient } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 import toast, { Toaster } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 interface InfluencerRecommendation {
   id: number;
@@ -36,12 +37,15 @@ interface AIAgent {
 interface InfluencerLocation {
   id: number;
   influencer_id: number;
-  location_name: string;
+  city_name: string;
+  region_name?: string;
+  region_code?: string;
+  country_code: string;
+  country_name: string;
   latitude: number;
   longitude: number;
-  address: string;
-  city: string;
-  country: string;
+  postcode?: string;
+  time_zone?: string;
   is_primary: boolean;
   created_at: string;
 }
@@ -49,9 +53,9 @@ interface InfluencerLocation {
 interface InfluencerCoachingGroup {
   id: number;
   name: string;
-  description: string;
+  description?: string;
   join_code: string;
-  max_members: number;
+  max_members?: number;
   current_members: number;
   created_at: string;
 }
@@ -67,10 +71,17 @@ interface UnifiedInfluencerProfile {
   locations: InfluencerLocation[];
   coaching_groups: InfluencerCoachingGroup[];
   collaboration_countries: InfluencerCollaborationCountry[];
+  rate_cards: any[];
+  rate_summary: any;
+  influencer_targets: any;
+  social_media_platforms: any[];
+  total_data_points: number;
+  data_gathered_at: string;
 }
 
 export default function RecommendationsPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [recommendations, setRecommendations] = useState<InfluencerRecommendation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentRecommendation, setCurrentRecommendation] = useState<InfluencerRecommendation | null>(null);
@@ -90,9 +101,27 @@ export default function RecommendationsPage() {
   const [scheduleFrequency, setScheduleFrequency] = useState<'hourly' | 'daily' | 'weekly' | 'monthly'>('daily');
   
   // Profile Modal state
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [unifiedProfile, setUnifiedProfile] = useState<UnifiedInfluencerProfile | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+
+  // Helper function to handle authentication errors
+  const handleAuthError = (error: any, customMessage?: string) => {
+    if (error.response?.status === 401) {
+      const message = customMessage || 'Your session has expired. Please log in again.';
+      toast.error(message);
+      
+      // Clear user state and redirect to login
+      logout();
+      
+      // Redirect after a short delay to allow toast to show
+      setTimeout(() => {
+        router.push('/auth/login');
+      }, 1500);
+      
+      return true; // Indicates this was an auth error
+    }
+    return false; // Not an auth error
+  };
 
   const sections = [
     { id: 0, name: 'Base Plan', icon: Target, color: 'bg-blue-500' },
@@ -186,12 +215,15 @@ export default function RecommendationsPage() {
          }
              } catch (error: any) {
          console.error('Failed to fetch recommendations:', error);
+        
+        // Handle authentication errors first
+        if (handleAuthError(error, 'Authentication required. Please log in again.')) {
+          return; // Exit early if it was an auth error
+        }
          
          let errorMessage = 'Failed to load recommendations. Please try again.';
          
-         if (error.response?.status === 401) {
-           errorMessage = 'Authentication required. Please log in again.';
-         } else if (error.response?.status === 404) {
+        if (error.response?.status === 404) {
            errorMessage = 'No recommendations found for your account.';
          } else if (error.response?.status === 500) {
            errorMessage = 'Server error. Please try again later.';
@@ -238,6 +270,12 @@ export default function RecommendationsPage() {
       } catch (error: any) {
         console.error('Failed to fetch AI agents:', error);
         console.error('Error details:', error.response?.data);
+        
+        // Handle authentication errors first
+        if (handleAuthError(error, 'Authentication required. Please log in again.')) {
+          return; // Exit early if it was an auth error
+        }
+        
         toast.error('Failed to load AI agents');
       } finally {
         setIsLoadingAgents(false);
@@ -247,40 +285,77 @@ export default function RecommendationsPage() {
     fetchAIAgents();
   }, []);
 
-  // Fetch unified influencer profile
+  // Fetch unified influencer profile using single API endpoint
   const fetchUnifiedProfile = async () => {
-    if (!user?.id) return;
+    console.log('fetchUnifiedProfile called, user:', user);
+    if (!user?.id) {
+      console.log('No user ID available');
+      toast.error('No user ID available');
+      return;
+    }
     
     try {
       setIsLoadingProfile(true);
+      console.log('Starting to fetch unified influencer profile for user ID:', user.id);
+      console.log('Starting to fetch unified influencer profile...');
       
-      // Fetch influencer data
-      const influencers = await apiClient.getInfluencers();
-      const currentInfluencer = influencers.find(inf => inf.user?.id === user.id);
+      // Use the new unified endpoint that fetches all data in one request
+      const unifiedProfileData = await apiClient.getUnifiedInfluencerProfileByUserId(user.id);
+      console.log('Unified profile data fetched:', unifiedProfileData);
+      console.log('API call completed successfully');
       
-      if (!currentInfluencer) {
+      if (!unifiedProfileData) {
+        console.log('No unified profile data found');
         toast.error('No influencer profile found for your account');
         return;
       }
 
-      // Fetch additional data in parallel
-      const [locations, coachingGroups, collaborationCountries] = await Promise.all([
-        apiClient.get(`/api/v1/influencers/${currentInfluencer.id}/locations`).catch(() => []),
-        apiClient.getMyCoachingGroups().catch(() => []),
-        Promise.resolve(currentInfluencer.collaboration_countries || [])
-      ]);
+      // Transform the API response to match the expected frontend format
+      const transformedProfile = {
+        influencer: unifiedProfileData.influencer,
+        locations: unifiedProfileData.operational_locations || [],
+        coaching_groups: [
+          ...(unifiedProfileData.coaching_groups_as_coach || []),
+          ...(unifiedProfileData.coaching_groups_as_member || [])
+        ],
+        collaboration_countries: unifiedProfileData.influencer.collaboration_countries || [],
+        rate_cards: unifiedProfileData.rate_cards || [],
+        rate_summary: unifiedProfileData.rate_summary,
+        influencer_targets: unifiedProfileData.influencer_targets,
+        social_media_platforms: unifiedProfileData.social_media_platforms || [],
+        total_data_points: unifiedProfileData.total_data_points || 0,
+        data_gathered_at: unifiedProfileData.data_gathered_at || new Date().toISOString()
+      };
 
-      setUnifiedProfile({
-        influencer: currentInfluencer,
-        locations: locations || [],
-        coaching_groups: coachingGroups || [],
-        collaboration_countries: collaborationCountries || []
-      });
+      console.log('Transformed profile data:', transformedProfile);
+      console.log(`Successfully gathered ${unifiedProfileData.total_data_points} data points in single request`);
+
+      console.log('Setting unified profile data');
+      setUnifiedProfile(transformedProfile);
+      console.log('Unified profile set successfully');
       
-      setIsProfileModalOpen(true);
+      // Show success message with data gathering info
+      toast.success(`Profile loaded successfully! Gathered ${unifiedProfileData.total_data_points} data points.`);
+      
     } catch (error: any) {
       console.error('Failed to fetch unified profile:', error);
-      toast.error('Failed to load influencer profile');
+      
+      // Handle authentication errors first
+      if (handleAuthError(error, 'Authentication required. Please log in again.')) {
+        return; // Exit early if it was an auth error
+      }
+      
+      let errorMessage = 'Failed to load influencer profile. Please try again.';
+      
+      if (error.response?.status === 404) {
+        errorMessage = 'No influencer profile found for your account.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else if (error.message === 'Network Error') {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoadingProfile(false);
     }
@@ -364,12 +439,15 @@ export default function RecommendationsPage() {
          } catch (error: any) {
        console.error('Failed to save base strategy:', error);
        
+       // Handle authentication errors first
+       if (handleAuthError(error, 'Authentication required. Please log in again.')) {
+         return; // Exit early if it was an auth error
+       }
+       
        // Handle different types of errors
        let errorMessage = 'Failed to save base strategy. Please try again.';
        
-       if (error.response?.status === 401) {
-         errorMessage = 'Authentication required. Please log in again.';
-       } else if (error.response?.status === 400) {
+       if (error.response?.status === 400) {
          // Handle validation errors properly
          if (error.response.data?.detail) {
            if (Array.isArray(error.response.data.detail)) {
@@ -1043,6 +1121,230 @@ export default function RecommendationsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Side - No Recommendations Content */}
               <div className="lg:col-span-2">
+                {unifiedProfile ? (
+                  /* Unified Influencer Profile Content */
+                  <div className="space-y-6">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 backdrop-blur-sm rounded-2xl border border-blue-500/30 p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-2xl font-bold text-white">Unified Influencer Profile</h2>
+                        <button
+                          onClick={() => setUnifiedProfile(null)}
+                          className="text-slate-400 hover:text-white transition-colors"
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xl font-bold">
+                            {unifiedProfile.influencer?.first_name?.[0]}{unifiedProfile.influencer?.last_name?.[0]}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-semibold text-white">
+                            {unifiedProfile.influencer?.first_name} {unifiedProfile.influencer?.last_name}
+                          </h3>
+                          <p className="text-slate-300">
+                            @{unifiedProfile.influencer?.user?.username}
+                          </p>
+                          <p className="text-sm text-slate-400">
+                            {unifiedProfile.total_data_points} data points gathered
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Data Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Basic Information */}
+                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <span>Basic Information</span>
+                        </h4>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Email:</span>
+                            <span className="text-white">{unifiedProfile.influencer?.user?.email}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Phone:</span>
+                            <span className="text-white">{unifiedProfile.influencer?.phone || 'N/A'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Base Country:</span>
+                            <span className="text-white">{unifiedProfile.influencer?.base_country?.name || 'N/A'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Social Media */}
+                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2" />
+                          </svg>
+                          <span>Social Media</span>
+                        </h4>
+                        <div className="space-y-2">
+                          {unifiedProfile.social_media_platforms?.map((platform, index) => (
+                            <div key={index} className="flex items-center justify-between">
+                              <span className="text-slate-400">{platform.name}:</span>
+                              <span className="text-white">{platform.followers || 'N/A'}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Operational Locations */}
+                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span>Operational Locations</span>
+                        </h4>
+                        <div className="space-y-2">
+                          {unifiedProfile.locations?.length > 0 ? (
+                            unifiedProfile.locations.map((location: any, index: number) => (
+                              <div key={index} className="text-sm">
+                                <div className="text-white font-medium">
+                                  {location.city_name}, {location.region_name}
+                                </div>
+                                <div className="text-slate-400">
+                                  {location.country_name}
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-slate-500">No locations added</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Collaboration Countries */}
+                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Collaboration Countries</span>
+                        </h4>
+                        <div className="space-y-2">
+                          {unifiedProfile.collaboration_countries?.length > 0 ? (
+                            unifiedProfile.collaboration_countries.map((country, index) => (
+                              <div key={index} className="text-white">
+                                {country.name}
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-slate-500">No countries added</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Coaching Groups */}
+                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                          </svg>
+                          <span>Coaching Groups</span>
+                        </h4>
+                        <div className="space-y-2">
+                          {unifiedProfile.coaching_groups?.length > 0 ? (
+                            unifiedProfile.coaching_groups.map((group, index) => (
+                              <div key={index} className="text-sm">
+                                <div className="text-white font-medium">{group.name}</div>
+                                <div className="text-slate-400">{group.description}</div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-slate-500">No coaching groups</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Rate Cards */}
+                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          </svg>
+                          <span>Rate Cards</span>
+                        </h4>
+                        <div className="space-y-2">
+                          {unifiedProfile.rate_cards?.length > 0 ? (
+                            unifiedProfile.rate_cards.map((rate, index) => (
+                              <div key={index} className="text-sm">
+                                <div className="text-white font-medium">{rate.service_type}</div>
+                                <div className="text-slate-400">${rate.price}</div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-slate-500">No rate cards</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Row - Full Width Cards */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Target Audiences */}
+                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          <span>Target Audiences</span>
+                        </h4>
+                        <div className="space-y-2">
+                          {unifiedProfile.influencer_targets?.length > 0 ? (
+                            unifiedProfile.influencer_targets.map((target: any, index: number) => (
+                              <div key={index} className="text-sm">
+                                <div className="text-white font-medium">{target.target_audience}</div>
+                                <div className="text-slate-400">{target.description}</div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-slate-500">No target audiences defined</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Profile Summary */}
+                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Profile Summary</span>
+                        </h4>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Total Data Points:</span>
+                            <span className="text-white font-medium">{unifiedProfile.total_data_points}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Data Gathered:</span>
+                            <span className="text-white">{new Date(unifiedProfile.data_gathered_at).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Profile Status:</span>
+                            <span className="text-green-400 font-medium">Complete</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* No Recommendations Content */
                 <div className="text-center py-16">
                   <div className="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                     <Brain className="h-10 w-10 text-slate-400" />
@@ -1052,23 +1354,27 @@ export default function RecommendationsPage() {
                     Your AI recommendations will appear here once generated. Please generate recommendations first.
                   </p>
                   <button
-                    onClick={fetchUnifiedProfile}
+                      onClick={() => {
+                        console.log('Button clicked!');
+                        fetchUnifiedProfile();
+                      }}
                     disabled={isLoadingProfile}
-                    className="btn-dark-primary px-6 py-3 rounded-xl font-medium flex items-center space-x-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="btn-dark-primary px-6 py-3 rounded-xl font-medium flex items-center space-x-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform duration-200"
                   >
                     {isLoadingProfile ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        <span>Loading...</span>
+                          <span>Loading Profile...</span>
                       </>
                     ) : (
                       <>
                         <User className="h-4 w-4" />
-                        <span>Show your unified Influencer Profile</span>
+                          <span>Get Unified Influencer Profile</span>
                       </>
                     )}
                   </button>
                 </div>
+                )}
               </div>
 
               {/* Right Side - Floating Panels (same as with recommendations) */}
@@ -1190,8 +1496,21 @@ export default function RecommendationsPage() {
                     <div className="pt-4 border-t border-slate-700/50">
                       {operationMode === 'manual' ? (
                         <button
-                          onClick={() => {
-                            toast.success('Generating AI recommendations...');
+                          onClick={async () => {
+                            if (!user?.id) {
+                              toast.error('No user ID available');
+                              return;
+                            }
+                            
+                            try {
+                              toast.loading('Generating AI recommendations...', { id: 'ai-recommendations' });
+                              const result = await apiClient.triggerRecommendationAnalysis(user.id);
+                              toast.success('AI recommendations generated successfully!', { id: 'ai-recommendations' });
+                              console.log('AI recommendations result:', result);
+                            } catch (error: any) {
+                              console.error('Error generating AI recommendations:', error);
+                              toast.error('Failed to generate AI recommendations. Please try again.', { id: 'ai-recommendations' });
+                            }
                           }}
                           className="w-full btn-dark-primary px-4 py-3 rounded-xl font-medium flex items-center justify-center space-x-2"
                         >
@@ -1274,26 +1593,31 @@ export default function RecommendationsPage() {
 
           {/* Main Content Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Side - Original Content */}
+            {/* Left Side - Content */}
             <div className="lg:col-span-2 space-y-8">
               {/* Navigation Tabs */}
-              <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-4">
-                <div className="flex flex-wrap gap-3">
+              <div className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-600/30">
+                <nav className="flex overflow-x-auto">
                   {sections.map((section) => (
                     <button
                       key={section.id}
                       onClick={() => goToSection(section.id)}
-                      className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                      className={`relative flex items-center space-x-2 px-6 py-4 font-medium text-sm transition-all duration-200 whitespace-nowrap ${
                         currentSection === section.id
-                          ? 'bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/30'
-                          : 'bg-slate-700/30 text-slate-300 border border-slate-600/30 hover:bg-slate-700/50'
+                          ? 'text-blue-400'
+                          : 'text-slate-400 hover:text-slate-200'
                       }`}
                     >
-                      <section.icon className="w-4 h-4" />
-                      <span className="text-sm font-medium">{section.name}</span>
+                      <section.icon className={`h-4 w-4 ${
+                        currentSection === section.id ? 'text-blue-400' : 'text-slate-400'
+                      }`} />
+                      <span>{section.name}</span>
+                      {currentSection === section.id && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400"></div>
+                      )}
                     </button>
                   ))}
-                </div>
+                </nav>
               </div>
 
               {/* Progress Bar */}
@@ -1317,7 +1641,7 @@ export default function RecommendationsPage() {
               {/* Main Content */}
               <div 
                 ref={timelineRef}
-                className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 min-h-[600px]"
+                className="bg-slate-800/30 backdrop-blur-sm rounded-b-2xl border border-slate-700/50 border-t-0 p-6 min-h-[600px]"
                 onTouchStart={handleTouchStart}
               >
                 {/* Desktop Navigation */}
@@ -1522,8 +1846,21 @@ export default function RecommendationsPage() {
                   <div className="pt-4 border-t border-slate-700/50">
                     {operationMode === 'manual' ? (
                       <button
-                        onClick={() => {
-                          toast.success('Generating AI recommendations...');
+                        onClick={async () => {
+                          if (!user?.id) {
+                            toast.error('No user ID available');
+                            return;
+                          }
+                          
+                          try {
+                            toast.loading('Generating AI recommendations...', { id: 'ai-recommendations-2' });
+                            const result = await apiClient.triggerRecommendationAnalysis(user.id);
+                            toast.success('AI recommendations generated successfully!', { id: 'ai-recommendations-2' });
+                            console.log('AI recommendations result:', result);
+                          } catch (error: any) {
+                            console.error('Error generating AI recommendations:', error);
+                            toast.error('Failed to generate AI recommendations. Please try again.', { id: 'ai-recommendations-2' });
+                          }
                         }}
                         className="w-full btn-dark-primary px-4 py-3 rounded-xl font-medium flex items-center justify-center space-x-2"
                       >
@@ -1612,194 +1949,7 @@ export default function RecommendationsPage() {
         </div>
       )}
 
-      {/* Unified Influencer Profile Modal */}
-      {isProfileModalOpen && unifiedProfile && (
-        <div 
-          className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setIsProfileModalOpen(false)}
-        >
-          <div 
-            className="form-container-dark max-w-6xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg">
-                  <User className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-white">Unified Influencer Profile</h3>
-                  <p className="text-sm text-slate-400">
-                    {unifiedProfile.influencer.user?.first_name} {unifiedProfile.influencer.user?.last_name}
-                  </p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setIsProfileModalOpen(false)} 
-                className="text-slate-400 hover:text-slate-200 p-2 hover:bg-slate-700/50 rounded-full transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Basic Information */}
-              <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <User className="h-5 w-5 mr-2 text-blue-400" />
-                  Basic Information
-                </h4>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Name:</span>
-                    <span className="text-white font-medium">
-                      {unifiedProfile.influencer.user?.first_name} {unifiedProfile.influencer.user?.last_name}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Username:</span>
-                    <span className="text-white font-medium">@{unifiedProfile.influencer.user?.username}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Email:</span>
-                    <span className="text-white font-medium">{unifiedProfile.influencer.user?.email}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Bio:</span>
-                    <span className="text-white font-medium">{unifiedProfile.influencer.bio || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Languages:</span>
-                    <span className="text-white font-medium">{unifiedProfile.influencer.languages || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Availability:</span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      unifiedProfile.influencer.availability 
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                        : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
-                    }`}>
-                      {unifiedProfile.influencer.availability ? 'Available' : 'Unavailable'}
-                    </span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Performance Metrics */}
-              <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <TrendingUp className="h-5 w-5 mr-2 text-green-400" />
-                  Performance Metrics
-                </h4>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Rate per Post:</span>
-                    <span className="text-white font-medium">${unifiedProfile.influencer.rate_per_post || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Total Posts:</span>
-                    <span className="text-white font-medium">{unifiedProfile.influencer.total_posts || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Growth Rate:</span>
-                    <span className="text-white font-medium">{unifiedProfile.influencer.growth_rate || 'N/A'}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Successful Campaigns:</span>
-                    <span className="text-white font-medium">{unifiedProfile.influencer.successful_campaigns || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Base Country:</span>
-                    <span className="text-white font-medium">{unifiedProfile.influencer.base_country?.name || 'N/A'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Operational Locations */}
-              <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <MapPin className="h-5 w-5 mr-2 text-orange-400" />
-                  Operational Locations ({unifiedProfile.locations.length})
-                </h4>
-                {unifiedProfile.locations.length > 0 ? (
-                  <div className="space-y-3 max-h-48 overflow-y-auto">
-                    {unifiedProfile.locations.map((location) => (
-                      <div key={location.id} className="p-3 bg-slate-600/30 rounded-lg border border-slate-500/30">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-white font-medium">{location.location_name}</span>
-                          {location.is_primary && (
-                            <span className="px-2 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-xs font-medium">
-                              Primary
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-slate-400 text-sm">{location.address}</p>
-                        <p className="text-slate-400 text-sm">{location.city}, {location.country}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-slate-400 text-center py-4">No operational locations added</p>
-                )}
-              </div>
-
-              {/* Coaching Groups */}
-              <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <GraduationCap className="h-5 w-5 mr-2 text-purple-400" />
-                  Coaching Groups ({unifiedProfile.coaching_groups.length})
-                </h4>
-                {unifiedProfile.coaching_groups.length > 0 ? (
-                  <div className="space-y-3 max-h-48 overflow-y-auto">
-                    {unifiedProfile.coaching_groups.map((group) => (
-                      <div key={group.id} className="p-3 bg-slate-600/30 rounded-lg border border-slate-500/30">
-                        <h5 className="text-white font-medium mb-1">{group.name}</h5>
-                        <p className="text-slate-400 text-sm mb-2">{group.description}</p>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-400">
-                            {group.current_members}/{group.max_members} members
-                          </span>
-                          <span className="text-slate-400">Code: {group.join_code}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-slate-400 text-center py-4">No coaching groups joined</p>
-                )}
-              </div>
-
-              {/* Collaboration Countries */}
-              <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30 lg:col-span-2">
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <Globe className="h-5 w-5 mr-2 text-cyan-400" />
-                  Collaboration Countries ({unifiedProfile.collaboration_countries.length})
-                </h4>
-                {unifiedProfile.collaboration_countries.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {unifiedProfile.collaboration_countries.map((country) => (
-                      <span key={country.id} className="px-3 py-1 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-full text-sm font-medium">
-                        {country.name} ({country.code})
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-slate-400 text-center py-4">No collaboration countries specified</p>
-                )}
-              </div>
-            </div>
-            
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setIsProfileModalOpen(false)}
-                className="btn-dark-primary px-6 h-12 rounded-xl font-medium"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </UnifiedDashboardLayout>
   );
 }

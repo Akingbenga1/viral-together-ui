@@ -52,7 +52,7 @@ export default function AdminBusinessesPage() {
     const matchesSize = filterSize === 'all' || biz.company_size === filterSize;
     
     const matchesSearch = searchTerm === '' || 
-      biz.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      biz.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       biz.user?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       biz.user?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       biz.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -263,12 +263,9 @@ export default function AdminBusinessesPage() {
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
-                      <Building className="w-6 h-6 text-white" />
-                    </div>
                     <div>
                       <h3 className="text-lg font-semibold text-white">
-                        {business.company_name}
+                        {business.name}
                       </h3>
                       <p className="text-sm text-slate-400">
                         {business.user?.first_name} {business.user?.last_name}
@@ -309,33 +306,29 @@ export default function AdminBusinessesPage() {
                     </p>
                   )}
 
-                  {business.website && (
+                  {business.website_url && (
                     <div className="flex items-center space-x-2 text-sm text-cyan-400">
                       <span>🌐</span>
                       <a 
-                        href={business.website} 
+                        href={business.website_url} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="hover:text-cyan-300 transition-colors truncate"
                       >
-                        {business.website}
+                        {business.website_url}
                       </a>
                     </div>
                   )}
                 </div>
 
                 <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-700/50">
-                  <div className="flex space-x-2">
-                    <button className="flex items-center space-x-1 px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 rounded-lg transition-colors text-sm">
-                      <Eye className="w-4 h-4" />
-                      <span>View</span>
-                    </button>
-                    <button className="flex items-center space-x-1 px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 rounded-lg transition-colors text-sm">
+                  <div className="flex items-center space-x-2">
+                    <button className="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 rounded-lg transition-colors text-sm font-medium">
                       <MessageSquare className="w-4 h-4" />
                       <span>Contact</span>
                     </button>
                     {!business.verified && (
-                      <button className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 rounded-lg transition-colors text-sm">
+                      <button className="flex items-center space-x-2 px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 rounded-lg transition-colors text-sm font-medium">
                         <Star className="w-4 h-4" />
                         <span>Verify</span>
                       </button>

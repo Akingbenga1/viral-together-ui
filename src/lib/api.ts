@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 import { uiLogger } from './logger';
+import toast from 'react-hot-toast';
 
 // Extend Axios config to include metadata
 declare module 'axios' {
@@ -133,9 +134,16 @@ class ApiClient {
         );
         
         if (error.response?.status === 401) {
-          // Clear token and redirect to login
+          // Clear token and show error message
           Cookies.remove('access_token');
-          window.location.href = '/auth/login';
+          toast.error('Your session has expired. Please log in again.');
+          
+          // Use a more graceful redirect approach
+          setTimeout(() => {
+            if (typeof window !== 'undefined') {
+              window.location.href = '/auth/login';
+            }
+          }, 1500); // Give time for toast to show
         }
         return Promise.reject(error);
       }
@@ -316,7 +324,17 @@ class ApiClient {
   // User Subscription endpoints
   async createCheckoutSession(data: CheckoutSessionData): Promise<{ url: string }> {
     const response = await this.client.post('/user_subscription/checkout', data);
-    return response.data;
+    
+    // Backend returns different formats for success/error
+    if (response.data.error) {
+      // Error response format: { error: string, details: string }
+      throw new Error(response.data.error);
+    } else if (response.data.checkout_url) {
+      // Success response format: { checkout_url: string, status: string, error: null }
+      return { url: response.data.checkout_url };
+    } else {
+      throw new Error('Invalid response format from server');
+    }
   }
 
   async createPortalSession(data: PortalSessionData): Promise<{ url: string }> {
@@ -554,6 +572,31 @@ class ApiClient {
     return response.data;
   }
 
+  // User profile management endpoints
+  async updateUserProfile(profileData: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    username?: string;
+  }): Promise<any> {
+    const response = await this.client.put('/user/profile/update', profileData);
+    return response.data;
+  }
+
+  async updateUserPassword(passwordData: {
+    current_password: string;
+    new_password: string;
+    confirm_password: string;
+  }): Promise<any> {
+    const response = await this.client.put('/user/profile/password', passwordData);
+    return response.data;
+  }
+
+  async getUserProfile(): Promise<any> {
+    const response = await this.client.get('/user/profile');
+    return response.data;
+  }
+
   // Influencer targets endpoints
   async saveInfluencerTargets(targets: CreateInfluencersTargetsData): Promise<InfluencersTargets> {
     const response = await this.client.post('/api/v1/influencers-targets/', targets);
@@ -567,62 +610,72 @@ class ApiClient {
 
   // Influencer Coaching endpoints
   async createCoachingGroup(data: CreateInfluencerCoachingGroupData): Promise<InfluencerCoachingGroup> {
-    const response = await this.client.post('/api/v1/coaching-groups/', data);
+    const response = await this.client.post('/coaching-groups/', data);
     return response.data;
   }
 
   async getMyCoachingGroups(): Promise<InfluencerCoachingGroup[]> {
-    const response = await this.client.get('/api/v1/coaching-groups/');
+    const response = await this.client.get('/coaching-groups/');
     return response.data;
   }
 
   async getCoachingGroup(groupId: number): Promise<InfluencerCoachingGroup> {
-    const response = await this.client.get(`/api/v1/coaching-groups/${groupId}`);
+    const response = await this.client.get(`/coaching-groups/${groupId}`);
     return response.data;
   }
 
   async updateCoachingGroup(groupId: number, data: UpdateInfluencerCoachingGroupData): Promise<InfluencerCoachingGroup> {
-    const response = await this.client.put(`/api/v1/coaching-groups/${groupId}`, data);
+    const response = await this.client.put(`/coaching-groups/${groupId}`, data);
+    return response.data;
+  }
+
+  async deleteCoachingGroup(groupId: number): Promise<{ message: string }> {
+    const response = await this.client.delete(`/coaching-groups/${groupId}`);
+    return response.data;
+  }
+
+  async archiveCoachingGroup(groupId: number): Promise<{ message: string }> {
+    const response = await this.client.patch(`/coaching-groups/${groupId}/archive`);
     return response.data;
   }
 
   async regenerateJoinCode(groupId: number): Promise<GenerateJoinCodeResponse> {
-    const response = await this.client.post(`/api/v1/coaching-groups/${groupId}/generate-code`);
+    const response = await this.client.post(`/coaching-groups/${groupId}/generate-code`);
     return response.data;
   }
 
   async joinCoachingGroup(data: JoinCoachingGroupData): Promise<JoinGroupResponse> {
-    const response = await this.client.post('/api/v1/coaching-groups/join', data);
+    const response = await this.client.post('/coaching-groups/join', data);
     return response.data;
   }
 
   async getGroupInfoByCode(joinCode: string): Promise<any> {
-    const response = await this.client.get(`/api/v1/coaching-groups/info/${joinCode}`);
+    const response = await this.client.get(`/coaching-groups/info/${joinCode}`);
     return response.data;
   }
 
   async getJoinedCoachingGroups(): Promise<InfluencerCoachingGroup[]> {
-    const response = await this.client.get('/api/v1/coaching-groups/joined');
+    const response = await this.client.get('/coaching-groups/joined');
     return response.data;
   }
 
   async createCoachingSession(groupId: number, data: CreateCoachingSessionData): Promise<InfluencerCoachingSession> {
-    const response = await this.client.post(`/api/v1/coaching-groups/${groupId}/sessions`, data);
+    const response = await this.client.post(`/coaching-groups/${groupId}/sessions`, data);
     return response.data;
   }
 
   async getCoachingSessions(groupId: number): Promise<InfluencerCoachingSession[]> {
-    const response = await this.client.get(`/api/v1/coaching-groups/${groupId}/sessions`);
+    const response = await this.client.get(`/coaching-groups/${groupId}/sessions`);
     return response.data;
   }
 
   async sendMessage(groupId: number, data: SendMessageData): Promise<InfluencerCoachingMessage> {
-    const response = await this.client.post(`/api/v1/coaching-groups/${groupId}/messages`, data);
+    const response = await this.client.post(`/coaching-groups/${groupId}/messages`, data);
     return response.data;
   }
 
   async getMessages(groupId: number): Promise<InfluencerCoachingMessage[]> {
-    const response = await this.client.get(`/api/v1/coaching-groups/${groupId}/messages`);
+    const response = await this.client.get(`/coaching-groups/${groupId}/messages`);
     return response.data;
   }
 
@@ -663,42 +716,42 @@ class ApiClient {
 
   // Influencer Location Management
   async addInfluencerLocation(influencerId: number, location: InfluencerLocationCreate): Promise<InfluencerLocation> {
-    const response = await this.client.post(`/api/v1/influencers/${influencerId}/locations`, location);
+    const response = await this.client.post(`/influencers/${influencerId}/locations`, location);
     return response.data;
   }
 
   async getInfluencerLocations(influencerId: number): Promise<InfluencerLocation[]> {
-    const response = await this.client.get(`/api/v1/influencers/${influencerId}/locations`);
+    const response = await this.client.get(`/influencers/${influencerId}/locations`);
     return response.data;
   }
 
   async updateInfluencerLocation(locationId: number, location: InfluencerLocationUpdate): Promise<InfluencerLocation> {
-    const response = await this.client.put(`/api/v1/influencers/locations/${locationId}`, location);
+    const response = await this.client.put(`/influencers/locations/${locationId}`, location);
     return response.data;
   }
 
   async deleteInfluencerLocation(locationId: number): Promise<void> {
-    await this.client.delete(`/api/v1/influencers/locations/${locationId}`);
+    await this.client.delete(`/influencers/locations/${locationId}`);
   }
 
   // Business Location Management
   async addBusinessLocation(businessId: number, location: BusinessLocationCreate): Promise<BusinessLocation> {
-    const response = await this.client.post(`/api/v1/businesses/${businessId}/locations`, location);
+    const response = await this.client.post(`/businesses/${businessId}/locations`, location);
     return response.data;
   }
 
   async getBusinessLocations(businessId: number): Promise<BusinessLocation[]> {
-    const response = await this.client.get(`/api/v1/businesses/${businessId}/locations`);
+    const response = await this.client.get(`/businesses/${businessId}/locations`);
     return response.data;
   }
 
   async updateBusinessLocation(locationId: number, location: BusinessLocationUpdate): Promise<BusinessLocation> {
-    const response = await this.client.put(`/api/v1/businesses/locations/${locationId}`, location);
+    const response = await this.client.put(`/businesses/locations/${locationId}`, location);
     return response.data;
   }
 
   async deleteBusinessLocation(locationId: number): Promise<void> {
-    await this.client.delete(`/api/v1/businesses/locations/${locationId}`);
+    await this.client.delete(`/businesses/locations/${locationId}`);
   }
 
   // Location Search (Proximity-based)
@@ -747,7 +800,7 @@ class ApiClient {
 
   // Location Promotion Requests
   async createLocationPromotionRequest(request: LocationPromotionRequestCreate): Promise<LocationPromotionRequest> {
-    const response = await this.client.post('/api/v1/location-promotion-requests', request);
+    const response = await this.client.post('/location-promotion-requests', request);
     return response.data;
   }
 
@@ -763,17 +816,109 @@ class ApiClient {
     if (filters?.country_id) params.append('country_id', filters.country_id.toString());
     if (filters?.city) params.append('city', filters.city);
     
-    const response = await this.client.get(`/api/v1/location-promotion-requests?${params}`);
+    const response = await this.client.get(`/location-promotion-requests?${params}`);
     return response.data;
   }
 
   async updateLocationPromotionRequest(requestId: number, request: LocationPromotionRequestUpdate): Promise<LocationPromotionRequest> {
-    const response = await this.client.put(`/api/v1/location-promotion-requests/${requestId}`, request);
+    const response = await this.client.put(`/location-promotion-requests/${requestId}`, request);
     return response.data;
   }
 
   async deleteLocationPromotionRequest(requestId: number): Promise<void> {
-    await this.client.delete(`/api/v1/location-promotion-requests/${requestId}`);
+    await this.client.delete(`/location-promotion-requests/${requestId}`);
+  }
+
+  // Unified Influencer Profile endpoints
+  async getUnifiedInfluencerProfile(influencerId: number): Promise<any> {
+    const response = await this.client.get(`/unified-influencer-profile/${influencerId}`);
+    return response.data;
+  }
+
+  async getUnifiedInfluencerProfileByUserId(userId: number): Promise<any> {
+    const response = await this.client.get(`/unified-influencer-profile/user/${userId}`);
+    return response.data;
+  }
+
+  // Recommendations endpoints
+  async triggerRecommendationAnalysis(userId: number): Promise<any> {
+    const response = await this.client.post(`/recommendations/trigger-analysis/${userId}`);
+    return response.data;
+  }
+
+  async generateRecommendations(userId: number): Promise<any> {
+    const response = await this.client.post(`/recommendations/generate/${userId}`);
+    return response.data;
+  }
+
+  async getUserRecommendations(userId: number): Promise<any[]> {
+    const response = await this.client.get(`/recommendations/user/${userId}`);
+    return response.data;
+  }
+
+  // Analytics endpoints
+  async getUserRegistrationsByMonth(): Promise<{
+    success: boolean;
+    year: number;
+    data: Array<{
+      month: string;
+      month_number: number;
+      registrations: number;
+    }>;
+  }> {
+    const response = await this.client.get('/api/analytics/user-registrations-by-month');
+    return response.data;
+  }
+
+  async getBusinessRegistrationsByMonth(): Promise<{
+    success: boolean;
+    year: number;
+    data: Array<{
+      month: string;
+      month_number: number;
+      registrations: number;
+    }>;
+  }> {
+    const response = await this.client.get('/api/analytics/business-registrations-by-month');
+    return response.data;
+  }
+
+  async getAnalyticsSummary(): Promise<{
+    success: boolean;
+    data: {
+      total_users: number;
+      new_users_30d: number;
+      total_businesses: number;
+      new_businesses_30d: number;
+      period: string;
+    };
+  }> {
+    const response = await this.client.get('/api/analytics/analytics-summary');
+    return response.data;
+  }
+
+  async getMonthlySubscriptionRevenue(): Promise<{
+    success: boolean;
+    year: number;
+    data: Array<{
+      month: string;
+      month_number: number;
+      revenue: number;
+    }>;
+  }> {
+    const response = await this.client.get('/api/analytics/monthly-subscription-revenue');
+    return response.data;
+  }
+
+  // Unified Influencer Profile endpoints
+  async getUnifiedInfluencerProfile(influencerId: number): Promise<any> {
+    const response = await this.client.get(`/unified-influencer-profile/${influencerId}`);
+    return response.data;
+  }
+
+  async getUnifiedInfluencerProfileByUserId(userId: number): Promise<any> {
+    const response = await this.client.get(`/unified-influencer-profile/user/${userId}`);
+    return response.data;
   }
 
 }

@@ -6,9 +6,11 @@ import InteractiveMap from '@/components/InteractiveMap';
 import { apiClient } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 export default function LocationManagementPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [locations, setLocations] = useState<Array<{
@@ -40,6 +42,25 @@ export default function LocationManagementPage() {
     return num.toFixed(6);
   };
 
+  // Helper function to handle authentication errors
+  const handleAuthError = (error: any, customMessage?: string) => {
+    if (error.response?.status === 401) {
+      const message = customMessage || 'Your session has expired. Please log in again.';
+      toast.error(message);
+      
+      // Clear user state and redirect to login
+      logout();
+      
+      // Redirect after a short delay to allow toast to show
+      setTimeout(() => {
+        router.push('/auth/login');
+      }, 1500);
+      
+      return true; // Indicates this was an auth error
+    }
+    return false; // Not an auth error
+  };
+
   // Get influencer ID and load existing locations when component mounts
   useEffect(() => {
     const getInfluencerId = async () => {
@@ -64,8 +85,14 @@ export default function LocationManagementPage() {
           } else {
             console.log('User does not have an influencer profile');
           }
-        } catch (error) {
+        } catch (error: any) {
           console.log('Error fetching influencers or user is not an influencer:', error);
+          
+          // Handle authentication errors
+          if (handleAuthError(error, 'Authentication required. Please log in again.')) {
+            return; // Exit early if it was an auth error
+          }
+          
           // User might be a business or not have an influencer profile yet
         }
       }
@@ -190,9 +217,30 @@ export default function LocationManagementPage() {
       
       console.log('Location saved:', response);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving location:', error);
-      toast.error('Failed to save location. Please try again.');
+      
+      // Handle authentication errors first
+      if (handleAuthError(error, 'Authentication required. Please log in again.')) {
+        return; // Exit early if it was an auth error
+      }
+      
+      // Handle other errors
+      let errorMessage = 'Failed to save location. Please try again.';
+      
+      if (error.response?.status === 400) {
+        errorMessage = 'Invalid location data. Please check your input and try again.';
+      } else if (error.response?.status === 409) {
+        errorMessage = 'This location already exists. Please choose a different location.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else if (error.message === 'Network Error') {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

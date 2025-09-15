@@ -132,9 +132,9 @@ export interface SubscriptionPlan {
   uuid: string;
   tier: string;
   price_per_month: number;
-  billing_cycle: string;
   is_active: boolean;
   price_id: string;
+  features: string[];
   created_at?: string;
   updated_at?: string;
 }
@@ -144,20 +144,21 @@ export interface CreateSubscriptionPlanData {
   uuid: string;
   tier: string;
   price_per_month: number;
-  billing_cycle: string;
   is_active: boolean;
   price_id: string;
+  features: string[];
 }
 
 export interface UserSubscription {
   id: number;
+  uuid: string;
   user_id: number;
   plan_id: number;
-  stripe_customer_id: string;
   stripe_subscription_id: string;
   status: string;
   current_period_start: string;
   current_period_end: string;
+  cancel_at_period_end: boolean;
   created_at?: string;
   updated_at?: string;
   plan?: SubscriptionPlan;
@@ -211,15 +212,40 @@ export interface SocialMediaPlatform {
 export interface Business {
   id: number;
   name: string;
-  description: string;
+  description?: string;
   website_url?: string;
-  industry: string;
-  owner_id: number;
+  location?: string;
+  industry?: string;
   contact_email: string;
-  contact_phone: string;
-  contact_name: string;
-  base_country_id: number;
-  collaboration_country_ids: number[];
+  contact_phone?: string;
+  verified?: boolean;
+  rating?: number;
+  logo_url?: string;
+  category?: string;
+  founded_year?: number;
+  number_of_employees?: number;
+  annual_revenue?: number;
+  active?: boolean;
+  monthly_budget?: number;
+  company_size?: string;
+  owner_id?: number;
+  base_country_id?: number;
+  collaboration_countries?: Array<{
+    id: number;
+    name: string;
+    code: string;
+  }>;
+  base_country?: {
+    id: number;
+    name: string;
+    code: string;
+  };
+  user?: {
+    id: number;
+    username: string;
+    first_name?: string;
+    last_name?: string;
+  };
   created_at?: string;
   updated_at?: string;
 }

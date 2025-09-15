@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import { Plus, Users, Copy, ExternalLink, Edit, Trash2, Eye } from 'lucide-react';
 import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { apiClient } from '@/lib/api';
+import { toast } from 'react-hot-toast';
 import { 
   InfluencerCoachingGroup, 
   CreateInfluencerCoachingGroupData,
+  UpdateInfluencerCoachingGroupData,
   JoinGroupResponse 
 } from '@/types';
 
@@ -15,9 +17,13 @@ export default function CoachingDashboard() {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<InfluencerCoachingGroup | null>(null);
   const [joinCode, setJoinCode] = useState('');
   const [joinMessage, setJoinMessage] = useState('');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<InfluencerCoachingGroup | null>(null);
 
   // Form state
   const [formData, setFormData] = useState<CreateInfluencerCoachingGroupData>({
@@ -27,6 +33,17 @@ export default function CoachingDashboard() {
     price: undefined,
     currency: 'USD',
     max_members: undefined
+  });
+
+  // Edit form state
+  const [editFormData, setEditFormData] = useState<UpdateInfluencerCoachingGroupData>({
+    name: '',
+    description: '',
+    is_paid: false,
+    price: undefined,
+    currency: 'USD',
+    max_members: undefined,
+    is_active: true
   });
 
   useEffect(() => {
@@ -73,14 +90,68 @@ export default function CoachingDashboard() {
       });
       setJoinMessage(response.message);
       if (response.success) {
+        // Show success toast with group name
+        const groupName = response.group?.name || 'the group';
+        toast.success(`Successfully joined "${groupName}"! 🎉`);
+        
         setShowJoinForm(false);
         setJoinCode('');
         // Reload groups to show the new membership
         loadGroups();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error joining coaching group:', error);
-      setJoinMessage('Failed to join group. Please check the code and try again.');
+      // Show more specific error messages
+      if (error.response?.data?.detail) {
+        setJoinMessage(error.response.data.detail);
+      } else if (error.response?.status === 404) {
+        setJoinMessage('Invalid join code. Please check the code and try again.');
+      } else if (error.response?.status === 400) {
+        setJoinMessage('Cannot join this group. It may be full or inactive.');
+      } else {
+        setJoinMessage('Failed to join group. Please check the code and try again.');
+      }
+    }
+  };
+
+  const handleEditGroup = (group: InfluencerCoachingGroup) => {
+    console.log('handleEditGroup called with group:', group);
+    setEditingGroup(group);
+    setEditFormData({
+      name: group.name,
+      description: group.description || '',
+      is_paid: group.is_paid,
+      price: group.price,
+      currency: group.currency || 'USD',
+      max_members: group.max_members,
+      is_active: group.is_active
+    });
+    setShowEditForm(true);
+    console.log('Edit form state set - showEditForm should be true');
+  };
+
+  const handleUpdateGroup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingGroup) return;
+    
+    try {
+      const updatedGroup = await apiClient.updateCoachingGroup(editingGroup.id, editFormData);
+      setGroups(groups.map(group => 
+        group.id === editingGroup.id ? updatedGroup : group
+      ));
+      setShowEditForm(false);
+      setEditingGroup(null);
+      setEditFormData({
+        name: '',
+        description: '',
+        is_paid: false,
+        price: undefined,
+        currency: 'USD',
+        max_members: undefined,
+        is_active: true
+      });
+    } catch (error) {
+      console.error('Error updating coaching group:', error);
     }
   };
 
@@ -97,6 +168,54 @@ export default function CoachingDashboard() {
   const generateInviteLink = (joinCode: string) => {
     const baseUrl = window.location.origin;
     return `${baseUrl}/dashboard/coaching/join?code=${joinCode}`;
+  };
+
+  const handleDeleteGroup = (group: InfluencerCoachingGroup) => {
+    setGroupToDelete(group);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteGroup = async () => {
+    if (!groupToDelete) return;
+
+    try {
+      const loadingToast = toast.loading('Deleting coaching group...');
+      await apiClient.deleteCoachingGroup(groupToDelete.id);
+      setGroups(groups.filter(g => g.id !== groupToDelete.id));
+      toast.dismiss(loadingToast);
+      toast.success(`"${groupToDelete.name}" has been deleted successfully`);
+    } catch (error: any) {
+      console.error('Error deleting coaching group:', error);
+      if (error.response?.status === 400) {
+        toast.error(error.response.data.detail || 'Cannot delete group with members. Consider archiving instead.');
+      } else {
+        toast.error('Failed to delete coaching group. Please try again.');
+      }
+    } finally {
+      setShowDeleteDialog(false);
+      setGroupToDelete(null);
+    }
+  };
+
+  const handleArchiveGroup = async () => {
+    if (!groupToDelete) return;
+
+    try {
+      const loadingToast = toast.loading('Archiving coaching group...');
+      await apiClient.archiveCoachingGroup(groupToDelete.id);
+      // Update the group in the list to show it as inactive
+      setGroups(groups.map(g => 
+        g.id === groupToDelete.id ? { ...g, is_active: false } : g
+      ));
+      toast.dismiss(loadingToast);
+      toast.success(`"${groupToDelete.name}" has been archived successfully`);
+    } catch (error) {
+      console.error('Error archiving coaching group:', error);
+      toast.error('Failed to archive coaching group. Please try again.');
+    } finally {
+      setShowDeleteDialog(false);
+      setGroupToDelete(null);
+    }
   };
 
   if (loading) {
@@ -237,14 +356,24 @@ export default function CoachingDashboard() {
                     <button
                       onClick={() => copyToClipboard(generateInviteLink(group.join_code), `link-${group.id}`)}
                       className="text-cyan-400 hover:text-cyan-300 p-1 rounded-lg hover:bg-slate-700/30 transition-colors"
+                      title="Copy invite link"
                     >
-                      <ExternalLink className="w-4 h-4" />
+                      <Copy className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="bg-slate-700/30 rounded-xl px-4 py-3 text-xs text-slate-300 truncate border border-slate-600/30">
-                    {generateInviteLink(group.join_code)}
+                  <div 
+                    onClick={() => copyToClipboard(generateInviteLink(group.join_code), `link-${group.id}`)}
+                    className="bg-slate-700/30 rounded-xl px-4 py-3 text-xs text-slate-300 border border-slate-600/30 cursor-pointer hover:bg-slate-700/50 transition-colors group"
+                    title="Click to copy invite link"
+                  >
+                    <div className="break-all">
+                      {generateInviteLink(group.join_code)}
+                    </div>
                     {copiedCode === `link-${group.id}` && (
-                      <span className="ml-2 text-xs text-emerald-400 font-medium">Copied!</span>
+                      <div className="mt-2 text-xs text-emerald-400 font-medium flex items-center">
+                        <span className="w-2 h-2 bg-emerald-400 rounded-full mr-2"></span>
+                        Copied to clipboard!
+                      </div>
                     )}
                   </div>
                 </div>
@@ -255,11 +384,17 @@ export default function CoachingDashboard() {
                     <Eye className="w-4 h-4 mr-1" />
                     View
                   </button>
-                  <button className="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm bg-slate-700/50 text-slate-300 border border-slate-600/30 rounded-xl hover:bg-slate-700/70 transition-colors font-medium">
+                  <button 
+                    onClick={() => handleEditGroup(group)}
+                    className="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm bg-slate-700/50 text-slate-300 border border-slate-600/30 rounded-xl hover:bg-slate-700/70 transition-colors font-medium"
+                  >
                     <Edit className="w-4 h-4 mr-1" />
                     Edit
                   </button>
-                  <button className="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl hover:bg-rose-500/30 transition-colors font-medium">
+                  <button 
+                    onClick={() => handleDeleteGroup(group)}
+                    className="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl hover:bg-rose-500/30 transition-colors font-medium"
+                  >
                     <Trash2 className="w-4 h-4 mr-1" />
                     Delete
                   </button>
@@ -289,8 +424,14 @@ export default function CoachingDashboard() {
 
         {/* Create Group Modal */}
         {showCreateForm && (
-          <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="form-container-dark w-full max-w-md">
+          <div 
+            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowCreateForm(false)}
+          >
+            <div 
+              className="form-container-dark w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
               <h2 className="text-xl font-semibold text-form-text mb-6">Create Coaching Group</h2>
               <form onSubmit={handleCreateGroup} className="space-y-6">
                 <div className="space-y-2">
@@ -386,8 +527,18 @@ export default function CoachingDashboard() {
 
         {/* Join Group Modal */}
         {showJoinForm && (
-          <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="form-container-dark w-full max-w-md">
+          <div 
+            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => {
+              setShowJoinForm(false);
+              setJoinCode('');
+              setJoinMessage('');
+            }}
+          >
+            <div 
+              className="form-container-dark w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
               <h2 className="text-xl font-semibold text-form-text mb-6">Join Coaching Group</h2>
               <form onSubmit={handleJoinGroup} className="space-y-6">
                 <div className="space-y-2">
@@ -434,6 +585,201 @@ export default function CoachingDashboard() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Group Modal */}
+        {showEditForm && editingGroup && (
+          <div 
+            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => {
+              setShowEditForm(false);
+              setEditingGroup(null);
+            }}
+          >
+            <div 
+              className="form-container-dark w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-semibold text-form-text mb-6">Edit Coaching Group</h2>
+              <form onSubmit={handleUpdateGroup} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="label-dark">
+                    Group Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.name || ''}
+                    onChange={(e) => setEditFormData({...editFormData, name: e.target.value})}
+                    className="input-dark"
+                    placeholder="Enter group name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="label-dark">
+                    Description
+                  </label>
+                  <textarea
+                    value={editFormData.description || ''}
+                    onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                    rows={3}
+                    className="textarea-dark"
+                    placeholder="Describe your coaching group..."
+                  />
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="edit_is_paid"
+                    checked={editFormData.is_paid || false}
+                    onChange={(e) => setEditFormData({...editFormData, is_paid: e.target.checked})}
+                    className="checkbox-dark mt-0.5"
+                  />
+                  <label htmlFor="edit_is_paid" className="text-sm text-form-text leading-5 cursor-pointer">
+                    This is a paid coaching group
+                  </label>
+                </div>
+
+                {editFormData.is_paid && (
+                  <div className="space-y-2">
+                    <label className="label-dark">
+                      Price (USD)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={editFormData.price || ''}
+                      onChange={(e) => setEditFormData({...editFormData, price: parseFloat(e.target.value) || undefined})}
+                      className="input-dark"
+                      placeholder="0.00"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <label className="label-dark">
+                    Max Members (optional)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={editFormData.max_members || ''}
+                    onChange={(e) => setEditFormData({...editFormData, max_members: parseInt(e.target.value) || undefined})}
+                    className="input-dark"
+                    placeholder="Leave empty for unlimited"
+                  />
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="edit_is_active"
+                    checked={editFormData.is_active || false}
+                    onChange={(e) => setEditFormData({...editFormData, is_active: e.target.checked})}
+                    className="checkbox-dark mt-0.5"
+                  />
+                  <label htmlFor="edit_is_active" className="text-sm text-form-text leading-5 cursor-pointer">
+                    Group is active
+                  </label>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="submit"
+                    className="btn-dark-primary flex-1 h-12 rounded-xl font-medium"
+                  >
+                    Update Group
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditForm(false);
+                      setEditingGroup(null);
+                    }}
+                    className="btn-dark flex-1 h-12 rounded-xl font-medium"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Dialog */}
+        {showDeleteDialog && groupToDelete && (
+          <div 
+            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => {
+              setShowDeleteDialog(false);
+              setGroupToDelete(null);
+            }}
+          >
+            <div 
+              className="form-container-dark w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-semibold text-form-text mb-6">Delete Coaching Group</h2>
+              
+              <div className="space-y-4 mb-6">
+                <p className="text-form-text">
+                  Are you sure you want to delete <strong>"{groupToDelete.name}"</strong>?
+                </p>
+                
+                {groupToDelete.current_members > 0 && (
+                  <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-5 h-5 text-amber-400 mt-0.5">⚠️</div>
+                      <div>
+                        <p className="text-amber-200 font-medium mb-2">
+                          This group has {groupToDelete.current_members} member{groupToDelete.current_members !== 1 ? 's' : ''}!
+                        </p>
+                        <p className="text-amber-300 text-sm leading-relaxed">
+                          Deleting this group will permanently remove all member data, session history, and messages. 
+                          This action cannot be undone.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {groupToDelete.current_members === 0 && (
+                  <p className="text-slate-400 text-sm">
+                    This action cannot be undone.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                {groupToDelete.current_members > 0 && (
+                  <button
+                    onClick={handleArchiveGroup}
+                    className="flex-1 h-12 rounded-xl font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 transition-colors"
+                  >
+                    Archive Instead
+                  </button>
+                )}
+                <button
+                  onClick={confirmDeleteGroup}
+                  className="flex-1 h-12 rounded-xl font-medium bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30 transition-colors"
+                >
+                  Delete Permanently
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDeleteDialog(false);
+                    setGroupToDelete(null);
+                  }}
+                  className="flex-1 h-12 rounded-xl font-medium btn-dark"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}

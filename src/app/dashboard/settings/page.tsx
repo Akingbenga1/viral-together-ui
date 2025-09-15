@@ -20,6 +20,18 @@ export default function SettingsPage() {
     username: user?.username || '',
   });
 
+  // Update profile form when user data changes
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        email: user.email || '',
+        username: user.username || '',
+      });
+    }
+  }, [user]);
+
   // Security form state
   const [securityForm, setSecurityForm] = useState({
     current_password: '',
@@ -52,12 +64,24 @@ export default function SettingsPage() {
   const handleProfileUpdate = async () => {
     setIsLoading(true);
     try {
-      // This would need a corresponding API endpoint
-      // await apiClient.updateProfile(profileForm);
+      const response = await apiClient.updateUserProfile({
+        first_name: profileForm.first_name,
+        last_name: profileForm.last_name,
+        email: profileForm.email,
+        username: profileForm.username,
+      });
+      
+      // Update the user data in the auth context if the update was successful
+      if (response && response.user) {
+        // You might want to update the user context here
+        // For now, we'll just show success
+      }
+      
       toast.success('Profile updated successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update profile:', error);
-      toast.error('Failed to update profile');
+      const errorMessage = error.response?.data?.detail || 'Failed to update profile';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -76,11 +100,11 @@ export default function SettingsPage() {
 
     setIsLoading(true);
     try {
-      // This would need a corresponding API endpoint
-      // await apiClient.changePassword({
-      //   current_password: securityForm.current_password,
-      //   new_password: securityForm.new_password,
-      // });
+      await apiClient.updateUserPassword({
+        current_password: securityForm.current_password,
+        new_password: securityForm.new_password,
+        confirm_password: securityForm.confirm_password,
+      });
       
       setSecurityForm({
         current_password: '',
@@ -88,9 +112,10 @@ export default function SettingsPage() {
         confirm_password: '',
       });
       toast.success('Password changed successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to change password:', error);
-      toast.error('Failed to change password');
+      const errorMessage = error.response?.data?.detail || 'Failed to change password';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -167,20 +192,25 @@ export default function SettingsPage() {
 
           {/* Settings Tabs */}
           <div className="mb-8">
-            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-4">
-              <nav className="flex space-x-4">
+            <div className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-600/30">
+              <nav className="flex">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+                    className={`relative flex items-center space-x-2 px-6 py-4 font-medium text-sm transition-all duration-200 ${
                       activeTab === tab.id
-                        ? 'bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-400 border border-cyan-500/30'
-                        : 'bg-slate-700/30 text-slate-300 border border-slate-600/30 hover:bg-slate-700/50 hover:text-slate-200'
+                        ? 'text-blue-400'
+                        : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    <tab.icon className="h-4 w-4" />
+                    <tab.icon className={`h-4 w-4 ${
+                      activeTab === tab.id ? 'text-blue-400' : 'text-slate-400'
+                    }`} />
                     <span>{tab.name}</span>
+                    {activeTab === tab.id && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400"></div>
+                    )}
                   </button>
                 ))}
               </nav>
@@ -189,7 +219,7 @@ export default function SettingsPage() {
             {/* Tab Content */}
             <div>
               {activeTab === 'profile' && (
-                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-b-2xl border border-slate-700/50 border-t-0 p-6">
                   <div className="flex items-center mb-6">
                     <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center mr-3">
                       <User className="w-5 h-5 text-white" />
@@ -268,7 +298,7 @@ export default function SettingsPage() {
               )}
 
               {activeTab === 'security' && (
-                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-b-2xl border border-slate-700/50 border-t-0 p-6">
                   <div className="flex items-center mb-6">
                     <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-green-500 rounded-xl flex items-center justify-center mr-3">
                       <Lock className="w-5 h-5 text-white" />
@@ -376,7 +406,7 @@ export default function SettingsPage() {
               )}
 
               {activeTab === 'notifications' && (
-                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-b-2xl border border-slate-700/50 border-t-0 p-6">
                   <div className="flex items-center mb-6">
                     <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mr-3">
                       <Bell className="w-5 h-5 text-white" />
@@ -496,7 +526,7 @@ export default function SettingsPage() {
               )}
 
               {activeTab === 'privacy' && (
-                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-b-2xl border border-slate-700/50 border-t-0 p-6">
                   <div className="flex items-center mb-6">
                     <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center mr-3">
                       <Shield className="w-5 h-5 text-white" />

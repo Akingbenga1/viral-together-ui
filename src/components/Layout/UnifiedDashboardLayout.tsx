@@ -94,9 +94,9 @@ const getNavigationForRole = (user: any, userRoles: any[]) => {
   // AI Recommendations - Available to all
   navigation.push({ name: 'Recommendations', href: '/dashboard/recommendations', icon: Brain, roles: ['user', 'influencer', 'business', 'professional_influencer', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
 
-  // Location Management - Available to businesses and admins
-  if (hasAnyRole(['business', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
-    navigation.push({ name: 'Locations', href: '/dashboard/location-management', icon: MapPin, roles: ['business', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
+  // Location Management - Available to influencers, businesses and admins
+  if (hasAnyRole(['influencer', 'professional_influencer', 'business', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
+    navigation.push({ name: 'Locations', href: '/dashboard/location-management', icon: MapPin, roles: ['influencer', 'professional_influencer', 'business', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
   }
 
   // Coaching - Available to influencers

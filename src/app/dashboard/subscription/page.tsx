@@ -18,6 +18,7 @@ export default function SubscriptionPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        
         const [plansData, subscriptionData] = await Promise.all([
           apiClient.getSubscriptionPlans(),
           apiClient.getMySubscription().catch(() => null), // User might not have subscription
@@ -36,6 +37,23 @@ export default function SubscriptionPage() {
     fetchData();
   }, []);
 
+  // Handle success/cancel messages from Stripe checkout
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const canceled = urlParams.get('canceled');
+    
+    if (success === 'true') {
+      toast.success('Subscription activated successfully! Welcome to your new plan.');
+      // Clean up URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (canceled === 'true') {
+      toast.error('Subscription process was canceled. You can try again anytime.');
+      // Clean up URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   const handleSubscribe = async (planId: number) => {
     setIsProcessing(true);
     try {
@@ -45,11 +63,36 @@ export default function SubscriptionPage() {
         cancel_url: `${window.location.origin}/dashboard/subscription?canceled=true`,
       });
 
+      if (!checkoutSession.url) {
+        throw new Error('No checkout URL received from server');
+      }
+
       // Redirect to Stripe checkout
       window.location.href = checkoutSession.url;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create checkout session:', error);
-      toast.error('Failed to start subscription process');
+      
+      // Handle specific error cases
+      if (error.response?.status === 400) {
+        const errorMessage = error.response?.data?.detail || 'Invalid request';
+        if (errorMessage.includes('already has an active subscription')) {
+          toast.error('You already have an active subscription. Please manage your existing subscription instead.');
+        } else if (errorMessage.includes('no longer available')) {
+          toast.error('This subscription plan is no longer available.');
+        } else {
+          toast.error(errorMessage);
+        }
+      } else if (error.response?.status === 404) {
+        toast.error('Subscription plan not found.');
+      } else if (error.response?.status === 401) {
+        toast.error('Please log in to subscribe to a plan.');
+      } else if (error.message) {
+        // Handle errors thrown by the API client (Stripe errors, etc.)
+        toast.error(error.message);
+      } else {
+        toast.error('Failed to start subscription process. Please try again.');
+      }
+      
       setIsProcessing(false);
     }
   };
@@ -65,9 +108,23 @@ export default function SubscriptionPage() {
 
       // Redirect to Stripe customer portal
       window.location.href = portalSession.url;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create portal session:', error);
-      toast.error('Failed to open subscription management');
+      
+      // Handle specific error cases
+      if (error.response?.status === 400) {
+        const errorMessage = error.response?.data?.detail || 'Invalid request';
+        if (errorMessage.includes('No Stripe customer found')) {
+          toast.error('No payment information found. Please contact support.');
+        } else {
+          toast.error(errorMessage);
+        }
+      } else if (error.response?.status === 401) {
+        toast.error('Please log in to manage your subscription.');
+      } else {
+        toast.error('Failed to open subscription management. Please try again.');
+      }
+      
       setIsProcessing(false);
     }
   };
@@ -80,69 +137,7 @@ export default function SubscriptionPage() {
     });
   };
 
-  const getPlanFeatures = (tier: string) => {
-    const baseFeatures = [
-      'Access to influencer directory',
-      'Basic search and filtering',
-      'Email support',
-    ];
 
-    switch (tier.toLowerCase()) {
-      case 'basic':
-        return [
-          ...baseFeatures,
-          'Up to 10 campaign requests',
-          'Standard response time',
-        ];
-      case 'pro':
-        return [
-          ...baseFeatures,
-          'Unlimited campaign requests',
-          'Priority support',
-          'Advanced analytics',
-          'Custom rate cards',
-          'Direct messaging',
-        ];
-      case 'enterprise':
-        return [
-          ...baseFeatures,
-          'Unlimited everything',
-          'Dedicated account manager',
-          'Custom integrations',
-          'White-label options',
-          'API access',
-          '24/7 phone support',
-        ];
-      default:
-        return baseFeatures;
-    }
-  };
-
-  const getPlanColor = (tier: string) => {
-    switch (tier.toLowerCase()) {
-      case 'basic':
-        return 'border-gray-300';
-      case 'pro':
-        return 'border-primary-500';
-      case 'enterprise':
-        return 'border-purple-500';
-      default:
-        return 'border-gray-300';
-    }
-  };
-
-  const getPlanBadgeColor = (tier: string) => {
-    switch (tier.toLowerCase()) {
-      case 'basic':
-        return 'bg-gray-100 text-gray-800';
-      case 'pro':
-        return 'bg-primary-100 text-primary-800';
-      case 'enterprise':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   if (isLoading) {
     return (
@@ -257,7 +252,7 @@ export default function SubscriptionPage() {
                     <div>
                       <div className="text-sm text-slate-400">Plan Features</div>
                       <div className="text-sm font-medium text-white">
-                        {getPlanFeatures(plans.find(p => p.id === userSubscription.plan_id)?.tier || '').length} features included
+                        {plans.find(p => p.id === userSubscription.plan_id)?.features?.length || 0} features included
                       </div>
                     </div>
                   </div>
@@ -266,45 +261,106 @@ export default function SubscriptionPage() {
             </div>
           )}
 
-          {/* Available Plans */}
+
+          {/* Show different content based on subscription status */}
+          {userSubscription ? (
+            /* Already Subscribed Panel */
+            <div className="mb-8">
+              <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-8">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Check className="h-8 w-8 text-white" />
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold text-white mb-4">
+                    Already Subscribed! 🎉
+                  </h3>
+                  
+                  <p className="text-slate-300 text-lg mb-6 leading-relaxed">
+                    You're currently subscribed to the <span className="font-semibold text-cyan-400">
+                      {plans.find(p => p.id === userSubscription.plan_id)?.name || 'Unknown Plan'}
+                    </span> plan
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="bg-slate-700/30 rounded-xl p-6 border border-slate-600/30">
+                      <div className="flex items-center mb-3">
+                        <Calendar className="h-5 w-5 text-cyan-400 mr-2" />
+                        <h4 className="text-sm font-medium text-white">Next Payment</h4>
+                      </div>
+                      <p className="text-2xl font-bold text-white">
+                        {formatDate(userSubscription.current_period_end)}
+                      </p>
+                      <p className="text-sm text-slate-400 mt-1">
+                        £{plans.find(p => p.id === userSubscription.plan_id)?.price_per_month || 0} will be charged
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-700/30 rounded-xl p-6 border border-slate-600/30">
+                      <div className="flex items-center mb-3">
+                        <CreditCard className="h-5 w-5 text-emerald-400 mr-2" />
+                        <h4 className="text-sm font-medium text-white">Payment Method</h4>
+                      </div>
+                      <p className="text-lg font-semibold text-white">
+                        •••• •••• •••• {userSubscription.stripe_subscription_id.slice(-4)}
+                      </p>
+                      <p className="text-sm text-slate-400 mt-1">
+                        Manage your payment method
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button
+                      onClick={handleManageSubscription}
+                      disabled={isProcessing}
+                      className="btn-dark-primary px-8 py-3 rounded-xl font-medium flex items-center justify-center space-x-2 disabled:opacity-50"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      <span>{isProcessing ? 'Loading...' : 'Manage Subscription'}</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="btn-dark border border-slate-600/30 hover:border-slate-500/50 px-8 py-3 rounded-xl font-medium"
+                    >
+                      Refresh Status
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Choose Your Plan Panel */
           <div className="mb-8">
             <h3 className="text-2xl font-bold text-white mb-6 leading-tight tracking-tight">
-              {userSubscription ? 'Available Plans' : 'Choose Your Plan'}
+                Choose Your Plan
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {plans.map((plan) => {
-                const isCurrentPlan = userSubscription?.plan_id === plan.id;
-                const features = getPlanFeatures(plan.tier);
+                  const features = plan.features || [];
                 
                 return (
                   <div
                     key={plan.id}
                     className={`relative bg-slate-800/30 backdrop-blur-sm rounded-2xl border-2 transition-all duration-300 ${
-                      plan.tier.toLowerCase() === 'basic' ? 'border-slate-600/50' :
-                      plan.tier.toLowerCase() === 'pro' ? 'border-cyan-500/50' :
-                      'border-purple-500/50'
-                    } ${
-                      isCurrentPlan ? 'ring-2 ring-cyan-500/50 shadow-lg shadow-cyan-500/20' : 'hover:border-slate-500/50'
-                    }`}
-                  >
-                    {isCurrentPlan && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <span className="inline-flex items-center px-4 py-2 rounded-full text-xs font-medium bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-lg">
-                          Current Plan
-                        </span>
-                      </div>
-                    )}
-
+                        plan.tier === '1' ? 'border-slate-600/50' :
+                        plan.tier === '2' ? 'border-cyan-500/50' :
+                        plan.tier === '3' ? 'border-purple-500/50' :
+                        'border-slate-600/50'
+                      } hover:border-slate-500/50`}
+                    >
                     <div className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="text-xl font-semibold text-white">{plan.name}</h4>
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                          plan.tier.toLowerCase() === 'basic' ? 'bg-slate-700/50 text-slate-300 border border-slate-600/30' :
-                          plan.tier.toLowerCase() === 'pro' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' :
-                          'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                        }`}>
-                          {plan.tier}
+                            plan.tier === '1' ? 'bg-slate-700/50 text-slate-300 border border-slate-600/30' :
+                            plan.tier === '2' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' :
+                            plan.tier === '3' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
+                            'bg-slate-700/50 text-slate-300 border border-slate-600/30'
+                          }`}>
+                            Tier {plan.tier}
                         </span>
                       </div>
 
@@ -314,7 +370,7 @@ export default function SubscriptionPage() {
                           <span className="text-slate-400 ml-1">/month</span>
                         </div>
                         <p className="text-sm text-slate-400 mt-1">
-                          Billed {plan.billing_cycle}
+                            Billed monthly
                         </p>
                       </div>
 
@@ -330,26 +386,17 @@ export default function SubscriptionPage() {
                       </div>
 
                       <div className="mt-6">
-                        {isCurrentPlan ? (
-                          <button
-                            disabled
-                            className="w-full px-4 py-3 border border-slate-600/30 rounded-xl text-sm font-medium text-slate-400 bg-slate-700/30 cursor-not-allowed"
-                          >
-                            Current Plan
-                          </button>
-                        ) : (
                           <button
                             onClick={() => handleSubscribe(plan.id)}
                             disabled={isProcessing}
                             className={`w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                              plan.tier.toLowerCase() === 'pro' 
+                              plan.tier === '2' 
                                 ? 'btn-dark-primary' 
                                 : 'btn-dark border border-slate-600/30 hover:border-slate-500/50'
                             }`}
                           >
-                            {isProcessing ? 'Processing...' : userSubscription ? 'Upgrade Plan' : 'Subscribe Now'}
+                            {isProcessing ? 'Processing...' : 'Subscribe Now'}
                           </button>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -357,6 +404,7 @@ export default function SubscriptionPage() {
               })}
             </div>
           </div>
+          )}
 
           {/* Billing Information */}
           {userSubscription && (
@@ -371,7 +419,7 @@ export default function SubscriptionPage() {
                         <CreditCard className="h-4 w-4 text-white" />
                       </div>
                       <span className="text-sm text-slate-300">
-                        •••• •••• •••• {userSubscription.stripe_customer_id.slice(-4)}
+                        •••• •••• •••• {userSubscription.stripe_subscription_id.slice(-4)}
                       </span>
                     </div>
                   </div>
@@ -381,6 +429,193 @@ export default function SubscriptionPage() {
                       {formatDate(userSubscription.current_period_end)}
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Payment History Table */}
+          {userSubscription && (
+            <div className="mb-8">
+              <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h3 className="text-xl font-semibold text-white mb-6">Payment History</h3>
+                
+                {/* Desktop Table */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-600/30">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-300">#</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-300">Month</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-300">Payment Amount</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-300">Payment Card</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-300">Payment Date</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-300">Next Payment</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-300">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        {
+                          id: 1,
+                          month: 'December 2024',
+                          amount: 29.99,
+                          card: '•••• 4242',
+                          paymentDate: '2024-12-15',
+                          nextPayment: '2025-01-15',
+                          status: 'completed'
+                        },
+                        {
+                          id: 2,
+                          month: 'November 2024',
+                          amount: 29.99,
+                          card: '•••• 4242',
+                          paymentDate: '2024-11-15',
+                          nextPayment: '2024-12-15',
+                          status: 'completed'
+                        },
+                        {
+                          id: 3,
+                          month: 'October 2024',
+                          amount: 29.99,
+                          card: '•••• 4242',
+                          paymentDate: '2024-10-15',
+                          nextPayment: '2024-11-15',
+                          status: 'completed'
+                        },
+                        {
+                          id: 4,
+                          month: 'September 2024',
+                          amount: 29.99,
+                          card: '•••• 4242',
+                          paymentDate: '2024-09-15',
+                          nextPayment: '2024-10-15',
+                          status: 'completed'
+                        },
+                        {
+                          id: 5,
+                          month: 'August 2024',
+                          amount: 29.99,
+                          card: '•••• 4242',
+                          paymentDate: '2024-08-15',
+                          nextPayment: '2024-09-15',
+                          status: 'completed'
+                        }
+                      ].map((payment, index) => (
+                        <tr key={payment.id} className="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
+                          <td className="py-4 px-4 text-sm text-slate-300 font-medium">{payment.id}</td>
+                          <td className="py-4 px-4 text-sm text-white font-medium">{payment.month}</td>
+                          <td className="py-4 px-4 text-sm text-emerald-400 font-semibold">${payment.amount}</td>
+                          <td className="py-4 px-4 text-sm text-slate-300">{payment.card}</td>
+                          <td className="py-4 px-4 text-sm text-slate-300">{payment.paymentDate}</td>
+                          <td className="py-4 px-4 text-sm text-cyan-400">{payment.nextPayment}</td>
+                          <td className="py-4 px-4">
+                            <div className="flex space-x-2">
+                              <button className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors">
+                                View
+                              </button>
+                              <button className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-xs rounded-lg border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors">
+                                Download
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="lg:hidden space-y-4">
+                  {[
+                    {
+                      id: 1,
+                      month: 'December 2024',
+                      amount: 29.99,
+                      card: '•••• 4242',
+                      paymentDate: '2024-12-15',
+                      nextPayment: '2025-01-15',
+                      status: 'completed'
+                    },
+                    {
+                      id: 2,
+                      month: 'November 2024',
+                      amount: 29.99,
+                      card: '•••• 4242',
+                      paymentDate: '2024-11-15',
+                      nextPayment: '2024-12-15',
+                      status: 'completed'
+                    },
+                    {
+                      id: 3,
+                      month: 'October 2024',
+                      amount: 29.99,
+                      card: '•••• 4242',
+                      paymentDate: '2024-10-15',
+                      nextPayment: '2024-11-15',
+                      status: 'completed'
+                    },
+                    {
+                      id: 4,
+                      month: 'September 2024',
+                      amount: 29.99,
+                      card: '•••• 4242',
+                      paymentDate: '2024-09-15',
+                      nextPayment: '2024-10-15',
+                      status: 'completed'
+                    },
+                    {
+                      id: 5,
+                      month: 'August 2024',
+                      amount: 29.99,
+                      card: '•••• 4242',
+                      paymentDate: '2024-08-15',
+                      nextPayment: '2024-09-15',
+                      status: 'completed'
+                    }
+                  ].map((payment) => (
+                    <div key={payment.id} className="bg-slate-700/30 rounded-xl p-4 border border-slate-600/30">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="text-sm font-semibold text-white">{payment.month}</h4>
+                          <p className="text-xs text-slate-400">Payment #{payment.id}</p>
+                        </div>
+                        <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 text-xs rounded-lg border border-emerald-500/30">
+                          ${payment.amount}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Payment Card</p>
+                          <p className="text-sm text-slate-300">{payment.card}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Payment Date</p>
+                          <p className="text-sm text-slate-300">{payment.paymentDate}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Next Payment</p>
+                          <p className="text-sm text-cyan-400">{payment.nextPayment}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Status</p>
+                          <span className="inline-block px-2 py-1 bg-emerald-500/20 text-emerald-400 text-xs rounded-lg border border-emerald-500/30">
+                            Completed
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex space-x-2">
+                        <button className="flex-1 px-3 py-2 bg-blue-500/20 text-blue-400 text-xs rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors">
+                          View Details
+                        </button>
+                        <button className="flex-1 px-3 py-2 bg-emerald-500/20 text-emerald-400 text-xs rounded-lg border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors">
+                          Download Receipt
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
