@@ -1,10 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Shield, Download, Trash2, Settings } from 'lucide-react';
 
 export default function PrivacyLink() {
   const [showModal, setShowModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleDataExport = () => {
     if (typeof window !== 'undefined') {
@@ -43,6 +48,16 @@ export default function PrivacyLink() {
       window.location.reload();
     }
   };
+
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+        <Shield className="w-4 h-4" />
+        <span>Privacy</span>
+      </button>
+    );
+  }
 
   return (
     <>
