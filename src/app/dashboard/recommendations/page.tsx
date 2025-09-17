@@ -628,48 +628,48 @@ export default function RecommendationsPage() {
     
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-lg">
-          <h3 className="text-xl font-bold text-purple-900 mb-4">AI Enhanced Strategy</h3>
+        <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
+          <h3 className="text-xl font-bold text-white mb-4">AI Enhanced Strategy</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-3">
-                             <div className="flex items-center space-x-2">
-                 <Brain className="w-5 h-5 text-purple-600" />
-                 <span className="font-semibold">Level:</span>
-                 <span className="capitalize">{typeof plan.level === 'string' ? plan.level : 'N/A'}</span>
+            <div className="space-y-4">
+                             <div className="flex items-center space-x-3">
+                 <Brain className="w-5 h-5 text-cyan-400" />
+                 <span className="font-semibold text-white">Level:</span>
+                 <span className="capitalize text-slate-300">{typeof plan.level === 'string' ? plan.level : 'N/A'}</span>
                </div>
-              <div className="flex items-center space-x-2">
-                <Calendar className="w-5 h-5 text-purple-600" />
-                <span className="font-semibold">Posting Frequency:</span>
-                <span>{plan.posting_frequency}</span>
+              <div className="flex items-center space-x-3">
+                <Calendar className="w-5 h-5 text-cyan-400" />
+                <span className="font-semibold text-white">Posting Frequency:</span>
+                <span className="text-slate-300">{plan.posting_frequency}</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-purple-600" />
-                <span className="font-semibold">Engagement Goal:</span>
-                <span>{plan.engagement_goals}</span>
+              <div className="flex items-center space-x-3">
+                <Users className="w-5 h-5 text-cyan-400" />
+                <span className="font-semibold text-white">Engagement Goal:</span>
+                <span className="text-slate-300">{plan.engagement_goals}</span>
               </div>
             </div>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5 text-purple-600" />
-                <span className="font-semibold">Follower Growth:</span>
-                <span>{plan.follower_growth}</span>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <TrendingUp className="w-5 h-5 text-cyan-400" />
+                <span className="font-semibold text-white">Follower Growth:</span>
+                <span className="text-slate-300">{plan.follower_growth}</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <DollarSign className="w-5 h-5 text-purple-600" />
-                <span className="font-semibold">Pricing Strategy:</span>
-                <span>{plan.pricing_strategy}</span>
+              <div className="flex items-center space-x-3">
+                <DollarSign className="w-5 h-5 text-cyan-400" />
+                <span className="font-semibold text-white">Pricing Strategy:</span>
+                <span className="text-slate-300">{plan.pricing_strategy}</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <Zap className="w-5 h-5 text-purple-600" />
-                <span className="font-semibold">Hours/Week:</span>
-                <span>{plan.estimated_hours_per_week}</span>
+              <div className="flex items-center space-x-3">
+                <Zap className="w-5 h-5 text-cyan-400" />
+                <span className="font-semibold text-white">Hours/Week:</span>
+                <span className="text-slate-300">{plan.estimated_hours_per_week}</span>
               </div>
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">AI Enhancements</h4>
+          <h4 className="text-lg font-semibold text-white">AI Enhancements</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {plan.ai_enhancements?.map((enhancement: any, index: number) => {
               const IconComponent = agentIcons[enhancement.agent_type as keyof typeof agentIcons] || Brain;
@@ -678,7 +678,7 @@ export default function RecommendationsPage() {
               return (
                 <div
                   key={index}
-                  className="bg-white p-4 rounded-lg border border-gray-200 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+                  className="bg-slate-700/30 p-4 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/50 transition-all duration-200 hover:scale-105"
                   onClick={() => openModal({
                     agent_type: enhancement.agent_type,
                     focus_area: 'ai_enhancement',
@@ -691,21 +691,21 @@ export default function RecommendationsPage() {
                       <IconComponent className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h5 className="font-semibold text-gray-800 capitalize text-sm">
+                      <h5 className="font-semibold text-white capitalize text-sm">
                         {enhancement.agent_type?.replace('_', ' ')} Advisor
                       </h5>
-                      <p className="text-xs text-gray-600">AI-Powered Enhancement</p>
+                      <p className="text-xs text-slate-400">AI-Powered Enhancement</p>
                     </div>
-                    <div className="w-full text-xs text-gray-600 overflow-hidden">
+                    <div className="w-full text-xs text-slate-400 overflow-hidden">
                       <div className="h-12 overflow-hidden">
                         {enhancement.insights?.substring(0, 80)}...
                       </div>
                     </div>
                     <div className="w-full flex flex-col items-center space-y-2">
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                         Active
                       </span>
-                      <span className="text-xs text-purple-600 font-medium">Click to view details</span>
+                      <span className="text-xs text-cyan-400 font-medium">Click to view details</span>
                     </div>
                   </div>
                 </div>
@@ -715,10 +715,10 @@ export default function RecommendationsPage() {
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Engagement Strategies</h4>
+          <h4 className="text-lg font-semibold text-white">Engagement Strategies</h4>
           <div className="flex flex-wrap gap-2">
             {plan.engagement_strategies?.map((strategy: string, index: number) => (
-              <span key={index} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+              <span key={index} className="px-3 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full text-sm font-medium">
                 {strategy}
               </span>
             ))}
@@ -726,10 +726,10 @@ export default function RecommendationsPage() {
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Consistency Tools</h4>
+          <h4 className="text-lg font-semibold text-white">Consistency Tools</h4>
           <div className="flex flex-wrap gap-2">
             {plan.consistency_tools?.map((tool: string, index: number) => (
-              <span key={index} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+              <span key={index} className="px-3 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full text-sm font-medium">
                 {tool}
               </span>
             ))}
@@ -737,10 +737,10 @@ export default function RecommendationsPage() {
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Pricing Optimization</h4>
+          <h4 className="text-lg font-semibold text-white">Pricing Optimization</h4>
           <div className="flex flex-wrap gap-2">
             {plan.pricing_optimization?.map((strategy: string, index: number) => (
-              <span key={index} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+              <span key={index} className="px-3 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full text-sm font-medium">
                 {strategy}
               </span>
             ))}
@@ -756,37 +756,37 @@ export default function RecommendationsPage() {
     
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-lg">
-          <h3 className="text-xl font-bold text-green-900 mb-4">Monthly Content Schedule</h3>
+        <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
+          <h3 className="text-xl font-bold text-white mb-4">Monthly Content Schedule</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{schedule.posts_per_week}</div>
-              <div className="text-sm text-green-700">Posts per Week</div>
+              <div className="text-2xl font-bold text-cyan-400">{schedule.posts_per_week}</div>
+              <div className="text-sm text-slate-300">Posts per Week</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{schedule.total_posts_month}</div>
-              <div className="text-sm text-green-700">Total Posts This Month</div>
+              <div className="text-2xl font-bold text-cyan-400">{schedule.total_posts_month}</div>
+              <div className="text-sm text-slate-300">Total Posts This Month</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{schedule.content_themes?.length || 0}</div>
-              <div className="text-sm text-green-700">Content Themes</div>
+              <div className="text-2xl font-bold text-cyan-400">{schedule.content_themes?.length || 0}</div>
+              <div className="text-sm text-slate-300">Content Themes</div>
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Weekly Schedule</h4>
+          <h4 className="text-lg font-semibold text-white">Weekly Schedule</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(schedule.schedule || {}).map(([week, weekData]: [string, any]) => (
-              <div key={week} className="bg-green-50 p-4 rounded-lg">
-                <h5 className="font-semibold text-green-800 mb-3">{week.replace('_', ' ').toUpperCase()}</h5>
+              <div key={week} className="bg-slate-700/30 p-4 rounded-xl border border-slate-600/30">
+                <h5 className="font-semibold text-white mb-3">{week.replace('_', ' ').toUpperCase()}</h5>
                 <div className="space-y-2">
                   {Object.entries(weekData).map(([day, dayData]: [string, any]) => (
                     <div key={day} className="flex justify-between items-center text-sm">
                       <span className="font-medium capitalize">{day}</span>
                       <div className="text-right">
-                        <div className="text-green-700">{dayData.content_type?.replace('_', ' ')}</div>
-                        <div className="text-gray-600 text-xs">{dayData.theme?.replace('_', ' ')}</div>
+                        <div className="text-cyan-400">{dayData.content_type?.replace('_', ' ')}</div>
+                        <div className="text-slate-400 text-xs">{dayData.theme?.replace('_', ' ')}</div>
                       </div>
                     </div>
                   ))}
@@ -797,10 +797,10 @@ export default function RecommendationsPage() {
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Content Themes</h4>
+          <h4 className="text-lg font-semibold text-white">Content Themes</h4>
           <div className="flex flex-wrap gap-2">
             {schedule.content_themes?.map((theme: string, index: number) => (
-              <span key={index} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+              <span key={index} className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-sm font-medium">
                 {theme}
               </span>
             ))}
@@ -808,14 +808,14 @@ export default function RecommendationsPage() {
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Hashtag Strategies</h4>
+          <h4 className="text-lg font-semibold text-white">Hashtag Strategies</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(schedule.hashtag_strategies || {}).map(([category, hashtags]: [string, any]) => (
-              <div key={category} className="bg-green-50 p-4 rounded-lg">
-                <h5 className="font-semibold text-green-800 mb-2 capitalize">{category.replace('_', ' ')}</h5>
+              <div key={category} className="bg-slate-700/30 p-4 rounded-xl border border-slate-600/30">
+                <h5 className="font-semibold text-white mb-2 capitalize">{category.replace('_', ' ')}</h5>
                 <div className="flex flex-wrap gap-1">
                   {hashtags?.map((hashtag: string, index: number) => (
-                    <span key={index} className="px-2 py-1 bg-green-200 text-green-800 rounded text-xs">
+                    <span key={index} className="px-2 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded text-xs">
                       {hashtag}
                     </span>
                   ))}
@@ -834,52 +834,52 @@ export default function RecommendationsPage() {
     
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-6 rounded-lg">
-          <h3 className="text-xl font-bold text-orange-900 mb-4">Performance Goals & Metrics</h3>
+        <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
+          <h3 className="text-xl font-bold text-white mb-4">Performance Goals & Metrics</h3>
         </div>
 
         <div className="space-y-6">
           <div>
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Monthly Goals</h4>
+            <h4 className="text-lg font-semibold text-white mb-4">Monthly Goals</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Object.entries(goals.monthly_goals || {}).map(([key, value]: [string, any]) => (
-                <div key={key} className="bg-orange-50 p-4 rounded-lg">
+                <div key={key} className="bg-slate-700/30 p-4 rounded-xl border border-slate-600/30">
                   <div className="flex items-center space-x-2 mb-2">
-                    <Target className="w-4 h-4 text-orange-600" />
-                    <span className="font-semibold text-orange-800 capitalize">
+                    <Target className="w-4 h-4 text-cyan-400" />
+                    <span className="font-semibold text-white capitalize">
                       {key.replace('_', ' ')}
                     </span>
                   </div>
-                  <div className="text-lg font-bold text-orange-700">{value}</div>
+                  <div className="text-lg font-bold text-cyan-400">{value}</div>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Quarterly Goals</h4>
+            <h4 className="text-lg font-semibold text-white mb-4">Quarterly Goals</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Object.entries(goals.quarterly_goals || {}).map(([key, value]: [string, any]) => (
-                <div key={key} className="bg-orange-50 p-4 rounded-lg">
+                <div key={key} className="bg-slate-700/30 p-4 rounded-xl border border-slate-600/30">
                   <div className="flex items-center space-x-2 mb-2">
-                    <TrendingUp className="w-4 h-4 text-orange-600" />
-                    <span className="font-semibold text-orange-800 capitalize">
+                    <TrendingUp className="w-4 h-4 text-cyan-400" />
+                    <span className="font-semibold text-white capitalize">
                       {key.replace('_', ' ')}
                     </span>
                   </div>
-                  <div className="text-lg font-bold text-orange-700">{value}</div>
+                  <div className="text-lg font-bold text-cyan-400">{value}</div>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Success Metrics</h4>
+            <h4 className="text-lg font-semibold text-white mb-4">Success Metrics</h4>
             <div className="space-y-2">
               {goals.success_metrics?.map((metric: string, index: number) => (
                 <div key={index} className="flex items-start space-x-2">
-                  <Star className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">{metric}</span>
+                  <Star className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-slate-300">{metric}</span>
                 </div>
               ))}
             </div>
@@ -895,34 +895,34 @@ export default function RecommendationsPage() {
     
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-red-50 to-red-100 p-6 rounded-lg">
-          <h3 className="text-xl font-bold text-red-900 mb-4">Pricing Strategy & Recommendations</h3>
+        <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
+          <h3 className="text-xl font-bold text-white mb-4">Pricing Strategy & Recommendations</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{pricing.current_average_rate}</div>
-              <div className="text-sm text-red-700">Current Average Rate</div>
+              <div className="text-2xl font-bold text-cyan-400">{pricing.current_average_rate}</div>
+              <div className="text-sm text-slate-300">Current Average Rate</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{pricing.recommended_rate}</div>
-              <div className="text-sm text-red-700">Recommended Rate</div>
+              <div className="text-2xl font-bold text-cyan-400">{pricing.recommended_rate}</div>
+              <div className="text-sm text-slate-300">Recommended Rate</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{pricing.rate_increase}</div>
-              <div className="text-sm text-red-700">Rate Increase</div>
+              <div className="text-2xl font-bold text-cyan-400">{pricing.rate_increase}</div>
+              <div className="text-sm text-slate-300">Rate Increase</div>
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Pricing Tiers</h4>
+          <h4 className="text-lg font-semibold text-white">Pricing Tiers</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(pricing.pricing_tiers || {}).map(([tier, price]: [string, any]) => (
-              <div key={tier} className="bg-red-50 p-4 rounded-lg">
+              <div key={tier} className="bg-slate-700/30 p-4 rounded-xl border border-slate-600/30">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-red-800 capitalize">
+                  <span className="font-semibold text-white capitalize">
                     {tier.replace('_', ' ')}
                   </span>
-                  <span className="text-xl font-bold text-red-600">{price}</span>
+                  <span className="text-xl font-bold text-cyan-400">{price}</span>
                 </div>
               </div>
             ))}
@@ -930,24 +930,24 @@ export default function RecommendationsPage() {
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Pricing Strategies</h4>
+          <h4 className="text-lg font-semibold text-white">Pricing Strategies</h4>
           <div className="space-y-2">
             {pricing.pricing_strategies?.map((strategy: string, index: number) => (
               <div key={index} className="flex items-start space-x-2">
-                <DollarSign className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">{strategy}</span>
+                <DollarSign className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
+                <span className="text-slate-300">{strategy}</span>
               </div>
             ))}
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Negotiation Tips</h4>
+          <h4 className="text-lg font-semibold text-white">Negotiation Tips</h4>
           <div className="space-y-2">
             {pricing.negotiation_tips?.map((tip: string, index: number) => (
               <div key={index} className="flex items-start space-x-2">
-                <Star className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">{tip}</span>
+                <Star className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
+                <span className="text-slate-300">{tip}</span>
               </div>
             ))}
           </div>
@@ -962,11 +962,11 @@ export default function RecommendationsPage() {
     
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 p-6 rounded-lg">
-          <h3 className="text-xl font-bold text-indigo-900 mb-4">AI Agent Insights</h3>
+        <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
+          <h3 className="text-xl font-bold text-white mb-4">AI Agent Insights</h3>
           <div className="text-center">
-            <div className="text-2xl font-bold text-indigo-600">{insights.length}</div>
-            <div className="text-sm text-indigo-700">AI Agents Analyzed</div>
+            <div className="text-2xl font-bold text-cyan-400">{insights.length}</div>
+            <div className="text-sm text-slate-300">AI Agents Analyzed</div>
           </div>
         </div>
 
@@ -978,7 +978,7 @@ export default function RecommendationsPage() {
             return (
               <div
                 key={index}
-                className="bg-white p-4 rounded-lg border border-gray-200 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+                className="bg-slate-700/30 p-4 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/50 transition-all duration-200 hover:scale-105"
                 onClick={() => openModal(insight)}
               >
                 <div className="flex flex-col items-center text-center space-y-3">
@@ -986,14 +986,14 @@ export default function RecommendationsPage() {
                     <IconComponent className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h5 className="font-semibold text-gray-800 capitalize text-sm">
+                    <h5 className="font-semibold text-white capitalize text-sm">
                       {insight.agent_type?.replace('_', ' ')} Advisor
                     </h5>
-                    <p className="text-xs text-gray-600 capitalize">
+                    <p className="text-xs text-slate-400 capitalize">
                       {insight.focus_area?.replace('_', ' ')}
                     </p>
                   </div>
-                  <div className="w-full text-xs text-gray-600 overflow-hidden">
+                  <div className="w-full text-xs text-slate-400 overflow-hidden">
                     <div className="h-12 overflow-hidden">
                       {insight.response?.substring(0, 80)}...
                     </div>
@@ -1001,12 +1001,12 @@ export default function RecommendationsPage() {
                   <div className="w-full flex flex-col items-center space-y-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       insight.status === 'success' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                        : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                     }`}>
                       {insight.status}
                     </span>
-                    <span className="text-xs text-indigo-600 font-medium">Click to view details</span>
+                    <span className="text-xs text-cyan-400 font-medium">Click to view details</span>
                   </div>
                 </div>
               </div>

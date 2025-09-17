@@ -23,7 +23,10 @@ class UILogger {
   constructor() {
     // Initialize logging
     this.setupConsoleLogging();
-    this.setupErrorHandling();
+    // Only setup error handling in browser environment
+    if (typeof window !== 'undefined') {
+      this.setupErrorHandling();
+    }
     this.startLogProcessor();
   }
 
@@ -193,9 +196,14 @@ class UILogger {
   }
 
   /**
-   * Setup global error handling
+   * Setup global error handling (browser only)
    */
   private setupErrorHandling(): void {
+    // Only run in browser environment
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     // Handle unhandled promise rejections
     window.addEventListener('unhandledrejection', (event) => {
       this.logError('Unhandled Promise Rejection', event.reason);
@@ -273,9 +281,14 @@ class UILogger {
   }
 
   /**
-   * Send log entry to file via API endpoint
+   * Send log entry to file via API endpoint (browser only)
    */
   private async sendLogToFile(log: LogEntry): Promise<void> {
+    // Only send logs in browser environment
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     try {
       const response = await fetch('/api/log', {
         method: 'POST',

@@ -414,6 +414,20 @@ export default function SettingsPage() {
                     <h3 className="text-xl font-semibold text-white">Notification Preferences</h3>
                   </div>
                   
+                  {/* Feature Coming Soon */}
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center mb-6">
+                      <Bell className="w-10 h-10 text-white" />
+                    </div>
+                    <h4 className="text-2xl font-bold text-white mb-3">Feature Coming Soon</h4>
+                    <p className="text-slate-400 text-center max-w-md leading-relaxed">
+                      We're working hard to bring you comprehensive notification settings. 
+                      This feature will allow you to customize how and when you receive notifications.
+                    </p>
+                  </div>
+
+                  {/* Commented out notification settings - temporarily disabled */}
+                  {/*
                   <div className="space-y-6">
                     <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                       <div>
@@ -522,6 +536,7 @@ export default function SettingsPage() {
                       </button>
                     </div>
                   </div>
+                  */}
                 </div>
               )}
 
@@ -534,6 +549,20 @@ export default function SettingsPage() {
                     <h3 className="text-xl font-semibold text-white">Privacy Settings</h3>
                   </div>
                   
+                  {/* Feature Coming Soon */}
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mb-6">
+                      <Shield className="w-10 h-10 text-white" />
+                    </div>
+                    <h4 className="text-2xl font-bold text-white mb-3">Feature Coming Soon</h4>
+                    <p className="text-slate-400 text-center max-w-md leading-relaxed">
+                      We're working hard to bring you comprehensive privacy settings. 
+                      This feature will allow you to control your profile visibility and data sharing preferences.
+                    </p>
+                  </div>
+
+                  {/* Commented out privacy settings - temporarily disabled */}
+                  {/*
                   <div className="space-y-6">
                     <div>
                       <label className="label-dark mb-3">
@@ -628,6 +657,7 @@ export default function SettingsPage() {
                       </button>
                     </div>
                   </div>
+                  */}
                 </div>
               )}
             </div>
