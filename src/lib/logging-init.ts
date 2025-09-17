@@ -7,12 +7,14 @@ import { uiLogger } from './logger';
 
 // Initialize logging
 export const initializeLogging = () => {
-  // Log application startup
-  uiLogger.logInfo('UI Application started', {
-    userAgent: navigator.userAgent,
-    url: window.location.href,
-    timestamp: new Date().toISOString()
-  });
+  // Only log application startup in browser environment
+  if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+    uiLogger.logInfo('UI Application started', {
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      timestamp: new Date().toISOString()
+    });
+  }
 
   // Log any existing errors in console
   const originalError = console.error;
@@ -42,7 +44,7 @@ export const initializeLogging = () => {
     });
   }
 
-  // Add utility functions to window for debugging
+  // Add utility functions to window for debugging (browser only)
   if (typeof window !== 'undefined') {
     (window as any).downloadLogs = () => {
       uiLogger.downloadLogFile();
@@ -57,9 +59,9 @@ export const initializeLogging = () => {
     };
 
     (window as any).uiLogger = uiLogger;
+    
+    console.log('UI Logging initialized. Use window.downloadLogs() to download logs.');
   }
-
-  console.log('UI Logging initialized. Use window.downloadLogs() to download logs.');
 };
 
 // Auto-initialize if in browser environment

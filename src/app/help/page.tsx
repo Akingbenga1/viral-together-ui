@@ -15,11 +15,13 @@ export default function HelpPage() {
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('');
 
-  // Load recently viewed articles from localStorage
+  // Load recently viewed articles from localStorage (browser only)
   useEffect(() => {
-    const saved = localStorage.getItem('help-recently-viewed');
-    if (saved) {
-      setRecentlyViewed(JSON.parse(saved));
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('help-recently-viewed');
+      if (saved) {
+        setRecentlyViewed(JSON.parse(saved));
+      }
     }
   }, []);
 

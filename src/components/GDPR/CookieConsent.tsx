@@ -12,6 +12,7 @@ interface CookiePreferences {
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>({
     necessary: true, // Always true
     analytics: false,
@@ -19,9 +20,13 @@ export default function CookieConsent() {
   });
 
   useEffect(() => {
-    const consent = localStorage.getItem('cookie-consent');
-    if (!consent) {
-      setShowBanner(true);
+    setMounted(true);
+    // Only access localStorage after component is mounted (client-side)
+    if (typeof window !== 'undefined') {
+      const consent = localStorage.getItem('cookie-consent');
+      if (!consent) {
+        setShowBanner(true);
+      }
     }
   }, []);
 
@@ -31,21 +36,29 @@ export default function CookieConsent() {
       analytics: true,
       marketing: true
     };
-    localStorage.setItem('cookie-consent', JSON.stringify(allAccepted));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cookie-consent', JSON.stringify(allAccepted));
+    }
     setShowBanner(false);
   };
 
   const acceptNecessary = () => {
-    localStorage.setItem('cookie-consent', JSON.stringify(preferences));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cookie-consent', JSON.stringify(preferences));
+    }
     setShowBanner(false);
   };
 
   const savePreferences = () => {
-    localStorage.setItem('cookie-consent', JSON.stringify(preferences));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cookie-consent', JSON.stringify(preferences));
+    }
     setShowSettings(false);
     setShowBanner(false);
   };
 
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) return null;
   if (!showBanner && !showSettings) return null;
 
   return (

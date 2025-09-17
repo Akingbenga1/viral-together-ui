@@ -166,7 +166,7 @@ export default function CoachingDashboard() {
   };
 
   const generateInviteLink = (joinCode: string) => {
-    const baseUrl = window.location.origin;
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
     return `${baseUrl}/dashboard/coaching/join?code=${joinCode}`;
   };
 

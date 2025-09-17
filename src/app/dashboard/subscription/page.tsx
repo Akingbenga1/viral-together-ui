@@ -37,20 +37,22 @@ export default function SubscriptionPage() {
     fetchData();
   }, []);
 
-  // Handle success/cancel messages from Stripe checkout
+  // Handle success/cancel messages from Stripe checkout (browser only)
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const success = urlParams.get('success');
-    const canceled = urlParams.get('canceled');
-    
-    if (success === 'true') {
-      toast.success('Subscription activated successfully! Welcome to your new plan.');
-      // Clean up URL parameters
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (canceled === 'true') {
-      toast.error('Subscription process was canceled. You can try again anytime.');
-      // Clean up URL parameters
-      window.history.replaceState({}, document.title, window.location.pathname);
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const success = urlParams.get('success');
+      const canceled = urlParams.get('canceled');
+      
+      if (success === 'true') {
+        toast.success('Subscription activated successfully! Welcome to your new plan.');
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (canceled === 'true') {
+        toast.error('Subscription process was canceled. You can try again anytime.');
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
   }, []);
 
@@ -59,16 +61,18 @@ export default function SubscriptionPage() {
     try {
       const checkoutSession = await apiClient.createCheckoutSession({
         plan_id: planId,
-        success_url: `${window.location.origin}/dashboard/subscription?success=true`,
-        cancel_url: `${window.location.origin}/dashboard/subscription?canceled=true`,
+        success_url: typeof window !== 'undefined' ? `${window.location.origin}/dashboard/subscription?success=true` : '',
+        cancel_url: typeof window !== 'undefined' ? `${window.location.origin}/dashboard/subscription?canceled=true` : '',
       });
 
       if (!checkoutSession.url) {
         throw new Error('No checkout URL received from server');
       }
 
-      // Redirect to Stripe checkout
-      window.location.href = checkoutSession.url;
+      // Redirect to Stripe checkout (browser only)
+      if (typeof window !== 'undefined') {
+        window.location.href = checkoutSession.url;
+      }
     } catch (error: any) {
       console.error('Failed to create checkout session:', error);
       
@@ -103,11 +107,13 @@ export default function SubscriptionPage() {
     setIsProcessing(true);
     try {
       const portalSession = await apiClient.createPortalSession({
-        return_url: `${window.location.origin}/dashboard/subscription`,
+        return_url: typeof window !== 'undefined' ? `${window.location.origin}/dashboard/subscription` : '',
       });
 
-      // Redirect to Stripe customer portal
-      window.location.href = portalSession.url;
+      // Redirect to Stripe customer portal (browser only)
+      if (typeof window !== 'undefined') {
+        window.location.href = portalSession.url;
+      }
     } catch (error: any) {
       console.error('Failed to create portal session:', error);
       
@@ -321,7 +327,7 @@ export default function SubscriptionPage() {
                     </button>
                     
                     <button
-                      onClick={() => window.location.reload()}
+                      onClick={() => typeof window !== 'undefined' && window.location.reload()}
                       className="btn-dark border border-slate-600/30 hover:border-slate-500/50 px-8 py-3 rounded-xl font-medium"
                     >
                       Refresh Status

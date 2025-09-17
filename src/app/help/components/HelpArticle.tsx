@@ -14,19 +14,21 @@ export default function HelpArticle({ article, searchQuery = '' }: HelpArticlePr
   const [feedback, setFeedback] = useState<'helpful' | 'not-helpful' | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
-  // Track recently viewed articles
+  // Track recently viewed articles (browser only)
   useEffect(() => {
-    if (expanded) {
+    if (expanded && typeof window !== 'undefined') {
       const recentlyViewed = JSON.parse(localStorage.getItem('help-recently-viewed') || '[]');
       const updated = [article.id, ...recentlyViewed.filter((id: string) => id !== article.id)].slice(0, 10);
       localStorage.setItem('help-recently-viewed', JSON.stringify(updated));
     }
   }, [expanded, article.id]);
 
-  // Check if article is bookmarked on mount
+  // Check if article is bookmarked on mount (browser only)
   useEffect(() => {
-    const bookmarks = JSON.parse(localStorage.getItem('help-bookmarks') || '[]');
-    setIsBookmarked(bookmarks.includes(article.id));
+    if (typeof window !== 'undefined') {
+      const bookmarks = JSON.parse(localStorage.getItem('help-bookmarks') || '[]');
+      setIsBookmarked(bookmarks.includes(article.id));
+    }
   }, [article.id]);
 
   const highlightText = (text: string, query: string) => {
@@ -53,17 +55,19 @@ export default function HelpArticle({ article, searchQuery = '' }: HelpArticlePr
   };
 
   const toggleBookmark = () => {
-    const bookmarks = JSON.parse(localStorage.getItem('help-bookmarks') || '[]');
-    const updated = isBookmarked 
-      ? bookmarks.filter((id: string) => id !== article.id)
-      : [...bookmarks, article.id];
-    
-    localStorage.setItem('help-bookmarks', JSON.stringify(updated));
-    setIsBookmarked(!isBookmarked);
+    if (typeof window !== 'undefined') {
+      const bookmarks = JSON.parse(localStorage.getItem('help-bookmarks') || '[]');
+      const updated = isBookmarked 
+        ? bookmarks.filter((id: string) => id !== article.id)
+        : [...bookmarks, article.id];
+      
+      localStorage.setItem('help-bookmarks', JSON.stringify(updated));
+      setIsBookmarked(!isBookmarked);
+    }
   };
 
   const shareArticle = async () => {
-    if (navigator.share) {
+    if (typeof window !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
           title: article.question,
@@ -73,7 +77,7 @@ export default function HelpArticle({ article, searchQuery = '' }: HelpArticlePr
       } catch (error) {
         console.log('Error sharing:', error);
       }
-    } else {
+    } else if (typeof window !== 'undefined') {
       // Fallback: copy to clipboard
       const url = `${window.location.origin}/help#${article.id}`;
       navigator.clipboard.writeText(url);

@@ -37,10 +37,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const init = async () => {
       try {
-        const token = Cookies.get('access_token');
-        if (token) {
-          const currentUser = await apiClient.getCurrentUser();
-          setUser(currentUser);
+        // Only access cookies in browser environment
+        if (typeof window !== 'undefined') {
+          const token = Cookies.get('access_token');
+          if (token) {
+            const currentUser = await apiClient.getCurrentUser();
+            setUser(currentUser);
+          }
         }
       } catch {
         setUser(null);
@@ -56,8 +59,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       const tokens = await apiClient.login(credentials);
       
-      // Store token in cookie
-      Cookies.set('access_token', tokens.access_token, { expires: 7 });
+      // Store token in cookie (browser only)
+      if (typeof window !== 'undefined') {
+        Cookies.set('access_token', tokens.access_token, { expires: 7 });
+      }
       
       const currentUser = await apiClient.getCurrentUser();
       setUser(currentUser);
@@ -92,7 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    Cookies.remove('access_token');
+    if (typeof window !== 'undefined') {
+      Cookies.remove('access_token');
+    }
     setUser(null);
     toast.success('Logged out successfully');
     router.push('/auth/login');

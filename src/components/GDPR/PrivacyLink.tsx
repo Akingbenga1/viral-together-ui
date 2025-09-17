@@ -7,26 +7,28 @@ export default function PrivacyLink() {
   const [showModal, setShowModal] = useState(false);
 
   const handleDataExport = () => {
-    // Simple data export simulation
-    const userData = {
-      profile: localStorage.getItem('user-profile'),
-      preferences: localStorage.getItem('user-preferences'),
-      cookieConsent: localStorage.getItem('cookie-consent'),
-      timestamp: new Date().toISOString(),
-      note: "This is a simulated data export. In a real implementation, this would contain all user data from the backend."
-    };
-    
-    const blob = new Blob([JSON.stringify(userData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'my-data-export.json';
-    a.click();
-    URL.revokeObjectURL(url);
+    if (typeof window !== 'undefined') {
+      // Simple data export simulation
+      const userData = {
+        profile: localStorage.getItem('user-profile'),
+        preferences: localStorage.getItem('user-preferences'),
+        cookieConsent: localStorage.getItem('cookie-consent'),
+        timestamp: new Date().toISOString(),
+        note: "This is a simulated data export. In a real implementation, this would contain all user data from the backend."
+      };
+      
+      const blob = new Blob([JSON.stringify(userData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'my-data-export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   const handleAccountDeletion = () => {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    if (typeof window !== 'undefined' && confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       // Simple account deletion simulation
       localStorage.clear();
       alert('Account deletion simulated. In a real implementation, this would delete your account from the backend.');
@@ -35,9 +37,11 @@ export default function PrivacyLink() {
   };
 
   const handleCookieSettings = () => {
-    // Clear cookie consent to show banner again
-    localStorage.removeItem('cookie-consent');
-    window.location.reload();
+    if (typeof window !== 'undefined') {
+      // Clear cookie consent to show banner again
+      localStorage.removeItem('cookie-consent');
+      window.location.reload();
+    }
   };
 
   return (
@@ -76,7 +80,7 @@ export default function PrivacyLink() {
               </button>
 
               <button
-                onClick={() => window.open('/privacy', '_blank')}
+                onClick={() => typeof window !== 'undefined' && window.open('/privacy', '_blank')}
                 className="w-full flex items-center space-x-3 p-3 text-left hover:bg-gray-50 rounded-lg"
               >
                 <Shield className="w-5 h-5 text-green-600" />
