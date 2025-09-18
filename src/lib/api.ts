@@ -143,7 +143,7 @@ class ApiClient {
           // Use a more graceful redirect approach
           setTimeout(() => {
             if (typeof window !== 'undefined') {
-              window.location.href = '/auth/login';
+              window.location.href = '/';
             }
           }, 1500); // Give time for toast to show
         }
