@@ -39,10 +39,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Only access cookies in browser environment
         if (typeof window !== 'undefined') {
-          const token = Cookies.get('access_token');
-          if (token) {
-            const currentUser = await apiClient.getCurrentUser();
-            setUser(currentUser);
+          // Check if current route is public/unauthenticated
+          const currentPath = window.location.pathname;
+          const publicRoutes = ['/', '/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy'];
+          const isPublicRoute = publicRoutes.includes(currentPath) || currentPath.startsWith('/blog');
+          
+          // Only check authentication for protected routes
+          if (!isPublicRoute) {
+            const token = Cookies.get('access_token');
+            if (token) {
+              const currentUser = await apiClient.getCurrentUser();
+              setUser(currentUser);
+            }
           }
         }
       } catch {
