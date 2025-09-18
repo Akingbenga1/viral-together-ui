@@ -33,7 +33,7 @@ export default function HelpIndex({ onCategoryClick }: HelpIndexProps) {
           Welcome to the Help Center
         </h2>
         <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-          Find everything you need to know about Viral Together. Whether you're an influencer looking to grow your business or a company seeking authentic partnerships, we've got you covered.
+          Find everything you need to know about Viral Together. Whether you&apos;re an influencer looking to grow your business or a company seeking authentic partnerships, we&apos;ve got you covered.
         </p>
       </div>
 
@@ -112,7 +112,7 @@ export default function HelpIndex({ onCategoryClick }: HelpIndexProps) {
             </div>
             <h4 className="font-medium text-gray-900 mb-2">Need Support?</h4>
             <p className="text-sm text-gray-600 mb-3">
-              Can't find what you're looking for? Contact our support team.
+              Can&apos;t find what you&apos;re looking for? Contact our support team.
             </p>
             <a
               href="mailto:support@viraltogether.com"

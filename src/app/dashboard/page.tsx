@@ -27,9 +27,9 @@ export default function DashboardPage() {
 
         setInfluencers(allInfluencers.slice(0, 5)); // Show only first 5 for preview
 
-        const totalCampaigns = allInfluencers.reduce((sum, inf) => sum + inf.successful_campaigns, 0);
+        const totalCampaigns = allInfluencers.reduce((sum, inf) => sum + (inf.successful_campaigns || 0), 0);
         const averageRate = allInfluencers.length > 0 
-          ? allInfluencers.reduce((sum, inf) => sum + inf.rate_per_post, 0) / allInfluencers.length 
+          ? allInfluencers.reduce((sum, inf) => sum + (inf.rate_per_post || 0), 0) / allInfluencers.length 
           : 0;
 
         setStats({
@@ -94,7 +94,7 @@ export default function DashboardPage() {
                 Dashboard
               </h2>
               <p className="mt-1 text-sm text-slate-400">
-                Welcome back! Here's what's happening with your influencer campaigns.
+                Welcome back! Here&apos;s what&apos;s happening with your influencer campaigns.
               </p>
             </div>
             <div className="mt-4 flex md:mt-0 md:ml-4">
@@ -172,15 +172,15 @@ export default function DashboardPage() {
                     <div key={influencer.id} className="flex items-center space-x-4">
                       <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center">
                         <span className="text-sm font-medium text-white">
-                          {influencer.name?.charAt(0) || 'U'}
+                          {(influencer.user.first_name || influencer.user.username)?.charAt(0) || 'U'}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
-                          {influencer.name || 'Unnamed Influencer'}
+                          {influencer.user.first_name || influencer.user.username || 'Unnamed Influencer'}
                         </p>
                         <p className="text-sm text-gray-500 truncate">
-                          {influencer.location} • {influencer.languages}
+                          {influencer.base_country.name} • {influencer.languages || 'N/A'}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -192,7 +192,7 @@ export default function DashboardPage() {
                           {influencer.availability ? 'Available' : 'Busy'}
                         </span>
                         <span className="text-sm font-medium text-gray-900">
-                          {formatCurrency(influencer.rate_per_post)}
+                          {formatCurrency(influencer.rate_per_post || 0)}
                         </span>
                       </div>
                     </div>

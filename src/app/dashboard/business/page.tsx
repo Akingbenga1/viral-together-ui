@@ -104,7 +104,7 @@ export default function BusinessDashboardPage() {
                 Business Dashboard
               </h2>
               <p className="mt-1 text-sm text-slate-400">
-                Welcome back, {user?.first_name || user?.username}! Here's your business campaign overview.
+                Welcome back, {user?.first_name || user?.username}! Here&apos;s your business campaign overview.
               </p>
             </div>
             <div className="mt-4 flex md:mt-0 md:ml-4">

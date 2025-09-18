@@ -152,7 +152,7 @@ export default function LoginDarkPage() {
       {/* Footer Links */}
       <div className="text-center pt-6 border-t border-form-border/20">
         <p className="text-form-text-muted text-sm">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link 
             href="/auth/register" 
             className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium"

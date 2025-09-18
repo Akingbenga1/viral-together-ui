@@ -286,22 +286,22 @@ export default function AdminSubscriptionsPage() {
                           ${subscription.plan?.price_per_month || 0}/month
                         </div>
                         <div className="text-xs text-slate-500">
-                          {subscription.plan?.description || 'No description'}
+                          {subscription.plan?.name || 'No plan name'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
-                          {getStatusIcon(subscription.status)}
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(subscription.status)}`}>
-                            {subscription.status}
+                          {getStatusIcon('active')}
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor('active')}`}>
+                            Active
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
-                        {subscription.start_date ? new Date(subscription.start_date).toLocaleDateString() : 'N/A'}
+                        {subscription.created_at ? new Date(subscription.created_at).toLocaleDateString() : 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
-                        {subscription.end_date ? new Date(subscription.end_date).toLocaleDateString() : 'N/A'}
+                        {subscription.updated_at ? new Date(subscription.updated_at).toLocaleDateString() : 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">

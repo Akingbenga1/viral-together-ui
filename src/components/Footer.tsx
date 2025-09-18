@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Users } from 'lucide-react';
 import PrivacyLink from '@/components/GDPR/PrivacyLink';
 
-export default function Footer() {
+const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto px-4">
@@ -50,4 +50,6 @@ export default function Footer() {
       </div>
     </footer>
   );
-} 
+};
+
+export default Footer; 

@@ -60,9 +60,9 @@ export default function SearchPage() {
         // For businesses, we'll use a simple search for now
         const businesses = await apiClient.getAllBusinesses();
         const filteredBusinesses = businesses.filter(business =>
-          business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          business.industry.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          business.description.toLowerCase().includes(searchTerm.toLowerCase())
+          business.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          business.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          business.description?.toLowerCase().includes(searchTerm.toLowerCase())
         );
         setResults(filteredBusinesses);
       }
@@ -178,7 +178,7 @@ export default function SearchPage() {
       <div className="mt-6 grid grid-cols-2 gap-4">
         <div className="text-center p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
           <p className="text-xs text-slate-400 mb-1">Contact</p>
-          <p className="font-bold text-white text-sm truncate">{business.contact_name}</p>
+          <p className="font-bold text-white text-sm truncate">{business.user?.first_name || business.user?.username || 'N/A'}</p>
         </div>
         <div className="text-center p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
           <p className="text-xs text-slate-400 mb-1">Email</p>

@@ -32,7 +32,7 @@ export default function AboutPage() {
             
             <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-gray-100">
               <p className="text-xl md:text-2xl text-gray-700 leading-relaxed text-center font-medium">
-                "To democratize influencer marketing by providing a transparent, efficient, and authentic platform that connects brands with the perfect influencers, enabling meaningful partnerships that drive real business growth while empowering creators to monetize their influence effectively."
+                &quot;To democratize influencer marketing by providing a transparent, efficient, and authentic platform that connects brands with the perfect influencers, enabling meaningful partnerships that drive real business growth while empowering creators to monetize their influence effectively.&quot;
               </p>
             </div>
           </div>
@@ -54,7 +54,7 @@ export default function AboutPage() {
             
             <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-gray-100">
               <p className="text-xl md:text-2xl text-gray-700 leading-relaxed text-center font-medium">
-                "To become the world's leading influencer marketing platform, setting the standard for transparency, authenticity, and measurable results in the creator economy. We envision a future where every brand can easily find their perfect influencer match, and every creator can build sustainable income through meaningful brand partnerships."
+                &quot;To become the world&apos;s leading influencer marketing platform, setting the standard for transparency, authenticity, and measurable results in the creator economy. We envision a future where every brand can easily find their perfect influencer match, and every creator can build sustainable income through meaningful brand partnerships.&quot;
               </p>
             </div>
           </div>

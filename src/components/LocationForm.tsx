@@ -11,13 +11,13 @@ interface LocationFormProps {
   title: string;
 }
 
-export default function LocationForm({
+const LocationForm = ({
   initialData,
   onSubmit,
   onCancel,
   isLoading = false,
   title
-}: LocationFormProps) {
+}: LocationFormProps) => {
   const [formData, setFormData] = useState<LocationBase>({
     city_name: '',
     region_name: '',
@@ -120,4 +120,6 @@ export default function LocationForm({
       </form>
     </div>
   );
-}
+};
+
+export default LocationForm;

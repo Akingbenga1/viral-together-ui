@@ -37,7 +37,7 @@ const navigation = [
   { name: 'Settings', href: '/dashboard/user/settings', icon: Settings },
 ];
 
-export default function UserDashboardLayout({ children }: UserDashboardLayoutProps) {
+const UserDashboardLayout = ({ children }: UserDashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
   const pathname = usePathname();
@@ -222,4 +222,6 @@ export default function UserDashboardLayout({ children }: UserDashboardLayoutPro
       </div>
     </div>
   );
-}
+};
+
+export default UserDashboardLayout;

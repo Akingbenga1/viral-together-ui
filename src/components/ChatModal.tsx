@@ -16,7 +16,7 @@ interface ChatModalProps {
   onClose: () => void;
 }
 
-export default function ChatModal({ isOpen, onClose }: ChatModalProps) {
+const ChatModal = ({ isOpen, onClose }: ChatModalProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -171,7 +171,7 @@ export default function ChatModal({ isOpen, onClose }: ChatModalProps) {
                 How can I help you today?
               </h3>
               <p className="text-gray-600 mb-6">
-                I'm here to answer your questions about Viral Together
+                I&apos;m here to answer your questions about Viral Together
               </p>
               
               {/* Suggestions */}
@@ -281,4 +281,6 @@ export default function ChatModal({ isOpen, onClose }: ChatModalProps) {
       </div>
     </div>
   );
-}
+};
+
+export default ChatModal;

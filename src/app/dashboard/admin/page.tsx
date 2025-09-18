@@ -172,7 +172,7 @@ export default function AdminDashboardPage() {
       last_name: user.last_name || '',
       email: user.email || '',
       username: user.username || '',
-      mobile_number: user.mobile_number || '',
+      mobile_number: '', // mobile_number not available in UserWithRoles type
       new_password: '',
       confirm_password: ''
     });

@@ -7,7 +7,24 @@ import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
-import { Blog } from '@/types';
+// Local Blog interface since it's not exported from @/types
+interface Blog {
+  id: number;
+  title: string;
+  content: string;
+  author: string;
+  created_at: string;
+  updated_at: string;
+  published: boolean;
+  slug: string;
+  topic: string;
+  description?: string;
+  excerpt?: string;
+  featured_image?: string;
+  tags?: string[];
+  category?: string;
+  views?: number;
+}
 import {
   DndContext,
   closestCenter,

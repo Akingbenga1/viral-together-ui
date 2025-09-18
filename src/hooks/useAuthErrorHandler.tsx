@@ -47,7 +47,7 @@ export const useAuthErrorHandler = (): AuthErrorHandler => {
    * @param customErrorMessage - Optional custom error message for auth errors
    * @returns Promise that resolves to the API response or rejects with non-auth errors
    */
-  const withAuthErrorHandling = async <T>(
+  const withAuthErrorHandling = async <T,>(
     apiCall: () => Promise<T>,
     customErrorMessage?: string
   ): Promise<T> => {

@@ -29,7 +29,7 @@ const createAnimatedIcon = () => {
 };
 
 // Enhanced map controller component with zoom control
- function MapController({ 
+ const MapController = ({ 
    position, 
    onLocationSelect,
    zoomLevel = 15,
@@ -41,7 +41,7 @@ const createAnimatedIcon = () => {
    zoomLevel?: number;
    isSearchResult?: boolean;
    isAnimating?: boolean;
- }) {
+ }) => {
   const map = useMap();
   
      useEffect(() => {
@@ -84,7 +84,7 @@ interface InteractiveMapProps {
   initialLng?: number;
 }
 
-function MapClickHandler({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
+const MapClickHandler = ({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) => {
   const map = useMapEvents({
     click: (e) => {
       const { lat, lng } = e.latlng;
@@ -93,13 +93,13 @@ function MapClickHandler({ onLocationSelect }: { onLocationSelect: (lat: number,
     },
   });
   return null;
-}
+};
 
-export default function InteractiveMap({ 
+const InteractiveMap = ({ 
   onLocationSelect, 
   initialLat = 40.7128, 
   initialLng = -74.0060
-}: InteractiveMapProps) {
+}: InteractiveMapProps) => {
   const [position, setPosition] = useState<[number, number]>([initialLat, initialLng]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -597,11 +597,13 @@ export default function InteractiveMap({
             <li>Click anywhere on the map to select a location</li>
             <li>Type in the search field to see autocomplete suggestions</li>
             <li>Click on any autocomplete result to instantly navigate to that location</li>
-            <li>Use the "Search" button to manually search and place markers</li>
+            <li>Use the &quot;Search&quot; button to manually search and place markers</li>
             <li>Use the 📍 button to get your current location</li>
             <li>Coordinates are automatically updated when you select a location</li>
           </ul>
         </div>
     </div>
   );
-}
+};
+
+export default InteractiveMap;

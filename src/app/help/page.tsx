@@ -116,7 +116,7 @@ export default function HelpPage() {
               {filteredArticleCount > 0 ? (
                 <>Showing {filteredArticleCount} of {totalArticles} articles</>
               ) : (
-                <>No articles found for "{searchQuery}"</>
+                <>No articles found for &quot;{searchQuery}&quot;</>
               )}
             </div>
           )}
@@ -216,7 +216,7 @@ export default function HelpPage() {
                         No articles found
                       </h3>
                       <p className="text-gray-600 mb-6">
-                        We couldn't find any articles matching your search. Try different keywords or browse our categories.
+                        We couldn&apos;t find any articles matching your search. Try different keywords or browse our categories.
                       </p>
                       <button
                         onClick={() => setSearchQuery('')}
@@ -259,7 +259,7 @@ export default function HelpPage() {
               Still need help?
             </h2>
             <p className="text-gray-600 mb-8">
-              Can't find what you're looking for? Our support team is here to help you succeed.
+              Can&apos;t find what you&apos;re looking for? Our support team is here to help you succeed.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a

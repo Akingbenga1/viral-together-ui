@@ -121,7 +121,7 @@ export default function RateCardDetailPage() {
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">Rate Card Not Found</h3>
             <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-md">
-              The rate card you're looking for doesn't exist or you don't have permission to view it.
+              The rate card you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to view it.
             </p>
             <button
               onClick={() => router.push('/dashboard/rate-cards')}
@@ -296,12 +296,7 @@ export default function RateCardDetailPage() {
                       <span className="text-white">@{influencer.user?.username}</span>
                     </div>
                     
-                    {influencer.user?.email && (
-                      <div>
-                        <label className="text-sm font-medium text-slate-400 mb-2 block">Email</label>
-                        <span className="text-white">{influencer.user.email}</span>
-                      </div>
-                    )}
+                    {/* Email not available in current user type */}
                   </div>
                 )}
               </div>
@@ -321,12 +316,12 @@ export default function RateCardDetailPage() {
                   
                   <div>
                     <label className="text-sm font-medium text-slate-400 mb-2 block">Created</label>
-                    <span className="text-white">{formatDate(rateCard.created_at)}</span>
+                    <span className="text-white">{rateCard.created_at ? formatDate(rateCard.created_at) : 'N/A'}</span>
                   </div>
                   
                   <div>
                     <label className="text-sm font-medium text-slate-400 mb-2 block">Last Updated</label>
-                    <span className="text-white">{formatDate(rateCard.updated_at)}</span>
+                    <span className="text-white">{rateCard.updated_at ? formatDate(rateCard.updated_at) : 'N/A'}</span>
                   </div>
                 </div>
               </div>

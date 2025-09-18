@@ -89,7 +89,7 @@ export default function ContactPage() {
             Contact Us
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Get in touch with our team. We're here to help you succeed with Viral Together.
+            Get in touch with our team. We&apos;re here to help you succeed with Viral Together.
           </p>
         </div>
       </section>
@@ -205,7 +205,7 @@ export default function ContactPage() {
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                   <div>
                     <p className="text-green-800 font-medium">Message sent successfully!</p>
-                    <p className="text-green-700 text-sm">We'll get back to you within 1-2 hours.</p>
+                    <p className="text-green-700 text-sm">We&apos;ll get back to you within 1-2 hours.</p>
                   </div>
                 </div>
               )}

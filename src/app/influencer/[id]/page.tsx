@@ -90,7 +90,7 @@ const InfluencerDetailsPage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Influencer Not Found</h2>
-          <p className="text-gray-600 mb-6">The influencer you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-6">The influencer you&apos;re looking for doesn&apos;t exist.</p>
           <Link href="/">
             <Button variant="secondary">
               <ArrowLeft className="w-4 h-4 mr-2" />

@@ -42,8 +42,8 @@ export default function AdminInfluencersPage() {
     ? Math.round(influencers.reduce((sum, inf) => sum + (inf.rate_per_post || 0), 0) / influencers.length)
     : 0;
 
-  // Get unique locations for filter
-  const uniqueLocations = Array.from(new Set(influencers.map(inf => inf.location).filter(Boolean)));
+  // Get unique locations for filter (location data not available in current Influencer type)
+  const uniqueLocations: string[] = [];
 
   // Filter influencers based on criteria
   const filteredInfluencers = influencers.filter(inf => {
@@ -51,13 +51,13 @@ export default function AdminInfluencersPage() {
       (filterAvailability === 'available' && inf.availability) ||
       (filterAvailability === 'unavailable' && !inf.availability);
     
-    const matchesLocation = filterLocation === 'all' || inf.location === filterLocation;
+    const matchesLocation = filterLocation === 'all'; // Location filtering disabled - location data not available in current Influencer type
     
     const matchesSearch = searchTerm === '' || 
       inf.user?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inf.user?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inf.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inf.location?.toLowerCase().includes(searchTerm.toLowerCase());
+      inf.user?.username?.toLowerCase().includes(searchTerm.toLowerCase());
+      // Location search disabled - location data not available in current Influencer type
 
     return matchesAvailability && matchesLocation && matchesSearch;
   });
@@ -264,7 +264,7 @@ export default function AdminInfluencersPage() {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2 text-sm text-slate-300">
                     <MapPin className="w-4 h-4 text-slate-400" />
-                    <span>{influencer.location || 'Location not specified'}</span>
+                    <span>Location not available</span>
                   </div>
                   
                   <div className="flex items-center space-x-2 text-sm text-slate-300">

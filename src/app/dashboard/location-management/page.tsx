@@ -1,12 +1,25 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
-import InteractiveMap from '@/components/InteractiveMap';
 import { apiClient } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+
+// Dynamically import InteractiveMap to avoid SSR issues
+const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="border border-gray-300 rounded-md overflow-hidden flex items-center justify-center" style={{ height: '400px' }}>
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+        <p className="text-gray-600">Loading map...</p>
+      </div>
+    </div>
+  )
+});
 
 export default function LocationManagementPage() {
   const { user, logout } = useAuth();

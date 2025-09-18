@@ -421,7 +421,7 @@ export default function SettingsPage() {
                     </div>
                     <h4 className="text-2xl font-bold text-white mb-3">Feature Coming Soon</h4>
                     <p className="text-slate-400 text-center max-w-md leading-relaxed">
-                      We're working hard to bring you comprehensive notification settings. 
+                      We&apos;re working hard to bring you comprehensive notification settings. 
                       This feature will allow you to customize how and when you receive notifications.
                     </p>
                   </div>
@@ -556,7 +556,7 @@ export default function SettingsPage() {
                     </div>
                     <h4 className="text-2xl font-bold text-white mb-3">Feature Coming Soon</h4>
                     <p className="text-slate-400 text-center max-w-md leading-relaxed">
-                      We're working hard to bring you comprehensive privacy settings. 
+                      We&apos;re working hard to bring you comprehensive privacy settings. 
                       This feature will allow you to control your profile visibility and data sharing preferences.
                     </p>
                   </div>

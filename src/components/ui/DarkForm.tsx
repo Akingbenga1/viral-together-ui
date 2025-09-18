@@ -45,14 +45,14 @@ interface DarkCheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 // Main form container
-export function DarkForm({ 
+export const DarkForm = ({ 
   children, 
   className, 
   onSubmit, 
   title, 
   subtitle, 
   showPattern = true 
-}: DarkFormProps) {
+}: DarkFormProps) => {
   return (
     <div className={cn(
       'min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4',
@@ -74,17 +74,17 @@ export function DarkForm({
       </div>
     </div>
   );
-}
+};
 
 // Dark input component
-export function DarkInput({ 
+export const DarkInput = ({ 
   label, 
   error, 
   icon, 
   helperText, 
   className, 
   ...props 
-}: DarkInputProps) {
+}: DarkInputProps) => {
   return (
     <div className="space-y-2">
       {label && (
@@ -123,13 +123,13 @@ export function DarkInput({
 }
 
 // Dark textarea component
-export function DarkTextarea({ 
+export const DarkTextarea = ({ 
   label, 
   error, 
   helperText, 
   className, 
   ...props 
-}: DarkTextareaProps) {
+}: DarkTextareaProps) => {
   return (
     <div className="space-y-2">
       {label && (
@@ -156,17 +156,17 @@ export function DarkTextarea({
       )}
     </div>
   );
-}
+};
 
 // Dark select component
-export function DarkSelect({ 
+export const DarkSelect = ({ 
   label, 
   error, 
   children, 
   helperText, 
   className, 
   ...props 
-}: DarkSelectProps) {
+}: DarkSelectProps) => {
   return (
     <div className="space-y-2">
       {label && (
@@ -204,10 +204,10 @@ export function DarkSelect({
       )}
     </div>
   );
-}
+};
 
 // Dark button component
-export function DarkButton({ 
+export const DarkButton = ({ 
   variant = 'primary', 
   size = 'md', 
   loading = false, 
@@ -215,7 +215,7 @@ export function DarkButton({
   className, 
   disabled,
   ...props 
-}: DarkButtonProps) {
+}: DarkButtonProps) => {
   const baseClasses = 'btn transition-all duration-200 font-medium';
   
   const variantClasses = {
@@ -253,15 +253,15 @@ export function DarkButton({
       )}
     </button>
   );
-}
+};
 
 // Dark checkbox component
-export function DarkCheckbox({ 
+export const DarkCheckbox = ({ 
   label, 
   error, 
   className, 
   ...props 
-}: DarkCheckboxProps) {
+}: DarkCheckboxProps) => {
   return (
     <div className="space-y-2">
       <div className="flex items-start space-x-3">
@@ -282,10 +282,10 @@ export function DarkCheckbox({
       )}
     </div>
   );
-}
+};
 
 // Form section divider
-export function DarkFormSection({ 
+export const DarkFormSection = ({ 
   title, 
   children, 
   className 
@@ -293,7 +293,7 @@ export function DarkFormSection({
   title?: string; 
   children: React.ReactNode; 
   className?: string; 
-}) {
+}) => {
   return (
     <div className={cn('space-y-4', className)}>
       {title && (
@@ -304,19 +304,19 @@ export function DarkFormSection({
       {children}
     </div>
   );
-}
+};
 
 // Form group for organizing related fields
-export function DarkFormGroup({ 
+export const DarkFormGroup = ({ 
   children, 
   className 
 }: { 
   children: React.ReactNode; 
   className?: string; 
-}) {
+}) => {
   return (
     <div className={cn('grid grid-cols-1 md:grid-cols-2 gap-4', className)}>
       {children}
     </div>
   );
-}
+};

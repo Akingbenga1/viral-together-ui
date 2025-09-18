@@ -234,18 +234,7 @@ export default function DarkFormsExamplePage() {
                   <UniversalCheckbox
                     dark
                     id="terms"
-                    label={
-                      <span>
-                        I agree to the{' '}
-                        <a href="#" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-                          Terms of Service
-                        </a>{' '}
-                        and{' '}
-                        <a href="#" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-                          Privacy Policy
-                        </a>
-                      </span>
-                    }
+                    label="I agree to the Terms of Service and Privacy Policy"
                     checked={formData.terms}
                     onChange={(e) => setFormData({ ...formData, terms: e.target.checked })}
                   />
@@ -299,7 +288,7 @@ export default function DarkFormsExamplePage() {
                   Contact Us
                 </h3>
                 <p className="text-gray-600 text-sm">
-                  We'd love to hear from you
+                  We&apos;d love to hear from you
                 </p>
               </div>
 

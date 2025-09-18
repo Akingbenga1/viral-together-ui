@@ -36,9 +36,10 @@ export default function InfluencersPage() {
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(influencer =>
-        influencer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        influencer.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        influencer.languages.toLowerCase().includes(searchTerm.toLowerCase())
+        influencer.user?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        influencer.user?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        influencer.user?.username?.toLowerCase().includes(searchTerm.toLowerCase())
+        // Location and languages filtering disabled - these properties not available in current Influencer type
       );
     }
 
@@ -196,8 +197,8 @@ export default function InfluencersPage() {
                 
                 <div className="min-w-0">
                   <h3 className="text-xl lg:text-2xl font-bold text-white mb-1 truncate">
-                    {influencers.length > 0 
-                      ? formatCurrency(influencers.reduce((sum, inf) => sum + inf.rate_per_post, 0) / influencers.length)
+                    {influencers.length > 0
+                      ? formatCurrency(influencers.reduce((sum, inf) => sum + (inf.rate_per_post || 0), 0) / influencers.length)
                       : '$0'
                     }
                   </h3>
@@ -231,11 +232,13 @@ export default function InfluencersPage() {
                     <div className="text-center">
                       <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                         <span className="text-xl font-bold text-white">
-                          {influencer.name?.charAt(0)?.toUpperCase() || 'U'}
+                          {influencer.user?.first_name?.charAt(0)?.toUpperCase() || 'U'}
                         </span>
                       </div>
                       <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-cyan-400 transition-colors">
-                        {influencer.name || 'Unnamed Influencer'}
+                        {influencer.user?.first_name && influencer.user?.last_name 
+                          ? `${influencer.user.first_name} ${influencer.user.last_name}`
+                          : influencer.user?.username || 'Unnamed Influencer'}
                       </h3>
                       <p className="text-sm text-slate-400 mb-4 line-clamp-2 leading-relaxed">
                         {influencer.bio}
@@ -245,32 +248,32 @@ export default function InfluencersPage() {
                     <div className="space-y-3 mb-6">
                       <div className="flex items-center text-sm text-slate-300">
                         <MapPin className="w-4 h-4 mr-3 text-cyan-400 flex-shrink-0" />
-                        <span className="truncate">{influencer.location}</span>
+                        <span className="truncate">Location not available</span>
                       </div>
                       <div className="flex items-center text-sm text-slate-300">
                         <Globe className="w-4 h-4 mr-3 text-cyan-400 flex-shrink-0" />
-                        <span className="truncate">{influencer.languages}</span>
+                        <span className="truncate">Languages not available</span>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4 mb-6">
                       <div className="text-center p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
                         <p className="text-xs text-slate-400 mb-1">Posts</p>
-                        <p className="font-bold text-white text-sm">{formatNumber(influencer.total_posts)}</p>
+                        <p className="font-bold text-white text-sm">{formatNumber(influencer.total_posts || 0)}</p>
                       </div>
                       <div className="text-center p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
                         <p className="text-xs text-slate-400 mb-1">Growth</p>
-                        <p className="font-bold text-emerald-400 text-sm">{influencer.growth_rate}%</p>
+                        <p className="font-bold text-emerald-400 text-sm">{influencer.growth_rate || 0}%</p>
                       </div>
                       <div className="text-center p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
                         <p className="text-xs text-slate-400 mb-1">Campaigns</p>
-                        <p className="font-bold text-white text-sm">{influencer.successful_campaigns}</p>
+                        <p className="font-bold text-white text-sm">{influencer.successful_campaigns || 0}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="text-xl font-bold text-emerald-400">
-                        {formatCurrency(influencer.rate_per_post)}
+                        {formatCurrency(influencer.rate_per_post || 0)}
                       </span>
                       <button
                         onClick={() => handleAvailabilityToggle(influencer.id, !influencer.availability)}

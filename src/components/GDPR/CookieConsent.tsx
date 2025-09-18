@@ -9,7 +9,7 @@ interface CookiePreferences {
   marketing: boolean;
 }
 
-export default function CookieConsent() {
+const CookieConsent = () => {
   const [showBanner, setShowBanner] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -178,4 +178,6 @@ export default function CookieConsent() {
       )}
     </>
   );
-}
+};
+
+export default CookieConsent;

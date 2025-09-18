@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Shield, Download, Trash2, Settings } from 'lucide-react';
 
-export default function PrivacyLink() {
+const PrivacyLink = () => {
   const [showModal, setShowModal] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -139,4 +139,6 @@ export default function PrivacyLink() {
       )}
     </>
   );
-}
+};
+
+export default PrivacyLink;

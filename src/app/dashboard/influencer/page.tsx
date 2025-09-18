@@ -122,7 +122,7 @@ export default function InfluencerDashboardPage() {
                 Influencer Dashboard 📈
               </h1>
               <div className="text-slate-300 text-lg leading-relaxed">
-                <span>Here's your influencer performance overview</span>
+                <span>Here&apos;s your influencer performance overview</span>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-slate-300">
                     {user?.first_name} {user?.last_name}

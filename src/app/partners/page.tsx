@@ -206,7 +206,7 @@ export default function PartnersPage() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Discovery</h3>
               <p className="text-gray-600">
-                We identify partners whose solutions align with our users' needs.
+                We identify partners whose solutions align with our users&apos; needs.
               </p>
             </div>
             

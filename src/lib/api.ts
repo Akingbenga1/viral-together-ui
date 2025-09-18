@@ -69,7 +69,9 @@ import {
   LocationPromotionRequestWithDetails
 } from '@/types/location';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+uiLogger.logInfo('API_BASE_URL ======>', API_BASE_URL);
 
 class ApiClient {
   private client: AxiosInstance;
@@ -907,17 +909,6 @@ class ApiClient {
     }>;
   }> {
     const response = await this.client.get('/api/analytics/monthly-subscription-revenue');
-    return response.data;
-  }
-
-  // Unified Influencer Profile endpoints
-  async getUnifiedInfluencerProfile(influencerId: number): Promise<any> {
-    const response = await this.client.get(`/unified-influencer-profile/${influencerId}`);
-    return response.data;
-  }
-
-  async getUnifiedInfluencerProfileByUserId(userId: number): Promise<any> {
-    const response = await this.client.get(`/unified-influencer-profile/user/${userId}`);
     return response.data;
   }
 

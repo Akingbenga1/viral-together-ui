@@ -13,7 +13,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            We're committed to protecting your privacy and being transparent about how we handle your information.
+            We&apos;re committed to protecting your privacy and being transparent about how we handle your information.
           </p>
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
             <span>Last updated:</span>
@@ -107,7 +107,7 @@ export default function PrivacyPage() {
                     </li>
                     <li className="flex items-start space-x-3">
                       <CheckCircle className="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0" />
-                      <span><strong>With Your Permission:</strong> We'll ask for your explicit consent before sharing your data in other ways</span>
+                      <span><strong>With Your Permission:</strong> We&apos;ll ask for your explicit consent before sharing your data in other ways</span>
                     </li>
                   </ul>
                 </div>
@@ -187,7 +187,7 @@ export default function PrivacyPage() {
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Questions About Privacy?</h3>
                   <p className="text-gray-700 mb-4">
-                    We're here to help with any privacy-related questions or concerns you might have.
+                    We&apos;re here to help with any privacy-related questions or concerns you might have.
                   </p>
                   <div className="flex items-center space-x-2">
                     <Mail className="w-5 h-5 text-primary-600" />
@@ -207,7 +207,7 @@ export default function PrivacyPage() {
           <div className="text-center text-gray-600 text-sm">
             <p>
               This privacy policy applies to all users of Viral Together. We may update this policy from time to time, 
-              and we'll notify you of any significant changes via email or through our platform.
+              and we&apos;ll notify you of any significant changes via email or through our platform.
             </p>
           </div>
         </div>

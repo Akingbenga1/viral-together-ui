@@ -140,7 +140,7 @@ export default function PeoplePage() {
                   and serve our global community of brands and creators.
                 </p>
                 <p className="text-lg text-gray-700 leading-relaxed">
-                  We're committed to creating opportunities for underrepresented groups in tech and marketing, 
+                  We&apos;re committed to creating opportunities for underrepresented groups in tech and marketing, 
                   ensuring that our platform reflects the rich diversity of the creator economy we serve.
                 </p>
               </div>
@@ -210,12 +210,12 @@ export default function PeoplePage() {
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
                 <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  "To democratize influencer marketing by providing a transparent, efficient, and authentic 
+                  &quot;To democratize influencer marketing by providing a transparent, efficient, and authentic 
                   platform that connects brands with the perfect influencers, enabling meaningful partnerships 
-                  that drive real business growth while empowering creators to monetize their influence effectively."
+                  that drive real business growth while empowering creators to monetize their influence effectively.&quot;
                 </p>
                 <p className="text-gray-600">
-                  We're committed to breaking down barriers in the influencer marketing industry, 
+                  We&apos;re committed to breaking down barriers in the influencer marketing industry, 
                   making it accessible to brands of all sizes and creators at every stage of their journey.
                 </p>
               </div>
@@ -227,13 +227,13 @@ export default function PeoplePage() {
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
                 <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  "To become the world's leading influencer marketing platform, setting the standard for 
+                  &quot;To become the world&apos;s leading influencer marketing platform, setting the standard for 
                   transparency, authenticity, and measurable results in the creator economy. We envision a 
                   future where every brand can easily find their perfect influencer match, and every creator 
-                  can build sustainable income through meaningful brand partnerships."
+                  can build sustainable income through meaningful brand partnerships.&quot;
                 </p>
                 <p className="text-gray-600">
-                  We're building the infrastructure for the future of creator economy, where authentic 
+                  We&apos;re building the infrastructure for the future of creator economy, where authentic 
                   partnerships drive real value for everyone involved.
                 </p>
               </div>
@@ -305,7 +305,7 @@ export default function PeoplePage() {
             Join Our Team
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            We're always looking for passionate individuals who share our vision for the future 
+            We&apos;re always looking for passionate individuals who share our vision for the future 
             of influencer marketing. Come build something amazing with us.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

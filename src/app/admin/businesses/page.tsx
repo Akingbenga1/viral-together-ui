@@ -273,7 +273,7 @@ export default function AdminBusinessesPage() {
                     </div>
                   </div>
                   <div className="flex flex-col space-y-1">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getVerificationColor(business.verified)}`}>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getVerificationColor(business.verified ?? false)}`}>
                       {business.verified ? 'Verified' : 'Unverified'}
                     </span>
                     {business.company_size && (

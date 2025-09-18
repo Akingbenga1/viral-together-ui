@@ -12,13 +12,13 @@ interface FormWrapperProps {
   pattern?: boolean;
 }
 
-export function FormWrapper({ 
+export const FormWrapper = ({ 
   children, 
   className, 
   dark = false, 
   fullScreen = false,
   pattern = true
-}: FormWrapperProps) {
+}: FormWrapperProps) => {
   if (dark) {
     return (
       <div className={cn(
@@ -38,7 +38,7 @@ export function FormWrapper({
       {children}
     </div>
   );
-}
+};
 
 // Universal input component that adapts to dark/light mode
 interface UniversalInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -49,7 +49,7 @@ interface UniversalInputProps extends React.InputHTMLAttributes<HTMLInputElement
   dark?: boolean;
 }
 
-export function UniversalInput({ 
+export const UniversalInput = ({ 
   label, 
   error, 
   icon, 
@@ -57,7 +57,7 @@ export function UniversalInput({
   dark = false,
   className, 
   ...props 
-}: UniversalInputProps) {
+}: UniversalInputProps) => {
   return (
     <div className="space-y-2">
       {label && (
@@ -99,7 +99,7 @@ export function UniversalInput({
       )}
     </div>
   );
-}
+};
 
 // Universal button component
 interface UniversalButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -110,7 +110,7 @@ interface UniversalButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElem
   children: React.ReactNode;
 }
 
-export function UniversalButton({ 
+export const UniversalButton = ({ 
   variant = 'primary', 
   size = 'md', 
   loading = false, 
@@ -119,7 +119,7 @@ export function UniversalButton({
   className, 
   disabled,
   ...props 
-}: UniversalButtonProps) {
+}: UniversalButtonProps) => {
   const baseClasses = 'btn transition-all duration-200 font-medium';
   
   const getVariantClasses = () => {
@@ -167,7 +167,7 @@ export function UniversalButton({
       )}
     </button>
   );
-}
+};
 
 // Universal textarea
 interface UniversalTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -177,14 +177,14 @@ interface UniversalTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAr
   dark?: boolean;
 }
 
-export function UniversalTextarea({ 
+export const UniversalTextarea = ({ 
   label, 
   error, 
   helperText, 
   dark = false,
   className, 
   ...props 
-}: UniversalTextareaProps) {
+}: UniversalTextareaProps) => {
   return (
     <div className="space-y-2">
       {label && (
@@ -214,7 +214,7 @@ export function UniversalTextarea({
       )}
     </div>
   );
-}
+};
 
 // Universal select
 interface UniversalSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
@@ -225,7 +225,7 @@ interface UniversalSelectProps extends React.SelectHTMLAttributes<HTMLSelectElem
   dark?: boolean;
 }
 
-export function UniversalSelect({ 
+export const UniversalSelect = ({ 
   label, 
   error, 
   children, 
@@ -233,7 +233,7 @@ export function UniversalSelect({
   dark = false,
   className, 
   ...props 
-}: UniversalSelectProps) {
+}: UniversalSelectProps) => {
   return (
     <div className="space-y-2">
       {label && (
@@ -276,7 +276,7 @@ export function UniversalSelect({
       )}
     </div>
   );
-}
+};
 
 // Universal checkbox
 interface UniversalCheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -285,13 +285,13 @@ interface UniversalCheckboxProps extends React.InputHTMLAttributes<HTMLInputElem
   dark?: boolean;
 }
 
-export function UniversalCheckbox({ 
+export const UniversalCheckbox = ({ 
   label, 
   error, 
   dark = false,
   className, 
   ...props 
-}: UniversalCheckboxProps) {
+}: UniversalCheckboxProps) => {
   return (
     <div className="space-y-2">
       <div className="flex items-start space-x-3">
@@ -321,7 +321,7 @@ export function UniversalCheckbox({
       )}
     </div>
   );
-}
+};
 
 // Radio group for multiple choice questions (like in uploaded image)
 interface RadioOption {
@@ -338,14 +338,14 @@ interface RadioGroupProps {
   className?: string;
 }
 
-export function RadioGroup({ 
+export const RadioGroup = ({ 
   name, 
   options, 
   value, 
   onChange, 
   dark = false, 
   className 
-}: RadioGroupProps) {
+}: RadioGroupProps) => {
   return (
     <div className={cn('space-y-3', className)}>
       {options.map((option) => (
@@ -378,4 +378,4 @@ export function RadioGroup({
       ))}
     </div>
   );
-}
+};

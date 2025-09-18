@@ -46,10 +46,6 @@ export const initializeLogging = () => {
 
   // Add utility functions to window for debugging (browser only)
   if (typeof window !== 'undefined') {
-    (window as any).downloadLogs = () => {
-      uiLogger.downloadLogFile();
-    };
-
     (window as any).clearLogs = () => {
       uiLogger.clearLogs();
     };
@@ -60,7 +56,7 @@ export const initializeLogging = () => {
 
     (window as any).uiLogger = uiLogger;
     
-    console.log('UI Logging initialized. Use window.downloadLogs() to download logs.');
+    console.log('UI Logging initialized. Use window.getLogs() to view logs.');
   }
 };
 

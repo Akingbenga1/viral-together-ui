@@ -57,7 +57,7 @@ const getNavigation = (isSuperAdmin: boolean, isInfluencer: boolean) => {
   return baseNavigation;
 };
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
   const pathname = usePathname();
@@ -212,4 +212,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
     </div>
   );
-} 
+};
+
+export default DashboardLayout; 

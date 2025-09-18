@@ -5,7 +5,7 @@ interface HeaderProps {
   showAuthButtons?: boolean;
 }
 
-export default function Header({ showAuthButtons = true }: HeaderProps) {
+const Header = ({ showAuthButtons = true }: HeaderProps) => {
   return (
     <header className="border-b bg-white">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -53,4 +53,6 @@ export default function Header({ showAuthButtons = true }: HeaderProps) {
       </div>
     </header>
   );
-} 
+};
+
+export default Header; 

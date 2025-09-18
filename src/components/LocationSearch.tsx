@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import { api } from '@/lib/api';
-import { NearbySearchParams } from '@/types/location';
+import { NearbySearchParams, NearbyInfluencer, NearbyBusiness, NearbyPromotion } from '@/types/location';
 
 interface LocationSearchProps {
   onResultsFound: (results: any[], type: string) => void;
 }
 
-export default function LocationSearch({ onResultsFound }: LocationSearchProps) {
+const LocationSearch = ({ onResultsFound }: LocationSearchProps) => {
   const [searchParams, setSearchParams] = useState<NearbySearchParams>({
     latitude: 0,
     longitude: 0,
@@ -25,7 +25,7 @@ export default function LocationSearch({ onResultsFound }: LocationSearchProps) 
 
     setIsLoading(true);
     try {
-      let results;
+      let results: NearbyInfluencer[] | NearbyBusiness[] | NearbyPromotion[];
       switch (searchType) {
         case 'influencers':
           results = await api.findInfluencersNearby(searchParams);
@@ -135,4 +135,6 @@ export default function LocationSearch({ onResultsFound }: LocationSearchProps) 
       </div>
     </div>
   );
-}
+};
+
+export default LocationSearch;

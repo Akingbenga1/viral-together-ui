@@ -6,7 +6,7 @@ interface UnauthenticatedLayoutProps {
   children: ReactNode;
 }
 
-export default function UnauthenticatedLayout({ children }: UnauthenticatedLayoutProps) {
+const UnauthenticatedLayout = ({ children }: UnauthenticatedLayoutProps) => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header with clickable logo */}
@@ -21,4 +21,6 @@ export default function UnauthenticatedLayout({ children }: UnauthenticatedLayou
       <Footer />
     </div>
   );
-} 
+};
+
+export default UnauthenticatedLayout; 

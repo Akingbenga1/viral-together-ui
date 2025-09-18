@@ -185,7 +185,7 @@ export default function HelpSearch({ onSearch, placeholder = "Search for help ar
           ) : (
             /* No Results */
             <div className="p-4 text-center text-gray-500 text-sm">
-              No articles found for "{query}"
+              No articles found for &quot;{query}&quot;
             </div>
           )}
         </div>

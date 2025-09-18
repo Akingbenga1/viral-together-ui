@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Users, CheckCircle, XCircle } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { JoinGroupResponse } from '@/types';
 import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 
-export default function JoinCoachingGroup() {
+function JoinCoachingGroupContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [joinCode, setJoinCode] = useState('');
@@ -185,5 +185,27 @@ export default function JoinCoachingGroup() {
         </div>
       </div>
     </UnifiedDashboardLayout>
+  );
+}
+
+export default function JoinCoachingGroup() {
+  return (
+    <Suspense fallback={
+      <UnifiedDashboardLayout>
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="form-container-dark w-full max-w-md">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20 mx-auto mb-6">
+                <Users className="w-10 h-10 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-form-text mb-2">Loading...</h1>
+              <p className="text-form-text-muted text-sm">Preparing join form</p>
+            </div>
+          </div>
+        </div>
+      </UnifiedDashboardLayout>
+    }>
+      <JoinCoachingGroupContent />
+    </Suspense>
   );
 }

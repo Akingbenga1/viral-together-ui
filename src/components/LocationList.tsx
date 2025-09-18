@@ -11,13 +11,13 @@ interface LocationListProps {
   entityType: 'influencer' | 'business';
 }
 
-export default function LocationList({
+const LocationList = ({
   locations,
   onEdit,
   onDelete,
   onSetPrimary,
   entityType
-}: LocationListProps) {
+}: LocationListProps) => {
   if (locations.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -93,4 +93,6 @@ export default function LocationList({
       </div>
     </div>
   );
-}
+};
+
+export default LocationList;

@@ -124,7 +124,7 @@ export default function UserDashboardPage() {
                 Welcome back, {user?.first_name || user?.username}! 👋
               </h1>
               <div className="text-slate-300 text-lg leading-relaxed">
-                <span>Here's what's happening with your campaigns today</span>
+                <span>Here&apos;s what&apos;s happening with your campaigns today</span>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-slate-300">
                     {user?.first_name} {user?.last_name}

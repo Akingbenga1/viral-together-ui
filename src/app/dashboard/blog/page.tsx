@@ -244,8 +244,7 @@ export default function BlogCreatePage() {
                             'blockquote', 'code-block', 'align'
                           ]}
                           style={{
-                            height: '400px',
-                            '--placeholder-color': '#94a3b8' // slate-400 for better visibility
+                            height: '400px'
                           }}
                         />
                       )}

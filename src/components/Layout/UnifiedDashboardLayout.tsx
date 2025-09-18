@@ -118,7 +118,7 @@ const getNavigationForRole = (user: any, userRoles: any[]) => {
   return navigation;
 };
 
-export default function UnifiedDashboardLayout({ children }: UnifiedDashboardLayoutProps) {
+const UnifiedDashboardLayout = ({ children }: UnifiedDashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout, userRoles } = useAuth();
   const pathname = usePathname();
@@ -331,4 +331,6 @@ export default function UnifiedDashboardLayout({ children }: UnifiedDashboardLay
       </div>
     </div>
   );
-}
+};
+
+export default UnifiedDashboardLayout;

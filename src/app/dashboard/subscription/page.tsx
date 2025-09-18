@@ -283,7 +283,7 @@ export default function SubscriptionPage() {
                   </h3>
                   
                   <p className="text-slate-300 text-lg mb-6 leading-relaxed">
-                    You're currently subscribed to the <span className="font-semibold text-cyan-400">
+                    You&apos;re currently subscribed to the <span className="font-semibold text-cyan-400">
                       {plans.find(p => p.id === userSubscription.plan_id)?.name || 'Unknown Plan'}
                     </span> plan
                   </p>
@@ -635,7 +635,7 @@ export default function SubscriptionPage() {
                 <div className="p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">
                   <h4 className="text-sm font-semibold text-white mb-2">Can I cancel my subscription anytime?</h4>
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your current billing period.
+                    Yes, you can cancel your subscription at any time. You&apos;ll continue to have access until the end of your current billing period.
                   </p>
                 </div>
                 <div className="p-4 bg-slate-700/30 rounded-xl border border-slate-600/30">

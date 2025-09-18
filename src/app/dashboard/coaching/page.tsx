@@ -728,7 +728,7 @@ export default function CoachingDashboard() {
               
               <div className="space-y-4 mb-6">
                 <p className="text-form-text">
-                  Are you sure you want to delete <strong>"{groupToDelete.name}"</strong>?
+                  Are you sure you want to delete <strong>&quot;{groupToDelete.name}&quot;</strong>?
                 </p>
                 
                 {groupToDelete.current_members > 0 && (
