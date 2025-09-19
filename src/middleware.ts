@@ -5,8 +5,13 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('access_token')?.value;
   const { pathname } = request.nextUrl;
 
+  // Completely skip middleware for homepage - no authentication checks at all
+  if (pathname === '/') {
+    return NextResponse.next();
+  }
+
   // Public routes that don't require authentication
-  const publicRoutes = ['/', '/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy'];
+  const publicRoutes = ['/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy'];
   const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/blog');
 
   // Role-based dashboard routes

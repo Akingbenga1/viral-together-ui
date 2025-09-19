@@ -77,8 +77,11 @@ class ApiClient {
   private client: AxiosInstance;
 
   constructor() {
+    // Provide fallback URL if environment variable is not set
+    const baseURL = API_BASE_URL || 'http://localhost:8000';
+    
     this.client = axios.create({
-      baseURL: API_BASE_URL,
+      baseURL: baseURL,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -136,16 +139,24 @@ class ApiClient {
         );
         
         if (error.response?.status === 401) {
-          // Clear token and show error message
-          Cookies.remove('access_token');
-          toast.error('Your session has expired. Please log in again.');
+          // Check if current route is public to avoid showing session expired on public pages
+          const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+          const publicRoutes = ['/', '/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy'];
+          const isPublicRoute = publicRoutes.includes(currentPath) || currentPath.startsWith('/blog');
           
-          // Use a more graceful redirect approach
-          setTimeout(() => {
-            if (typeof window !== 'undefined') {
-              window.location.href = '/auth/login';
-            }
-          }, 1500); // Give time for toast to show
+          // Only show session expired message and redirect for protected routes
+          if (!isPublicRoute) {
+            // Clear token and show error message
+            Cookies.remove('access_token');
+            toast.error('Your session has expired. Please log in again.');
+            
+            // Use a more graceful redirect approach
+            setTimeout(() => {
+              if (typeof window !== 'undefined') {
+                window.location.href = '/auth/login';
+              }
+            }, 1500); // Give time for toast to show
+          }
         }
         return Promise.reject(error);
       }

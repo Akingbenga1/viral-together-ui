@@ -41,7 +41,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (typeof window !== 'undefined') {
           // Check if current route is public/unauthenticated
           const currentPath = window.location.pathname;
-          const publicRoutes = ['/', '/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy'];
+          
+          // Completely skip authentication check for homepage
+          if (currentPath === '/') {
+            setIsLoading(false);
+            return;
+          }
+          
+          const publicRoutes = ['/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy'];
           const isPublicRoute = publicRoutes.includes(currentPath) || currentPath.startsWith('/blog');
           
           // Only check authentication for protected routes
