@@ -29,7 +29,9 @@ import {
   BarChart3,
   Bell,
   Calendar,
-  Globe
+  Globe,
+  Handshake,
+  Megaphone,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -86,13 +88,13 @@ const getNavigationForRole = (user: any, userRoles: any[]) => {
     navigation.push({ name: 'Search', href: '/dashboard/search', icon: Search, roles: ['business', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
   }
 
+  // AI Recommendations - Available to all
+  navigation.push({ name: 'AI Recommendations', href: '/dashboard/recommendations', icon: Brain, roles: ['user', 'influencer', 'business', 'professional_influencer', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
+
   // Rate Cards - Available to influencers and businesses
   if (hasAnyRole(['influencer', 'professional_influencer', 'business', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
     navigation.push({ name: 'Rate Cards', href: '/dashboard/rate-cards', icon: CreditCard, roles: ['influencer', 'professional_influencer', 'business', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
   }
-
-  // AI Recommendations - Available to all
-  navigation.push({ name: 'Recommendations', href: '/dashboard/recommendations', icon: Brain, roles: ['user', 'influencer', 'business', 'professional_influencer', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
 
   // Location Management - Available to influencers, businesses and admins
   if (hasAnyRole(['influencer', 'professional_influencer', 'business', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
@@ -102,6 +104,21 @@ const getNavigationForRole = (user: any, userRoles: any[]) => {
   // Coaching - Available to influencers
   if (hasAnyRole(['influencer', 'professional_influencer', 'business_influencer'])) {
     navigation.push({ name: 'Coaching', href: '/dashboard/coaching', icon: GraduationCap, roles: ['influencer', 'professional_influencer', 'business_influencer'] });
+  }
+
+  // Collaborations - Available to influencers
+  if (hasAnyRole(['influencer', 'professional_influencer', 'business_influencer'])) {
+    navigation.push({ name: 'Collaborations', href: '/dashboard/collaborations', icon: Handshake, roles: ['influencer', 'professional_influencer', 'business_influencer'] });
+  }
+
+  // Promotions - Available to influencers
+  if (hasAnyRole(['influencer', 'professional_influencer', 'business_influencer'])) {
+    navigation.push({ name: 'Promotions', href: '/dashboard/promotions', icon: Megaphone, roles: ['influencer', 'professional_influencer', 'business_influencer'] });
+  }
+
+  // Social Media Targets - Available to influencers
+  if (hasAnyRole(['influencer', 'professional_influencer', 'business_influencer'])) {
+    navigation.push({ name: 'Social Targets', href: '/dashboard/social-targets', icon: Target, roles: ['influencer', 'professional_influencer', 'business_influencer'] });
   }
 
   // Blog Management - Available to admins
@@ -213,21 +230,19 @@ const UnifiedDashboardLayout = ({ children }: UnifiedDashboardLayoutProps) => {
           {/* Mobile user section */}
           <div className="flex-shrink-0 flex border-t border-slate-700/50 p-4">
             <div className="flex items-center w-full">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-full flex items-center justify-center">
-                <span className="text-sm font-bold text-white">
+              <button
+                className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-full flex items-center justify-center hover:from-cyan-500 hover:to-teal-600 transition-all duration-200 group cursor-pointer"
+                onClick={logout}
+                title="Sign out"
+              >
+                <span className="text-sm font-bold text-white group-hover:hidden">
                   {user?.username?.charAt(0).toUpperCase()}
                 </span>
-              </div>
+                <LogOut className="w-4 h-4 text-white hidden group-hover:block" />
+              </button>
               <div className="ml-3 flex-1">
                 <p className="text-sm font-medium text-white">{user?.username}</p>
                 <p className="text-xs text-slate-400">{getPrimaryRoleDisplay()}</p>
-                <button
-                  onClick={logout}
-                  className="text-xs text-slate-400 hover:text-slate-300 flex items-center transition-colors mt-1"
-                >
-                  <LogOut className="w-3 h-3 mr-1" />
-                  Sign out
-                </button>
               </div>
             </div>
           </div>
@@ -241,13 +256,15 @@ const UnifiedDashboardLayout = ({ children }: UnifiedDashboardLayoutProps) => {
             <div className="flex-1 flex flex-col pt-8 pb-4 overflow-y-auto">
               {/* Logo section */}
               <div className="flex items-center flex-shrink-0 px-6 mb-8">
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                  <Zap className="w-7 h-7 text-white" />
-                </div>
-                <div className="ml-4">
-                  <span className="text-xl font-bold text-white">Viral Together</span>
-                  <p className="text-xs text-slate-400 mt-1">Dashboard Portal</p>
-                </div>
+                <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <Zap className="w-7 h-7 text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <span className="text-xl font-bold text-white">Viral Together</span>
+                    <p className="text-xs text-slate-400 mt-1">Dashboard Portal</p>
+                  </div>
+                </Link>
               </div>
               
               {/* Navigation */}
@@ -279,23 +296,21 @@ const UnifiedDashboardLayout = ({ children }: UnifiedDashboardLayoutProps) => {
               <div className="px-4 mt-6">
                 <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 backdrop-blur-sm rounded-2xl p-4 border border-slate-600/30">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-sm font-bold text-white">
+                    <button
+                      className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-full flex items-center justify-center shadow-lg hover:from-cyan-500 hover:to-teal-600 transition-all duration-200 group cursor-pointer"
+                      onClick={logout}
+                      title="Sign out"
+                    >
+                      <span className="text-sm font-bold text-white group-hover:hidden">
                         {user?.username?.charAt(0).toUpperCase()}
                       </span>
-                    </div>
+                      <LogOut className="w-5 h-5 text-white hidden group-hover:block" />
+                    </button>
                     <div className="ml-3 flex-1">
                       <p className="text-sm font-medium text-white">{user?.username}</p>
                       <p className="text-xs text-slate-400">{getPrimaryRoleDisplay()}</p>
                     </div>
                   </div>
-                  <button
-                    onClick={logout}
-                    className="mt-3 w-full text-xs text-slate-400 hover:text-slate-300 flex items-center justify-center py-2 rounded-lg hover:bg-slate-700/30 transition-colors"
-                  >
-                    <LogOut className="w-3 h-3 mr-2" />
-                    Sign out
-                  </button>
                 </div>
               </div>
             </div>
