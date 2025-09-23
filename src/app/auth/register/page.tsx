@@ -34,9 +34,11 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 form-bg-pattern">
       <div className="form-container-dark w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20 mx-auto mb-6">
-            <Users className="w-10 h-10 text-white" />
-          </div>
+          <Link href="/" className="inline-block">
+            <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20 mx-auto mb-6 cursor-pointer hover:scale-105 transition-transform duration-200">
+              <Users className="w-10 h-10 text-white" />
+            </div>
+          </Link>
           <h1 className="text-3xl font-bold text-form-text mb-2">
             Create your account
           </h1>
@@ -156,11 +158,11 @@ export default function RegisterPage() {
             />
             <label htmlFor="agree-terms" className="text-sm text-form-text leading-5 cursor-pointer">
               I agree to the{' '}
-              <Link href="#" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+              <Link href="/terms-of-service" className="text-cyan-400 hover:text-cyan-300 transition-colors">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link href="#" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+              <Link href="/privacy-policy" className="text-cyan-400 hover:text-cyan-300 transition-colors">
                 Privacy Policy
               </Link>
             </label>
