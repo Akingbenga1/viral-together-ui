@@ -198,8 +198,53 @@ export default function InfluencerDashboardPage() {
           ))}
         </div>
 
-        {/* Recent Campaigns */}
+        {/* Quick Actions */}
         <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden mb-8">
+          <div className="p-4 lg:p-6">
+            <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+              <Zap className="w-5 h-5 mr-2 text-cyan-400" />
+              Quick Actions
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <button className="p-4 bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-200 text-left group">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
+                    <DollarSign className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-white group-hover:text-cyan-400 transition-colors">Update Rate Card</h4>
+                    <p className="text-sm text-slate-400">Set your pricing</p>
+                  </div>
+                </div>
+              </button>
+              <button className="p-4 bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-200 text-left group">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center shadow-lg">
+                    <Eye className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-white group-hover:text-emerald-400 transition-colors">Browse Opportunities</h4>
+                    <p className="text-sm text-slate-400">Find new campaigns</p>
+                  </div>
+                </div>
+              </button>
+              <button className="p-4 bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-200 text-left group">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
+                    <TrendingUp className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-white group-hover:text-purple-400 transition-colors">Analytics</h4>
+                    <p className="text-sm text-slate-400">View performance data</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Campaigns */}
+        <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
           <div className="p-4 lg:p-6">
             <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
               <Target className="w-5 h-5 mr-2 text-cyan-400" />
@@ -254,51 +299,6 @@ export default function InfluencerDashboardPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
-          <div className="p-4 lg:p-6">
-            <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
-              <Zap className="w-5 h-5 mr-2 text-cyan-400" />
-              Quick Actions
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <button className="p-4 bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-200 text-left group">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
-                    <DollarSign className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-white group-hover:text-cyan-400 transition-colors">Update Rate Card</h4>
-                    <p className="text-sm text-slate-400">Set your pricing</p>
-                  </div>
-                </div>
-              </button>
-              <button className="p-4 bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-200 text-left group">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center shadow-lg">
-                    <Eye className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-white group-hover:text-emerald-400 transition-colors">Browse Opportunities</h4>
-                    <p className="text-sm text-slate-400">Find new campaigns</p>
-                  </div>
-                </div>
-              </button>
-              <button className="p-4 bg-slate-700/30 border border-slate-600/30 rounded-xl hover:bg-slate-700/50 hover:border-slate-600/50 transition-all duration-200 text-left group">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
-                    <TrendingUp className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-white group-hover:text-purple-400 transition-colors">Analytics</h4>
-                    <p className="text-sm text-slate-400">View performance data</p>
-                  </div>
-                </div>
-              </button>
             </div>
           </div>
         </div>

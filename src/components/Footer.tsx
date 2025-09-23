@@ -32,7 +32,7 @@ const Footer = () => {
               <li><Link href="/about" className="hover:text-white">About</Link></li>
 
               <li><Link href="/blog" className="hover:text-white">Blog</Link></li>
-              <li><Link href="/people" className="hover:text-white">People</Link></li>
+              <li><span className="text-gray-400 cursor-default">People</span></li>
             </ul>
           </div>
           <div>
@@ -40,12 +40,12 @@ const Footer = () => {
             <ul className="space-y-2 text-gray-400">
                                <li><Link href="/help" className="hover:text-white">Help Center</Link></li>
                  <li><Link href="/contact" className="hover:text-white">Contact</Link></li>
-                 <li><PrivacyLink /></li>
+                 <li><Link href="/privacy-policy" className="hover:text-white">Privacy Policy</Link></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 Viral Together. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Viral Together. All rights reserved.</p>
         </div>
       </div>
     </footer>
