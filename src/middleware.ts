@@ -11,7 +11,11 @@ export function middleware(request: NextRequest) {
   }
 
   // Public routes that don't require authentication
+<<<<<<< Current (Your changes)
   const publicRoutes = ['/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy', '/privacy-policy', '/terms-of-service', '/auth/forgot-password'];
+=======
+  const publicRoutes = ['/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy', '/privacy-policy', '/terms-of-service', '/auth/forgot-password', '/subscription'];
+>>>>>>> Incoming (Background Agent changes)
   const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/blog');
 
   // Role-based dashboard routes

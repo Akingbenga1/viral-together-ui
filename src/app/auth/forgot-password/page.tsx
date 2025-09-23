@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { Mail, Users, ArrowLeft } from 'lucide-react';
+import { apiClient } from '@/lib/api';
+import toast from 'react-hot-toast';
 import UnauthenticatedLayout from '@/components/UnauthenticatedLayout';
 
 interface ForgotPasswordForm {
@@ -24,12 +26,13 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotPasswordForm) => {
     setIsLoading(true);
     try {
-      // TODO: Implement actual password reset logic
-      // For now, we'll just simulate the API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await apiClient.forgotPassword(data.email);
+      toast.success(response.message || 'Reset link sent successfully!');
       setIsSubmitted(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending reset email:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to send reset email';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -61,9 +64,20 @@ export default function ForgotPasswordPage() {
                 Click the link in the email to reset your password. If you don't see it, check your spam folder.
               </p>
               <button 
-                onClick={() => onSubmit(getValues())}
+                onClick={async () => {
+                  setIsLoading(true);
+                  try {
+                    const response = await apiClient.forgotPassword(getValues('email'));
+                    toast.success(response.message || 'Reset link sent again!');
+                  } catch (error: any) {
+                    const errorMessage = error.response?.data?.detail || error.message || 'Failed to resend email';
+                    toast.error(errorMessage);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
                 disabled={isLoading}
-                className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium text-sm"
+                className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium text-sm disabled:opacity-50"
               >
                 {isLoading ? 'Sending...' : 'Resend email'}
               </button>
