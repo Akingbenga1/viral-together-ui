@@ -82,7 +82,7 @@ export default function HomePage() {
         </div>
 
         {/* Carousel Container */}
-        <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
+        <div className="relative z-10 flex items-center justify-center min-h-screen px-4 pt-12">
           <div className="container mx-auto">
             {/* Carousel Wrapper */}
             <div className="relative overflow-hidden">
@@ -155,7 +155,7 @@ export default function HomePage() {
                       <div className="hidden lg:flex justify-center items-center">
                         {/* Main Image - 50% viewport height */}
                         <div className="relative w-full max-w-2xl">
-                          <div className="w-full rounded-3xl overflow-hidden bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 shadow-2xl transform transition-all duration-700 hover:scale-[1.02]" style={{ height: '50vh' }}>
+                          <div className="w-full rounded-3xl overflow-hidden bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 shadow-2xl transform transition-all duration-700 hover:scale-[1.02]" style={{ height: '65vh' }}>
                             <img 
                               src={slide.image} 
                               alt={`${slide.highlight} illustration`}
@@ -281,10 +281,10 @@ export default function HomePage() {
               <div className="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Star className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Rate Management</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Influencer and Brand Collaboration</h3>
               <p className="text-gray-600">
-                Transparent pricing with customizable rate cards for different 
-                content types and platforms.
+                Seamless collaboration tools connecting influencers with brands for 
+                authentic partnerships and successful campaigns.
               </p>
             </div>
             
