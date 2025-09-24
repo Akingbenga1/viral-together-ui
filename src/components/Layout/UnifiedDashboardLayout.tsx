@@ -31,11 +31,7 @@ import {
   Calendar,
   Globe,
   Handshake,
-<<<<<<< Current (Your changes)
-  Megaphone,
-=======
   Megaphone
->>>>>>> Incoming (Background Agent changes)
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
