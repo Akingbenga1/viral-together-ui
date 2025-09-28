@@ -16,7 +16,6 @@ import {
   Zap, 
   TrendingUp, 
   DollarSign, 
-  Target, 
   Award,
   Star,
   FileText,
