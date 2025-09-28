@@ -16,7 +16,6 @@ import {
   Zap, 
   TrendingUp, 
   DollarSign, 
-  Target, 
   Award,
   Star,
   FileText,
@@ -31,7 +30,8 @@ import {
   Calendar,
   Globe,
   Handshake,
-  Megaphone
+  Megaphone,
+  Target
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
