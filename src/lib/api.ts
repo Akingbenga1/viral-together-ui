@@ -963,6 +963,41 @@ class ApiClient {
     return response.data;
   }
 
+  // Growth Strategies API
+  async getGrowthStrategies(influencerId: number, recommendationId?: number): Promise<{
+    status: string;
+    data?: {
+      more_followers: any[];
+      content_ideas: any[];
+      social_profiles: any[];
+      influencer_collab: any[];
+      business_collab: any[];
+      content_scripts: any[];
+    };
+    task_id?: string;
+    message: string;
+  }> {
+    const params = recommendationId ? `?recommendation_id=${recommendationId}` : '';
+    const response = await this.client.get(`/non-ai-recommendations/influencer/${influencerId}${params}`);
+    return response.data;
+  }
+
+  async getGrowthStrategiesStatus(influencerId: number): Promise<{
+    status: string;
+    data?: {
+      more_followers: any[];
+      content_ideas: any[];
+      social_profiles: any[];
+      influencer_collab: any[];
+      business_collab: any[];
+      content_scripts: any[];
+    };
+    message: string;
+  }> {
+    const response = await this.client.get(`/non-ai-recommendations/influencer/${influencerId}/status`);
+    return response.data;
+  }
+
 }
 
 export const apiClient = new ApiClient();

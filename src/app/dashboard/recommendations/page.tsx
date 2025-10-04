@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Brain, ChevronLeft, ChevronRight, Calendar, Target, DollarSign, TrendingUp, Users, Star, Zap, Lightbulb, X, Edit, Check, Bot, Settings, Clock, User, MapPin, GraduationCap, Globe } from 'lucide-react';
+import { Brain, ChevronLeft, ChevronRight, Calendar, Target, DollarSign, TrendingUp, Users, Star, Zap, Lightbulb, X, Edit, Check, Bot, Settings, Clock, User, MapPin, GraduationCap, Globe, ChevronDown, ExternalLink, Download } from 'lucide-react';
 import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
@@ -100,6 +100,27 @@ export default function RecommendationsPage() {
   const [operationMode, setOperationMode] = useState<'manual' | 'automatic'>('manual');
   const [scheduleFrequency, setScheduleFrequency] = useState<'hourly' | 'daily' | 'weekly' | 'monthly'>('daily');
   
+  // Advanced Growth Strategies state
+  const [currentAdvancedTab, setCurrentAdvancedTab] = useState(0);
+  const [growthStrategies, setGrowthStrategies] = useState<any>(null);
+  const [isLoadingGrowthStrategies, setIsLoadingGrowthStrategies] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState<string>('idle'); // 'idle', 'processing', 'completed', 'error'
+  const [processingMessage, setProcessingMessage] = useState<string>('');
+  
+  // Downloads state
+  const [downloadFiles, setDownloadFiles] = useState<any[]>([]);
+  const [isLoadingDownloads, setIsLoadingDownloads] = useState(false);
+  
+  // Accordion state for each tab
+  const [expandedAccordions, setExpandedAccordions] = useState<{[key: string]: number | null}>({
+    'more_followers': null,
+    'content_ideas': null,
+    'social_profiles': null,
+    'influencer_collab': null,
+    'business_collab': null,
+    'content_scripts': null
+  });
+  
   // Profile Modal state
   const [unifiedProfile, setUnifiedProfile] = useState<UnifiedInfluencerProfile | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
@@ -121,6 +142,14 @@ export default function RecommendationsPage() {
       return true; // Indicates this was an auth error
     }
     return false; // Not an auth error
+  };
+
+  // Helper function to toggle accordion
+  const toggleAccordion = (tabKey: string, index: number) => {
+    setExpandedAccordions(prev => ({
+      ...prev,
+      [tabKey]: prev[tabKey] === index ? null : index
+    }));
   };
 
   const sections = [
@@ -192,8 +221,8 @@ export default function RecommendationsPage() {
   useEffect(() => {
     const fetchRecommendations = async () => {
       if (!user?.id) {
-        console.log('No user ID available');
-        setIsLoading(false);
+        console.log('No user ID available - waiting for user data to load');
+        // Don't set isLoading to false here - keep waiting for user data
         return;
       }
       
@@ -255,7 +284,17 @@ export default function RecommendationsPage() {
        }
     };
 
+    const loadGrowthStrategiesAutomatically = async () => {
+      console.log('🚀 Auto-loading growth strategies on page load with hardcoded influencer ID 13');
+      await fetchGrowthStrategies();
+    };
+
     fetchRecommendations();
+    
+    // Auto-load growth strategies when page loads
+    setTimeout(() => {
+      loadGrowthStrategiesAutomatically();
+    }, 2000); // Wait 2 seconds for page to fully load
   }, [user?.id]);
 
   // Fetch AI Agents
@@ -284,6 +323,65 @@ export default function RecommendationsPage() {
 
     fetchAIAgents();
   }, []);
+
+  // Downloads tab selection handler
+  useEffect(() => {
+    console.log('Downloads tab useEffect triggered - currentAdvancedTab:', currentAdvancedTab);
+    if (currentAdvancedTab === 6) {
+      console.log('Downloads tab selected');
+      // If no files loaded, try to fetch them
+      if (!downloadFiles || downloadFiles.length === 0) {
+        console.log('No files loaded, fetching download files...');
+        const fetchFiles = async () => {
+          setIsLoadingDownloads(true);
+          try {
+            const response = await apiClient.get(`/non-ai-recommendations/influencer/13`);
+            if (response.data?.download_links) {
+              setDownloadFiles(response.data.download_links);
+              console.log('Download files fetched on tab click:', response.data.download_links.length);
+            } else {
+              console.log('No download_links found on tab click');
+            }
+          } catch (error) {
+            console.error('Error fetching files on tab click:', error);
+          } finally {
+            setIsLoadingDownloads(false);
+          }
+        };
+        fetchFiles();
+      }
+    }
+  }, [currentAdvancedTab, downloadFiles]);
+
+  // Fetch download files when component mounts
+  useEffect(() => {
+    const fetchDownloadFiles = async () => {
+      console.log('Component mounted, fetching download files...');
+      setIsLoadingDownloads(true);
+      try {
+        const response = await apiClient.get(`/non-ai-recommendations/influencer/13`);
+        console.log('Download files API response:', response.data);
+        if (response.data?.download_links) {
+          setDownloadFiles(response.data.download_links);
+          console.log('Download files loaded successfully:', response.data.download_links.length);
+        } else {
+          console.log('No download_links found in response.data');
+          console.log('Available keys in response.data:', Object.keys(response.data || {}));
+        }
+      } catch (error) {
+        console.error('Error fetching download files:', error);
+      } finally {
+        setIsLoadingDownloads(false);
+      }
+    };
+
+    fetchDownloadFiles();
+  }, []);
+
+  // Monitor downloadFiles state changes
+  useEffect(() => {
+    console.log('downloadFiles state changed:', downloadFiles?.length || 0, 'files:', downloadFiles);
+  }, [downloadFiles]);
 
   // Fetch unified influencer profile using single API endpoint
   const fetchUnifiedProfile = async () => {
@@ -371,6 +469,96 @@ export default function RecommendationsPage() {
 
   const goToSection = (sectionId: number) => {
     setCurrentSection(sectionId);
+  };
+
+  const fetchGrowthStrategies = async () => {
+    console.log('🚀 fetchGrowthStrategies called');
+    
+    // Hardcoded influencer ID as requested
+    const influencerId = 13;
+    console.log('Using hardcoded influencer ID:', influencerId);
+
+    setIsLoadingGrowthStrategies(true);
+    try {
+      const response = await apiClient.getGrowthStrategies(influencerId);
+      console.log('Growth strategies response:', response);
+      
+      if (response.status === 'completed' && response.data) {
+        setGrowthStrategies(response.data);
+        setProcessingStatus('completed');
+        setProcessingMessage(response.message);
+        toast.success('Growth strategies loaded successfully!');
+      } else if (response.status === 'processing') {
+        setProcessingStatus('processing');
+        setProcessingMessage(response.message);
+        setGrowthStrategies(null);
+        // Start polling for status updates
+        startPollingForStatus(13); // Hardcoded influencer ID
+      } else if (response.status === 'error') {
+        setProcessingStatus('error');
+        setProcessingMessage(response.message || 'Unknown error occurred');
+        setGrowthStrategies(null);
+        
+        // Show specific error messages based on error type
+        if ((response as any).error_type === 'NO_RECOMMENDATIONS_FOUND') {
+          toast.error('No recommendations found. Please generate influencer recommendations first.');
+        } else if ((response as any).error_type === 'INFLUENCER_NOT_FOUND') {
+          toast.error('Influencer not found. Please check your account setup.');
+        } else if ((response as any).error_type === 'INSUFFICIENT_DATA') {
+          toast.error('Recommendation data is insufficient. Please regenerate recommendations with more data.');
+        } else {
+          toast.error(response.message || 'An error occurred while processing your request.');
+        }
+      } else {
+        setProcessingStatus('error');
+        setProcessingMessage(response.message || 'Unknown error occurred');
+        setGrowthStrategies(null);
+      }
+    } catch (error: any) {
+      console.error('Error fetching growth strategies:', error);
+      setProcessingStatus('error');
+      setProcessingMessage('Failed to load growth strategies');
+      if (!handleAuthError(error, 'Failed to load growth strategies. Please try again.')) {
+        toast.error('Failed to load growth strategies. Please try again.');
+      }
+    } finally {
+      setIsLoadingGrowthStrategies(false);
+    }
+  };
+
+  const startPollingForStatus = (influencerId: number) => {
+    const pollInterval = setInterval(async () => {
+      try {
+        const statusResponse = await apiClient.getGrowthStrategiesStatus(influencerId);
+        
+        if (statusResponse.status === 'completed' && statusResponse.data) {
+          setGrowthStrategies(statusResponse.data);
+          setProcessingStatus('completed');
+          setProcessingMessage(statusResponse.message);
+          clearInterval(pollInterval);
+          toast.success('Growth strategies are ready!');
+        } else if (statusResponse.status === 'processing') {
+          setProcessingStatus('processing');
+          setProcessingMessage(statusResponse.message);
+        } else {
+          setProcessingStatus('error');
+          setProcessingMessage(statusResponse.message);
+          clearInterval(pollInterval);
+        }
+      } catch (error) {
+        console.error('Error polling status:', error);
+        clearInterval(pollInterval);
+      }
+    }, 5000); // Poll every 5 seconds
+
+    // Stop polling after 5 minutes
+    setTimeout(() => {
+      clearInterval(pollInterval);
+      if (processingStatus === 'processing') {
+        setProcessingStatus('error');
+        setProcessingMessage('Processing timed out. Please try again.');
+      }
+    }, 300000); // 5 minutes
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -960,6 +1148,24 @@ export default function RecommendationsPage() {
     if (!currentRecommendation?.ai_insights) return null;
     const insights = currentRecommendation.ai_insights;
     
+    // Ensure insights is an array before proceeding
+    if (!Array.isArray(insights)) {
+      return (
+        <div className="space-y-6">
+          <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
+            <h3 className="text-xl font-bold text-white mb-4">AI Agent Insights</h3>
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Brain className="h-8 w-8 text-slate-400" />
+              </div>
+              <p className="text-slate-200">No AI insights data available</p>
+              <p className="text-slate-400 text-sm mt-2">AI insights will appear here once generated</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className="space-y-6">
         <div className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/30">
@@ -1017,6 +1223,868 @@ export default function RecommendationsPage() {
     );
   };
 
+  // Advanced Growth Strategies Render Functions
+  const renderMoreFollowers = () => {
+    if (isLoadingGrowthStrategies) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+          <span className="ml-3 text-slate-300">Loading growth strategies...</span>
+        </div>
+      );
+    }
+
+    if (processingStatus === 'processing') {
+      return (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <h3 className="text-lg font-semibold text-white mb-2">AI Agents Working</h3>
+          <p className="text-slate-300 mb-4">{processingMessage}</p>
+          <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
+            <p className="text-sm text-blue-300">
+              Our AI agents are analyzing your recommendation data and generating personalized growth strategies. 
+              This usually takes 2-5 minutes.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (processingStatus === 'error') {
+      return (
+        <div className="text-center py-8">
+          <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <X className="h-6 w-6 text-red-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">Processing Error</h3>
+          <p className="text-slate-300 mb-4">{processingMessage}</p>
+          
+          {/* Show specific guidance based on error type */}
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4 text-left">
+            <h4 className="text-red-300 font-semibold mb-2">What to do next:</h4>
+            <ul className="text-sm text-red-200 space-y-1">
+              <li>• Ensure you have generated influencer recommendations first</li>
+              <li>• Check that your recommendation data contains meaningful content</li>
+              <li>• Verify your influencer profile is properly set up</li>
+              <li>• Contact support if the issue persists</li>
+            </ul>
+          </div>
+          
+          <button
+            onClick={fetchGrowthStrategies}
+            className="btn-dark-primary px-4 py-2 rounded-lg text-sm"
+          >
+            Try Again
+          </button>
+        </div>
+      );
+    }
+
+    if (!growthStrategies?.more_followers || growthStrategies.more_followers.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Users className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+          <p className="text-slate-400">No follower growth strategies available</p>
+          <button
+            onClick={fetchGrowthStrategies}
+            className="mt-4 btn-dark-primary px-4 py-2 rounded-lg text-sm"
+          >
+            Load Growth Strategies
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {growthStrategies.more_followers.map((strategy: any, index: number) => (
+          <div key={index} className="bg-slate-700/30 rounded-xl border border-slate-600/30 overflow-hidden">
+            {/* Accordion Header */}
+            <button
+              onClick={() => toggleAccordion('more_followers', index)}
+              className="w-full p-4 flex items-center justify-between hover:bg-slate-700/50 transition-colors"
+            >
+              <div className="flex items-center space-x-3 flex-1">
+                <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Users className="w-5 h-5 text-blue-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <h4 className="font-semibold text-white">{strategy.strategy || `Strategy ${index + 1}`}</h4>
+                  <p className="text-xs text-slate-400 mt-0.5">Click to view details</p>
+                </div>
+              </div>
+              <ChevronDown 
+                className={`w-5 h-5 text-slate-400 transition-transform flex-shrink-0 ml-2 ${
+                  expandedAccordions['more_followers'] === index ? 'transform rotate-180' : ''
+                }`}
+              />
+            </button>
+            
+            {/* Accordion Content */}
+            {expandedAccordions['more_followers'] === index && (
+              <div className="p-6 pt-4 space-y-4 border-t border-slate-600/30 bg-slate-800/20">
+                {strategy.description && (
+                  <div>
+                    <h5 className="text-xs font-semibold text-slate-400 uppercase mb-2">Description</h5>
+                    <p className="text-sm text-slate-200 leading-relaxed">{strategy.description}</p>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {strategy.expected_growth && (
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <TrendingUp className="w-4 h-4 text-blue-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Expected Growth</span>
+                      </div>
+                      <span className="text-base text-blue-400 font-semibold">{strategy.expected_growth}</span>
+                    </div>
+                  )}
+                  
+                  {strategy.implementation && (
+                    <div className="bg-slate-700/50 border border-slate-600/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Target className="w-4 h-4 text-green-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Implementation</span>
+                      </div>
+                      <span className="text-sm text-slate-200">{strategy.implementation}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderContentIdeas = () => {
+    if (isLoadingGrowthStrategies) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
+          <span className="ml-3 text-slate-300">Loading content ideas...</span>
+        </div>
+      );
+    }
+
+    if (!growthStrategies?.content_ideas || growthStrategies.content_ideas.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Lightbulb className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+          <p className="text-slate-400">No content ideas available</p>
+          <button
+            onClick={fetchGrowthStrategies}
+            className="mt-4 btn-dark-primary px-4 py-2 rounded-lg text-sm"
+          >
+            Load Growth Strategies
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {growthStrategies.content_ideas.map((idea: any, index: number) => (
+          <div key={index} className="bg-slate-700/30 rounded-xl border border-slate-600/30 overflow-hidden">
+            {/* Accordion Header */}
+            <button
+              onClick={() => toggleAccordion('content_ideas', index)}
+              className="w-full p-4 flex items-center justify-between hover:bg-slate-700/50 transition-colors"
+            >
+              <div className="flex items-center space-x-3 flex-1">
+                <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Lightbulb className="w-5 h-5 text-yellow-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <h4 className="font-semibold text-white">{idea.idea || `Content Idea ${index + 1}`}</h4>
+                  <p className="text-xs text-slate-400 mt-0.5">Click to view details</p>
+                </div>
+              </div>
+              <ChevronDown 
+                className={`w-5 h-5 text-slate-400 transition-transform flex-shrink-0 ml-2 ${
+                  expandedAccordions['content_ideas'] === index ? 'transform rotate-180' : ''
+                }`}
+              />
+            </button>
+            
+            {/* Accordion Content */}
+            {expandedAccordions['content_ideas'] === index && (
+              <div className="p-6 pt-4 space-y-4 border-t border-slate-600/30 bg-slate-800/20">
+                {idea.description && (
+                  <div>
+                    <h5 className="text-xs font-semibold text-slate-400 uppercase mb-2">Description</h5>
+                    <p className="text-sm text-slate-200 leading-relaxed">{idea.description}</p>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {idea.content_type && (
+                    <div className="bg-slate-700/50 border border-slate-600/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Zap className="w-4 h-4 text-purple-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Content Type</span>
+                      </div>
+                      <span className="text-base text-white font-semibold">{idea.content_type}</span>
+                    </div>
+                  )}
+                  {idea.posting_frequency && (
+                    <div className="bg-slate-700/50 border border-slate-600/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Calendar className="w-4 h-4 text-cyan-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Frequency</span>
+                      </div>
+                      <span className="text-base text-white font-semibold">{idea.posting_frequency}</span>
+                    </div>
+                  )}
+                  {idea.expected_engagement && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <TrendingUp className="w-4 h-4 text-yellow-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Expected Engagement</span>
+                      </div>
+                      <span className="text-base text-yellow-400 font-semibold">{idea.expected_engagement}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderSocialProfiles = () => {
+    if (isLoadingGrowthStrategies) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
+          <span className="ml-3 text-slate-300">Loading social profiles...</span>
+        </div>
+      );
+    }
+
+    if (!growthStrategies?.social_profiles || growthStrategies.social_profiles.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Globe className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+          <p className="text-slate-400">No social profiles available</p>
+          <button
+            onClick={fetchGrowthStrategies}
+            className="mt-4 btn-dark-primary px-4 py-2 rounded-lg text-sm"
+          >
+            Load Growth Strategies
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {growthStrategies.social_profiles.map((profile: any, index: number) => (
+          <div key={index} className="bg-slate-700/30 rounded-xl border border-slate-600/30 overflow-hidden">
+            {/* Accordion Header */}
+            <button
+              onClick={() => toggleAccordion('social_profiles', index)}
+              className="w-full p-4 flex items-center justify-between hover:bg-slate-700/50 transition-colors"
+            >
+              <div className="flex items-center space-x-3 flex-1">
+                <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Globe className="w-5 h-5 text-purple-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <h4 className="font-semibold text-white">@{profile.name || `Profile ${index + 1}`}</h4>
+                  <p className="text-xs text-purple-400 mt-0.5">{profile.platform || 'Unknown Platform'}</p>
+                </div>
+              </div>
+              <ChevronDown 
+                className={`w-5 h-5 text-slate-400 transition-transform flex-shrink-0 ml-2 ${
+                  expandedAccordions['social_profiles'] === index ? 'transform rotate-180' : ''
+                }`}
+              />
+            </button>
+            
+            {/* Accordion Content */}
+            {expandedAccordions['social_profiles'] === index && (
+              <div className="p-6 pt-4 space-y-4 border-t border-slate-600/30 bg-slate-800/20">
+                {profile.relevance_reason && (
+                  <div>
+                    <h5 className="text-xs font-semibold text-slate-400 uppercase mb-2">Why This Profile</h5>
+                    <p className="text-sm text-slate-200 leading-relaxed">{profile.relevance_reason}</p>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {profile.platform && (
+                    <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Globe className="w-4 h-4 text-purple-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Platform</span>
+                      </div>
+                      <span className="text-base text-purple-400 font-semibold">{profile.platform}</span>
+                    </div>
+                  )}
+                  {profile.followers && (
+                    <div className="bg-slate-700/50 border border-slate-600/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Users className="w-4 h-4 text-cyan-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Followers</span>
+                      </div>
+                      <span className="text-base text-white font-semibold">{profile.followers}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {profile.profile_url && (
+                  <a
+                    href={profile.profile_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center space-x-2 w-full bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-lg p-4 text-purple-400 hover:text-purple-300 font-semibold transition-all duration-200 hover:scale-105"
+                  >
+                    <span>View Profile</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderInfluencerCollab = () => {
+    if (isLoadingGrowthStrategies) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-400"></div>
+          <span className="ml-3 text-slate-300">Loading collaboration ideas...</span>
+        </div>
+      );
+    }
+
+    if (!growthStrategies?.influencer_collab || growthStrategies.influencer_collab.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Star className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+          <p className="text-slate-400">No collaboration ideas available</p>
+          <button
+            onClick={fetchGrowthStrategies}
+            className="mt-4 btn-dark-primary px-4 py-2 rounded-lg text-sm"
+          >
+            Load Growth Strategies
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {growthStrategies.influencer_collab.map((collab: any, index: number) => (
+          <div key={index} className="bg-slate-700/30 rounded-xl border border-slate-600/30 overflow-hidden">
+            {/* Accordion Header */}
+            <button
+              onClick={() => toggleAccordion('influencer_collab', index)}
+              className="w-full p-4 flex items-center justify-between hover:bg-slate-700/50 transition-colors"
+            >
+              <div className="flex items-center space-x-3 flex-1">
+                <div className="w-10 h-10 bg-pink-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Star className="w-5 h-5 text-pink-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <h4 className="font-semibold text-white">{collab.collaboration || `Collaboration ${index + 1}`}</h4>
+                  <p className="text-xs text-slate-400 mt-0.5">Influencer partnership opportunity</p>
+                </div>
+              </div>
+              <ChevronDown 
+                className={`w-5 h-5 text-slate-400 transition-transform flex-shrink-0 ml-2 ${
+                  expandedAccordions['influencer_collab'] === index ? 'transform rotate-180' : ''
+                }`}
+              />
+            </button>
+            
+            {/* Accordion Content */}
+            {expandedAccordions['influencer_collab'] === index && (
+              <div className="p-6 pt-4 space-y-4 border-t border-slate-600/30 bg-slate-800/20">
+                {collab.description && (
+                  <div>
+                    <h5 className="text-xs font-semibold text-slate-400 uppercase mb-2">Description</h5>
+                    <p className="text-sm text-slate-200 leading-relaxed">{collab.description}</p>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {collab.expected_reach && (
+                    <div className="bg-pink-500/10 border border-pink-500/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Users className="w-4 h-4 text-pink-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Expected Reach</span>
+                      </div>
+                      <span className="text-base text-pink-400 font-semibold">{collab.expected_reach}</span>
+                    </div>
+                  )}
+                  {collab.implementation && (
+                    <div className="bg-slate-700/50 border border-slate-600/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Target className="w-4 h-4 text-green-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Implementation</span>
+                      </div>
+                      <span className="text-sm text-slate-200">{collab.implementation}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Real Links Section */}
+                {collab.real_links && collab.real_links.length > 0 && (
+                  <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <ExternalLink className="w-4 h-4 text-purple-400" />
+                      <span className="text-xs font-semibold text-slate-400 uppercase">Real Collaboration Links</span>
+                    </div>
+                    <div className="space-y-2">
+                      {collab.real_links.map((link: any, linkIndex: number) => (
+                        <a
+                          key={linkIndex}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between w-full bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-lg p-3 text-purple-400 hover:text-purple-300 font-semibold transition-all duration-200 hover:scale-105"
+                        >
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold">{link.name}</span>
+                            {link.description && (
+                              <span className="text-xs text-purple-300/70 mt-1">{link.description}</span>
+                            )}
+                            {link.platform && (
+                              <span className="text-xs text-purple-300/50 mt-1">Platform: {link.platform}</span>
+                            )}
+                          </div>
+                          <ChevronRight className="w-4 h-4" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderBusinessCollab = () => {
+    if (isLoadingGrowthStrategies) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400"></div>
+          <span className="ml-3 text-slate-300">Loading business opportunities...</span>
+        </div>
+      );
+    }
+
+    if (!growthStrategies?.business_collab || growthStrategies.business_collab.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Target className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+          <p className="text-slate-400">No business opportunities available</p>
+          <button
+            onClick={fetchGrowthStrategies}
+            className="mt-4 btn-dark-primary px-4 py-2 rounded-lg text-sm"
+          >
+            Load Growth Strategies
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {growthStrategies.business_collab.map((opportunity: any, index: number) => (
+          <div key={index} className="bg-slate-700/30 rounded-xl border border-slate-600/30 overflow-hidden">
+            {/* Accordion Header */}
+            <button
+              onClick={() => toggleAccordion('business_collab', index)}
+              className="w-full p-4 flex items-center justify-between hover:bg-slate-700/50 transition-colors"
+            >
+              <div className="flex items-center space-x-3 flex-1">
+                <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Target className="w-5 h-5 text-green-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <h4 className="font-semibold text-white">{opportunity.opportunity || `Business Opportunity ${index + 1}`}</h4>
+                  <div className="flex items-center space-x-2 mt-0.5">
+                    {opportunity.type && (
+                      <span className="text-xs text-slate-400">{opportunity.type}</span>
+                    )}
+                    {opportunity.potential_revenue && (
+                      <>
+                        <span className="text-xs text-slate-600">•</span>
+                        <span className="text-xs text-green-400 font-medium">{opportunity.potential_revenue}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <ChevronDown 
+                className={`w-5 h-5 text-slate-400 transition-transform flex-shrink-0 ml-2 ${
+                  expandedAccordions['business_collab'] === index ? 'transform rotate-180' : ''
+                }`}
+              />
+            </button>
+            
+            {/* Accordion Content */}
+            {expandedAccordions['business_collab'] === index && (
+              <div className="p-6 pt-4 space-y-4 border-t border-slate-600/30 bg-slate-800/20">
+                {opportunity.description && (
+                  <div>
+                    <h5 className="text-xs font-semibold text-slate-400 uppercase mb-2">Description</h5>
+                    <p className="text-sm text-slate-200 leading-relaxed">{opportunity.description}</p>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {opportunity.type && (
+                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Zap className="w-4 h-4 text-green-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Type</span>
+                      </div>
+                      <span className="text-base text-green-400 font-semibold">{opportunity.type}</span>
+                    </div>
+                  )}
+                  {opportunity.location && (
+                    <div className="bg-slate-700/50 border border-slate-600/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <MapPin className="w-4 h-4 text-cyan-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Location</span>
+                      </div>
+                      <span className="text-base text-white font-semibold">{opportunity.location}</span>
+                    </div>
+                  )}
+                  {opportunity.potential_revenue && (
+                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <DollarSign className="w-4 h-4 text-green-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Revenue Potential</span>
+                      </div>
+                      <span className="text-base text-green-400 font-semibold">{opportunity.potential_revenue}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {opportunity.implementation && (
+                  <div className="bg-slate-700/50 border border-slate-600/30 rounded-lg p-4">
+                    <h5 className="text-xs font-semibold text-slate-400 uppercase mb-2">Implementation Steps</h5>
+                    <p className="text-sm text-slate-200 leading-relaxed">{opportunity.implementation}</p>
+                  </div>
+                )}
+                
+                {opportunity.relevance_reason && (
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                    <h5 className="text-xs font-semibold text-slate-400 uppercase mb-2">Why This Opportunity</h5>
+                    <p className="text-sm text-green-300 leading-relaxed">{opportunity.relevance_reason}</p>
+                  </div>
+                )}
+                
+                {/* Real Links Section */}
+                {opportunity.real_links && opportunity.real_links.length > 0 && (
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <ExternalLink className="w-4 h-4 text-blue-400" />
+                      <span className="text-xs font-semibold text-slate-400 uppercase">Real Business Links</span>
+                    </div>
+                    <div className="space-y-2">
+                      {opportunity.real_links.map((link: any, linkIndex: number) => (
+                        <a
+                          key={linkIndex}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between w-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-lg p-3 text-blue-400 hover:text-blue-300 font-semibold transition-all duration-200 hover:scale-105"
+                        >
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold">{link.name}</span>
+                            {link.description && (
+                              <span className="text-xs text-blue-300/70 mt-1">{link.description}</span>
+                            )}
+                            {link.business_type && (
+                              <span className="text-xs text-blue-300/50 mt-1">Type: {link.business_type}</span>
+                            )}
+                          </div>
+                          <ChevronRight className="w-4 h-4" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderContentScripts = () => {
+    if (isLoadingGrowthStrategies) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
+          <span className="ml-3 text-slate-300">Loading content scripts...</span>
+        </div>
+      );
+    }
+
+    if (!growthStrategies?.content_scripts || growthStrategies.content_scripts.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Edit className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+          <p className="text-slate-400">No content scripts available</p>
+          <button
+            onClick={fetchGrowthStrategies}
+            className="mt-4 btn-dark-primary px-4 py-2 rounded-lg text-sm"
+          >
+            Load Growth Strategies
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {growthStrategies.content_scripts.map((script: any, index: number) => (
+          <div key={index} className="bg-slate-700/30 rounded-xl border border-slate-600/30 overflow-hidden">
+            {/* Accordion Header */}
+            <button
+              onClick={() => toggleAccordion('content_scripts', index)}
+              className="w-full p-4 flex items-center justify-between hover:bg-slate-700/50 transition-colors"
+            >
+              <div className="flex items-center space-x-3 flex-1">
+                <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Edit className="w-5 h-5 text-orange-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <h4 className="font-semibold text-white">{script.script || `Content Script ${index + 1}`}</h4>
+                  <p className="text-xs text-slate-400 mt-0.5">Ready-to-use script for content creation</p>
+                </div>
+              </div>
+              <ChevronDown 
+                className={`w-5 h-5 text-slate-400 transition-transform flex-shrink-0 ml-2 ${
+                  expandedAccordions['content_scripts'] === index ? 'transform rotate-180' : ''
+                }`}
+              />
+            </button>
+            
+            {/* Accordion Content */}
+            {expandedAccordions['content_scripts'] === index && (
+              <div className="p-6 pt-4 space-y-4 border-t border-slate-600/30 bg-slate-800/20">
+                {script.content && (
+                  <div className="bg-slate-900/70 border border-slate-700/50 rounded-lg p-5">
+                    <h5 className="text-xs font-semibold text-slate-400 uppercase mb-3 flex items-center">
+                      <Edit className="w-3 h-3 mr-2" />
+                      Script Content
+                    </h5>
+                    <p className="text-sm text-slate-100 leading-relaxed whitespace-pre-wrap font-medium">{script.content}</p>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {script.platform && (
+                    <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Globe className="w-4 h-4 text-orange-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Platform</span>
+                      </div>
+                      <span className="text-base text-orange-400 font-semibold">{script.platform}</span>
+                    </div>
+                  )}
+                  {script.duration && (
+                    <div className="bg-slate-700/50 border border-slate-600/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Clock className="w-4 h-4 text-cyan-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Duration</span>
+                      </div>
+                      <span className="text-base text-white font-semibold">{script.duration}</span>
+                    </div>
+                  )}
+                  {script.hashtags && (
+                    <div className="bg-slate-700/50 border border-slate-600/30 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Star className="w-4 h-4 text-yellow-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase">Hashtags</span>
+                      </div>
+                      <span className="text-sm text-white font-medium">{script.hashtags}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderDownloads = () => {
+    console.log('renderDownloads called - isLoadingDownloads:', isLoadingDownloads, 'downloadFiles:', downloadFiles?.length || 0);
+    console.log('Download files data:', downloadFiles);
+    
+    if (isLoadingDownloads) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-400"></div>
+          <span className="ml-3 text-slate-300">Loading download files...</span>
+        </div>
+      );
+    }
+
+    if (!downloadFiles || downloadFiles.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <Download className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-2">No Download Files Available</h3>
+          <p className="text-slate-400">Download files will appear here once they are generated.</p>
+          <button 
+            onClick={() => {
+              console.log('Manual refresh clicked');
+              const fetchFiles = async () => {
+                setIsLoadingDownloads(true);
+                try {
+                  const response = await apiClient.get(`/non-ai-recommendations/influencer/13`);
+                  if (response.data?.download_links) {
+                    setDownloadFiles(response.data.download_links);
+                    console.log('Files refreshed manually:', response.data.download_links.length);
+                  } else {
+                    console.log('No download_links found on manual refresh');
+                  }
+                } catch (error) {
+                  console.error('Error refreshing files:', error);
+                } finally {
+                  setIsLoadingDownloads(false);
+                }
+              };
+              fetchFiles();
+            }}
+            className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg"
+          >
+            Refresh Files
+          </button>
+        </div>
+      );
+    }
+
+    const handleDownload = (file: any) => {
+      console.log('Download clicked for file:', file);
+      console.log('Download URL from API:', file.download_url);
+      
+      try {
+        // Create a temporary link element to trigger download
+        const link = document.createElement('a');
+        // Use the absolute URL provided by the API
+        link.href = file.download_url;
+        link.download = file.filename;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        
+        console.log('Using API download URL:', file.download_url);
+        console.log('Download filename:', file.filename);
+        
+        // Add to DOM, click, then remove
+        document.body.appendChild(link);
+        link.click();
+        
+        // Remove after a short delay to ensure click is processed
+        setTimeout(() => {
+          document.body.removeChild(link);
+        }, 100);
+        
+        toast.success(`Downloading ${file.title}...`);
+        
+      } catch (error) {
+        console.error('Download error:', error);
+        toast.error(`Failed to download ${file.title}`);
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h3 className="text-2xl font-bold text-white mb-2">Implementation Guides</h3>
+          <p className="text-slate-400">Download comprehensive PDF guides for all your growth strategies</p>
+        </div>
+
+        <div className="space-y-4">
+          {console.log(`Total files to render: ${downloadFiles.length}`, downloadFiles)}
+          {downloadFiles.map((file, index) => {
+            console.log(`Rendering file ${index}:`, file);
+            return (
+            <div key={file.filename || index} className="bg-slate-700/50 border border-slate-600/30 rounded-lg p-4 hover:bg-slate-700/70 transition-all duration-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4 flex-1">
+                  <div className="bg-indigo-500/20 p-2 rounded-lg">
+                    <Download className="w-5 h-5 text-indigo-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <h4 className="text-white font-semibold">{file.title}</h4>
+                      <span className="text-xs text-slate-400 bg-slate-600/50 px-2 py-1 rounded-full">
+                        {file.category}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-300 mb-2">
+                      Download {file.title} - {file.size}
+                    </p>
+                    <div className="flex items-center space-x-4 text-xs text-slate-400">
+                      <span>{file.size}</span>
+                      <span className="text-indigo-400 font-medium">PDF</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDownload(file)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 ml-4"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download</span>
+                </button>
+              </div>
+            </div>
+            );
+          })}
+        </div>
+
+        {downloadFiles.length > 1 && (
+          <div className="bg-slate-800/50 border border-slate-600/30 rounded-lg p-4 mt-6">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="bg-green-500/20 p-2 rounded-lg">
+                <Check className="w-5 h-5 text-green-400" />
+              </div>
+              <h4 className="text-white font-semibold">Download All Guides</h4>
+            </div>
+            <p className="text-sm text-slate-300 mb-3">
+              Get the complete package with all implementation guides in one convenient download.
+            </p>
+            <button
+              onClick={() => {
+                downloadFiles.forEach((file, index) => {
+                  setTimeout(() => handleDownload(file), index * 500);
+                });
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download All PDFs</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderCurrentSection = () => {
     switch (currentSection) {
       case 0:
@@ -1031,6 +2099,27 @@ export default function RecommendationsPage() {
         return renderPricingStrategy();
       case 5:
         return renderAIInsights();
+      default:
+        return null;
+    }
+  };
+
+  const renderAdvancedTab = () => {
+    switch (currentAdvancedTab) {
+      case 0:
+        return renderMoreFollowers();
+      case 1:
+        return renderContentIdeas();
+      case 2:
+        return renderSocialProfiles();
+      case 3:
+        return renderInfluencerCollab();
+      case 4:
+        return renderBusinessCollab();
+      case 5:
+        return renderContentScripts();
+      case 6:
+        return renderDownloads();
       default:
         return null;
     }
@@ -1080,465 +2169,9 @@ export default function RecommendationsPage() {
     );
   }
 
-  if (recommendations.length === 0) {
-    return (
-      <UnifiedDashboardLayout>
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#1e293b',
-              color: '#fff',
-            },
-            success: {
-              duration: 3000,
-              iconTheme: {
-                primary: '#10B981',
-                secondary: '#fff',
-              },
-            },
-            error: {
-              duration: 5000,
-              iconTheme: {
-                primary: '#EF4444',
-                secondary: '#fff',
-              },
-            },
-          }}
-        />
-        <div className="min-h-full w-full overflow-hidden">
-          <div className="p-4 sm:p-6 lg:p-8 max-w-none">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-white mb-2 leading-tight tracking-tight">
-                AI Recommendations 🤖
-              </h1>
-              <p className="text-slate-300 text-lg leading-relaxed">
-                Your personalized influencer strategy recommendations powered by AI
-              </p>
-            </div>
-            {/* Main Content Layout for No Recommendations */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Side - No Recommendations Content */}
-              <div className="lg:col-span-2">
-                {unifiedProfile ? (
-                  /* Unified Influencer Profile Content */
-                  <div className="space-y-6">
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 backdrop-blur-sm rounded-2xl border border-blue-500/30 p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-2xl font-bold text-white">Unified Influencer Profile</h2>
-                        <button
-                          onClick={() => setUnifiedProfile(null)}
-                          className="text-slate-400 hover:text-white transition-colors"
-                        >
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xl font-bold">
-                            {unifiedProfile.influencer?.first_name?.[0]}{unifiedProfile.influencer?.last_name?.[0]}
-                          </span>
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold text-white">
-                            {unifiedProfile.influencer?.first_name} {unifiedProfile.influencer?.last_name}
-                          </h3>
-                          <p className="text-slate-300">
-                            @{unifiedProfile.influencer?.user?.username}
-                          </p>
-                          <p className="text-sm text-slate-400">
-                            {unifiedProfile.total_data_points} data points gathered
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Data Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Basic Information */}
-                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          <span>Basic Information</span>
-                        </h4>
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">Email:</span>
-                            <span className="text-white">{unifiedProfile.influencer?.user?.email}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">Phone:</span>
-                            <span className="text-white">{unifiedProfile.influencer?.phone || 'N/A'}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">Base Country:</span>
-                            <span className="text-white">{unifiedProfile.influencer?.base_country?.name || 'N/A'}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Social Media */}
-                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2" />
-                          </svg>
-                          <span>Social Media</span>
-                        </h4>
-                        <div className="space-y-2">
-                          {unifiedProfile.social_media_platforms?.map((platform, index) => (
-                            <div key={index} className="flex items-center justify-between">
-                              <span className="text-slate-400">{platform.name}:</span>
-                              <span className="text-white">{platform.followers || 'N/A'}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Operational Locations */}
-                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <span>Operational Locations</span>
-                        </h4>
-                        <div className="space-y-2">
-                          {unifiedProfile.locations?.length > 0 ? (
-                            unifiedProfile.locations.map((location: any, index: number) => (
-                              <div key={index} className="text-sm">
-                                <div className="text-white font-medium">
-                                  {location.city_name}, {location.region_name}
-                                </div>
-                                <div className="text-slate-400">
-                                  {location.country_name}
-                                </div>
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-slate-500">No locations added</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Collaboration Countries */}
-                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>Collaboration Countries</span>
-                        </h4>
-                        <div className="space-y-2">
-                          {unifiedProfile.collaboration_countries?.length > 0 ? (
-                            unifiedProfile.collaboration_countries.map((country, index) => (
-                              <div key={index} className="text-white">
-                                {country.name}
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-slate-500">No countries added</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Coaching Groups */}
-                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                          </svg>
-                          <span>Coaching Groups</span>
-                        </h4>
-                        <div className="space-y-2">
-                          {unifiedProfile.coaching_groups?.length > 0 ? (
-                            unifiedProfile.coaching_groups.map((group, index) => (
-                              <div key={index} className="text-sm">
-                                <div className="text-white font-medium">{group.name}</div>
-                                <div className="text-slate-400">{group.description}</div>
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-slate-500">No coaching groups</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Rate Cards */}
-                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                          </svg>
-                          <span>Rate Cards</span>
-                        </h4>
-                        <div className="space-y-2">
-                          {unifiedProfile.rate_cards?.length > 0 ? (
-                            unifiedProfile.rate_cards.map((rate, index) => (
-                              <div key={index} className="text-sm">
-                                <div className="text-white font-medium">{rate.service_type}</div>
-                                <div className="text-slate-400">${rate.price}</div>
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-slate-500">No rate cards</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom Row - Full Width Cards */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Target Audiences */}
-                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                          </svg>
-                          <span>Target Audiences</span>
-                        </h4>
-                        <div className="space-y-2">
-                          {unifiedProfile.influencer_targets?.length > 0 ? (
-                            unifiedProfile.influencer_targets.map((target: any, index: number) => (
-                              <div key={index} className="text-sm">
-                                <div className="text-white font-medium">{target.target_audience}</div>
-                                <div className="text-slate-400">{target.description}</div>
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-slate-500">No target audiences defined</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Profile Summary */}
-                      <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-                        <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>Profile Summary</span>
-                        </h4>
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">Total Data Points:</span>
-                            <span className="text-white font-medium">{unifiedProfile.total_data_points}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">Data Gathered:</span>
-                            <span className="text-white">{new Date(unifiedProfile.data_gathered_at).toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">Profile Status:</span>
-                            <span className="text-green-400 font-medium">Complete</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* No Recommendations Content */
-                <div className="text-center py-16">
-                  <div className="w-20 h-20 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                    <Brain className="h-10 w-10 text-slate-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">No recommendations yet</h3>
-                  <p className="text-slate-400 text-lg leading-relaxed mb-8 max-w-md mx-auto">
-                    Your AI recommendations will appear here once generated. Please generate recommendations first.
-                  </p>
-                  <button
-                      onClick={() => {
-                        console.log('Button clicked!');
-                        fetchUnifiedProfile();
-                      }}
-                    disabled={isLoadingProfile}
-                      className="btn-dark-primary px-6 py-3 rounded-xl font-medium flex items-center space-x-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform duration-200"
-                  >
-                    {isLoadingProfile ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          <span>Loading Profile...</span>
-                      </>
-                    ) : (
-                      <>
-                        <User className="h-4 w-4" />
-                          <span>Get Unified Influencer Profile</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-                )}
-              </div>
-
-              {/* Right Side - Floating Panels (same as with recommendations) */}
-              <div className="lg:col-span-1 space-y-6">
-                {/* AI Agents Panel */}
-                <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
-                  <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
-                    <Bot className="h-5 w-5 mr-2 text-blue-400" />
-                    AI Agents
-                    <span className="ml-2 text-blue-400 font-normal">{aiAgents.length}</span>
-                  </h2>
-                  
-                  {isLoadingAgents ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
-                      <span className="ml-3 text-slate-300">Loading AI agents...</span>
-                    </div>
-                  ) : aiAgents.length > 0 ? (
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
-                      {aiAgents.map((agent) => {
-                        const IconComponent = agentIcons[agent.agent_type as keyof typeof agentIcons] || Bot;
-                        const bgColor = agentColors[agent.agent_type as keyof typeof agentColors] || 'bg-blue-500';
-                        
-                        return (
-                          <div key={agent.id} className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600/30">
-                            <div className={`w-10 h-10 ${bgColor} rounded-full flex items-center justify-center flex-shrink-0`}>
-                              <IconComponent className="w-5 h-5 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="text-sm font-semibold text-white">{agent.name}</h3>
-                              <p className="text-xs text-slate-400 capitalize">
-                                {agent.agent_type?.replace('_', ' ')} • {agent.status}
-                              </p>
-                            </div>
-                            <div className="flex-shrink-0">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                agent.is_active 
-                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                                  : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
-                              }`}>
-                                {agent.is_active ? 'Active' : 'Inactive'}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Bot className="h-12 w-12 text-slate-400 mx-auto mb-3" />
-                      <p className="text-slate-400">No AI agents available</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* AI Agent Settings Panel */}
-                <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
-                  <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
-                    <Settings className="h-5 w-5 mr-2 text-blue-400" />
-                    AI Agent Settings
-                  </h2>
-                  
-                  <div className="space-y-6">
-                    {/* Operation Mode */}
-                    <div>
-                      <label className="text-sm font-medium text-slate-400 mb-3 block">Operation Mode</label>
-                      <div className="space-y-3">
-                        <label className="flex items-center space-x-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="operationMode"
-                            value="manual"
-                            checked={operationMode === 'manual'}
-                            onChange={(e) => setOperationMode(e.target.value as 'manual' | 'automatic')}
-                            className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
-                          />
-                          <span className="text-white">Operates manually</span>
-                        </label>
-                        <label className="flex items-center space-x-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="operationMode"
-                            value="automatic"
-                            checked={operationMode === 'automatic'}
-                            onChange={(e) => setOperationMode(e.target.value as 'manual' | 'automatic')}
-                            className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
-                          />
-                          <span className="text-white">Operates automatically</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Schedule Frequency (only show when automatic is selected) */}
-                    {operationMode === 'automatic' && (
-                      <div>
-                        <label className="text-sm font-medium text-slate-400 mb-3 block flex items-center">
-                          <Clock className="h-4 w-4 mr-2" />
-                          Schedule Frequency
-                        </label>
-                        <div className="grid grid-cols-2 gap-3">
-                          {(['hourly', 'daily', 'weekly', 'monthly'] as const).map((frequency) => (
-                            <label key={frequency} className="flex items-center space-x-2 cursor-pointer p-3 bg-slate-700/30 rounded-lg border border-slate-600/30 hover:bg-slate-700/50 transition-colors">
-                              <input
-                                type="radio"
-                                name="scheduleFrequency"
-                                value={frequency}
-                                checked={scheduleFrequency === frequency}
-                                onChange={(e) => setScheduleFrequency(e.target.value as typeof frequency)}
-                                className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
-                              />
-                              <span className="text-white capitalize text-sm">{frequency}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Action Button */}
-                    <div className="pt-4 border-t border-slate-700/50">
-                      {operationMode === 'manual' ? (
-                        <button
-                          onClick={async () => {
-                            if (!user?.id) {
-                              toast.error('No user ID available');
-                              return;
-                            }
-                            
-                            try {
-                              toast.loading('Generating AI recommendations...', { id: 'ai-recommendations' });
-                              const result = await apiClient.triggerRecommendationAnalysis(user.id);
-                              toast.success('AI recommendations generated successfully!', { id: 'ai-recommendations' });
-                              console.log('AI recommendations result:', result);
-                            } catch (error: any) {
-                              console.error('Error generating AI recommendations:', error);
-                              toast.error('Failed to generate AI recommendations. Please try again.', { id: 'ai-recommendations' });
-                            }
-                          }}
-                          className="w-full btn-dark-primary px-4 py-3 rounded-xl font-medium flex items-center justify-center space-x-2"
-                        >
-                          <Bot className="h-4 w-4" />
-                          <span>Generate AI Recommendation</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            toast.success('AI Agent settings saved successfully!');
-                          }}
-                          className="w-full btn-dark-primary px-4 py-3 rounded-xl font-medium flex items-center justify-center space-x-2"
-                        >
-                          <Settings className="h-4 w-4" />
-                          <span>Save Settings</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </UnifiedDashboardLayout>
-    );
-  }
-
+  // Removed the "if (recommendations.length === 0)" condition to always show the panels
+  
+  // Main return - always show the panels
   return (
     <UnifiedDashboardLayout>
       <Toaster 
@@ -1569,34 +2202,20 @@ export default function RecommendationsPage() {
         <div className="p-4 sm:p-6 lg:p-8 max-w-none">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-              <div className="min-w-0 flex-1">
-                <h1 className="text-3xl font-bold text-white mb-2 leading-tight tracking-tight">
-                  AI Recommendations 🤖
-                </h1>
-                <p className="text-slate-300 text-lg leading-relaxed">
-                  Your personalized influencer strategy recommendations powered by AI
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 flex-shrink-0">
-                <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl px-4 py-2 border border-slate-700/50">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-slate-300 whitespace-nowrap">
-                      {recommendations.length} Recommendation{recommendations.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <h1 className="text-3xl font-bold text-white mb-2 leading-tight tracking-tight">
+              AI Recommendations 🤖
+            </h1>
+            <p className="text-slate-300 text-lg leading-relaxed">
+              Your personalized influencer strategy recommendations powered by AI
+            </p>
           </div>
 
-          {/* Main Content Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Side - Content */}
-            <div className="lg:col-span-2 space-y-8">
+          {/* Main Content Layout - Two Column with AI Agents on Right */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8">
+            {/* Left Panel - Advanced Growth Strategies */}
+            <div className="space-y-6">
               {/* Navigation Tabs */}
-              <div className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-600/30">
+              {/* <div className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-600/30">
                 <nav className="flex overflow-x-auto">
                   {sections.map((section) => (
                     <button
@@ -1618,10 +2237,10 @@ export default function RecommendationsPage() {
                     </button>
                   ))}
                 </nav>
-              </div>
+              </div> */}
 
               {/* Progress Bar */}
-              <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              {/* <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-white">Progress</span>
                   <span className="text-sm text-slate-300">{Math.round(((currentSection + 1) / sections.length) * 100)}% Complete</span>
@@ -1636,16 +2255,16 @@ export default function RecommendationsPage() {
                   <span>Section {currentSection + 1} of {sections.length}</span>
                   <span>{sections[currentSection].name}</span>
                 </div>
-              </div>
+              </div> */}
 
               {/* Main Content */}
-              <div 
+              {/* <div 
                 ref={timelineRef}
                 className="bg-slate-800/30 backdrop-blur-sm rounded-b-2xl border border-slate-700/50 border-t-0 p-6 min-h-[600px]"
                 onTouchStart={handleTouchStart}
-              >
+              > */}
                 {/* Desktop Navigation */}
-                <div className="hidden md:flex justify-between items-center mb-6">
+                {/* <div className="hidden md:flex justify-between items-center mb-6">
                   <button
                     onClick={prevSection}
                     className="flex items-center space-x-2 px-4 py-3 btn-dark rounded-xl font-medium"
@@ -1666,10 +2285,10 @@ export default function RecommendationsPage() {
                     <span>Next</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
-                </div>
+                </div> */}
 
                 {/* Mobile Navigation */}
-                <div className="md:hidden flex justify-between items-center mb-6">
+                {/* <div className="md:hidden flex justify-between items-center mb-6">
                   <button
                     onClick={prevSection}
                     className="p-3 btn-dark rounded-xl"
@@ -1688,25 +2307,25 @@ export default function RecommendationsPage() {
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
-                </div>
+                </div> */}
 
                 {/* Section Content */}
-                <div className="overflow-y-auto max-h-[500px]">
+                {/* <div className="overflow-y-auto max-h-[500px]">
                   {renderCurrentSection()}
                 </div>
-              </div>
+              </div> */}
 
               {/* Recommendation Info */}
-              <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+              {/* <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
                 <div className="flex flex-wrap items-center justify-between text-sm text-slate-300">
                   <div className="flex items-center space-x-6">
                     <div className="flex items-center space-x-2">
                       <span className="text-slate-400">ID:</span>
-                      <span className="font-mono text-cyan-400">#{currentRecommendation?.id}</span>
+                      <span className="font-mono text-cyan-400">#{currentRecommendation?.id || 'N/A'}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-slate-400">Level:</span>
-                      <span className="capitalize font-medium text-white">{currentRecommendation?.user_level}</span>
+                      <span className="capitalize font-medium text-white">{currentRecommendation?.user_level || 'N/A'}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-slate-400">Created:</span>
@@ -1718,17 +2337,85 @@ export default function RecommendationsPage() {
                   <div className="flex items-center space-x-4 text-xs">
                     <div className="flex items-center space-x-2">
                       <span className="text-slate-400">User:</span>
-                      <span className="font-mono text-cyan-400">#{user?.id}</span>
+                      <span className="font-mono text-cyan-400">#{user?.id || 'N/A'}</span>
                     </div>
                     <span className="text-slate-600">•</span>
-                    <span className="text-slate-300 truncate max-w-xs">{user?.email}</span>
+                    <span className="text-slate-300 truncate max-w-xs">{user?.email || 'N/A'}</span>
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
-            {/* Right Side - Floating Panels */}
-            <div className="lg:col-span-1 space-y-6">
+            {/* Advanced Growth Strategies Panel - Moved to Left */}
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-white flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2 text-green-400" />
+                  Advanced Growth Strategies
+                </h2>
+                {!growthStrategies && processingStatus !== 'processing' && (
+                  <button
+                    onClick={fetchGrowthStrategies}
+                    disabled={isLoadingGrowthStrategies}
+                    className="btn-dark-primary px-4 py-2 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoadingGrowthStrategies ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Loading...
+                      </>
+                    ) : (
+                      'Load Strategies'
+                    )}
+                  </button>
+                )}
+                
+                {processingStatus === 'processing' && (
+                  <div className="flex items-center space-x-2 text-blue-400">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+                    <span className="text-sm">AI Processing...</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Tab Navigation */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {[
+                  { id: 0, name: 'More Followers', icon: Users, color: 'bg-blue-500' },
+                  { id: 1, name: 'Content Ideas', icon: Lightbulb, color: 'bg-yellow-500' },
+                  { id: 2, name: 'Social Profiles', icon: Globe, color: 'bg-purple-500' },
+                  { id: 3, name: 'Influencer Collab', icon: Star, color: 'bg-pink-500' },
+                  { id: 4, name: 'Business Collab', icon: Target, color: 'bg-green-500' },
+                  { id: 5, name: 'Content Scripts', icon: Edit, color: 'bg-orange-500' },
+                  { id: 6, name: 'Downloads', icon: Download, color: 'bg-indigo-500' }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      currentAdvancedTab === tab.id
+                        ? 'bg-slate-700 text-white shadow-lg'
+                        : 'bg-slate-600/50 text-slate-300 hover:bg-slate-600 hover:text-white'
+                    }`}
+                    onClick={() => {
+                      console.log('Tab clicked:', tab.name, 'ID:', tab.id);
+                      setCurrentAdvancedTab(tab.id);
+                    }}
+                  >
+                    <tab.icon className="h-4 w-4" />
+                    <span className="hidden sm:inline">{tab.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab Content */}
+              <div className="min-h-[400px]">
+                {renderAdvancedTab()}
+              </div>
+            </div>
+          </div>
+
+            {/* Right Panel - AI Agents */}
+            <div className="space-y-6">
               {/* AI Agents Panel */}
               <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
                 <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
@@ -1779,108 +2466,6 @@ export default function RecommendationsPage() {
                   </div>
                 )}
               </div>
-
-              {/* AI Agent Settings Panel */}
-              <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
-                <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
-                  <Settings className="h-5 w-5 mr-2 text-blue-400" />
-                  AI Agent Settings
-                </h2>
-                
-                <div className="space-y-6">
-                  {/* Operation Mode */}
-                  <div>
-                    <label className="text-sm font-medium text-slate-400 mb-3 block">Operation Mode</label>
-                    <div className="space-y-3">
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="operationMode"
-                          value="manual"
-                          checked={operationMode === 'manual'}
-                          onChange={(e) => setOperationMode(e.target.value as 'manual' | 'automatic')}
-                          className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
-                        />
-                        <span className="text-white">Operates manually</span>
-                      </label>
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="operationMode"
-                          value="automatic"
-                          checked={operationMode === 'automatic'}
-                          onChange={(e) => setOperationMode(e.target.value as 'manual' | 'automatic')}
-                          className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
-                        />
-                        <span className="text-white">Operates automatically</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Schedule Frequency (only show when automatic is selected) */}
-                  {operationMode === 'automatic' && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-400 mb-3 block flex items-center">
-                        <Clock className="h-4 w-4 mr-2" />
-                        Schedule Frequency
-                      </label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {(['hourly', 'daily', 'weekly', 'monthly'] as const).map((frequency) => (
-                          <label key={frequency} className="flex items-center space-x-2 cursor-pointer p-3 bg-slate-700/30 rounded-lg border border-slate-600/30 hover:bg-slate-700/50 transition-colors">
-                            <input
-                              type="radio"
-                              name="scheduleFrequency"
-                              value={frequency}
-                              checked={scheduleFrequency === frequency}
-                              onChange={(e) => setScheduleFrequency(e.target.value as typeof frequency)}
-                              className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 focus:ring-blue-500 focus:ring-2"
-                            />
-                            <span className="text-white capitalize text-sm">{frequency}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Action Button */}
-                  <div className="pt-4 border-t border-slate-700/50">
-                    {operationMode === 'manual' ? (
-                      <button
-                        onClick={async () => {
-                          if (!user?.id) {
-                            toast.error('No user ID available');
-                            return;
-                          }
-                          
-                          try {
-                            toast.loading('Generating AI recommendations...', { id: 'ai-recommendations-2' });
-                            const result = await apiClient.triggerRecommendationAnalysis(user.id);
-                            toast.success('AI recommendations generated successfully!', { id: 'ai-recommendations-2' });
-                            console.log('AI recommendations result:', result);
-                          } catch (error: any) {
-                            console.error('Error generating AI recommendations:', error);
-                            toast.error('Failed to generate AI recommendations. Please try again.', { id: 'ai-recommendations-2' });
-                          }
-                        }}
-                        className="w-full btn-dark-primary px-4 py-3 rounded-xl font-medium flex items-center justify-center space-x-2"
-                      >
-                        <Bot className="h-4 w-4" />
-                        <span>Generate AI Recommendation</span>
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          toast.success('AI Agent settings saved successfully!');
-                        }}
-                        className="w-full btn-dark-primary px-4 py-3 rounded-xl font-medium flex items-center justify-center space-x-2"
-                      >
-                        <Settings className="h-4 w-4" />
-                        <span>Save Settings</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -1897,28 +2482,10 @@ export default function RecommendationsPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center space-x-3">
-                {(() => {
-                  const IconComponent = agentIcons[selectedInsight.agent_type as keyof typeof agentIcons] || Brain;
-                  return (
-                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg">
-                      <IconComponent className="w-6 h-6 text-white" />
-                    </div>
-                  );
-                })()}
-                <div>
-                  <h3 className="text-xl font-bold text-white">
-                    {selectedInsight.agent_type?.replace('_', ' ').toUpperCase()} Advisor
-                  </h3>
-                  <p className="text-sm text-slate-400 capitalize">
-                    {selectedInsight.focus_area?.replace('_', ' ')}
-                  </p>
-                </div>
-              </div>
-              <button 
-                onClick={closeModal} 
-                className="text-slate-400 hover:text-slate-200 p-2 hover:bg-slate-700/50 rounded-full transition-colors"
-              >
+              <h3 className="text-2xl font-bold text-white">
+                {selectedInsight.agent_type?.replace('_', ' ')} Advisor Insight
+              </h3>
+              <button onClick={closeModal} className="text-slate-400 hover:text-white">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -1948,8 +2515,6 @@ export default function RecommendationsPage() {
           </div>
         </div>
       )}
-
-
     </UnifiedDashboardLayout>
   );
 }
