@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { 
@@ -35,8 +35,19 @@ interface UserRegistrationData extends RegisterData {
   confirmPassword: string;
 }
 
+// API Response type for social media platforms
+interface SocialMediaPlatformAPI {
+  id: number;
+  name: string;
+  icon_url: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 interface SocialMediaPlatform {
-  platform: string;
+  platform_id: number;
+  platform_name: string;
   handle: string;
 }
 
@@ -86,8 +97,6 @@ interface BusinessRegistrationData extends UserRegistrationData {
     countryCode?: string;
     displayName?: string;
   };
-  promotionScope: 'local' | 'international' | 'both';
-  targetMarkets: string[];
   businessSize: string;
 }
 
@@ -96,15 +105,9 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { register: registerUser, isLoading } = useAuth();
 
-  // Social media platforms
-  const socialMediaPlatforms = [
-    { name: 'Instagram', icon: Instagram, placeholder: '@username or URL' },
-    { name: 'YouTube', icon: Youtube, placeholder: 'Channel ID or URL' },
-    { name: 'TikTok', icon: Smartphone, placeholder: '@username or URL' },
-    { name: 'Twitter', icon: Hash, placeholder: '@username or URL' },
-    { name: 'Facebook', icon: Users, placeholder: 'Page name or URL' },
-    { name: 'LinkedIn', icon: Building, placeholder: 'Profile or company URL' },
-  ];
+  // Social media platforms from API
+  const [socialMediaPlatforms, setSocialMediaPlatforms] = useState<SocialMediaPlatformAPI[]>([]);
+  const [loadingPlatforms, setLoadingPlatforms] = useState(true);
 
   // Industries for business registration
   const industries = [
@@ -119,6 +122,20 @@ export default function RegisterPage() {
     'Finance',
     'Automotive',
     'Real Estate',
+    'E-commerce & Retail',
+    'Hospitality',
+    'Media & Publishing',
+    'Gaming',
+    'Art & Design',
+    'Music',
+    'Home & Garden',
+    'Pets & Animals',
+    'Non-profit & Charity',
+    'Professional Services',
+    'Manufacturing',
+    'Construction',
+    'Agriculture',
+    'Energy & Utilities',
     'Other'
   ];
 
@@ -144,11 +161,32 @@ export default function RegisterPage() {
 
   // State for dynamic fields
   const [socialMediaFields, setSocialMediaFields] = useState<SocialMediaPlatform[]>([]);
-  const [targetMarkets, setTargetMarkets] = useState<string[]>([]);
   const [baseLocation, setBaseLocation] = useState<any>(null);
   const [desiredLocation, setDesiredLocation] = useState<any>(null);
   const [businessLocation, setBusinessLocation] = useState<any>(null);
   const [desiredInfluencerLocation, setDesiredInfluencerLocation] = useState<any>(null);
+
+  // Fetch social media platforms from API on component mount
+  useEffect(() => {
+    const fetchSocialMediaPlatforms = async () => {
+      try {
+        setLoadingPlatforms(true);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/social-media-platforms/list`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch social media platforms');
+        }
+        const data: SocialMediaPlatformAPI[] = await response.json();
+        setSocialMediaPlatforms(data);
+      } catch (error) {
+        console.error('Error fetching social media platforms:', error);
+        toast.error('Failed to load social media platforms');
+      } finally {
+        setLoadingPlatforms(false);
+      }
+    };
+
+    fetchSocialMediaPlatforms();
+  }, []);
 
   const onSubmit = async (data: any) => {
     try {
@@ -156,42 +194,183 @@ export default function RegisterPage() {
         const { confirmPassword, ...registerData } = data;
         await registerUser(registerData);
       } else if (activeTab === 'influencer') {
-        // TODO: Handle influencer registration
-        toast.success('Influencer registration form submitted (API integration pending)');
-        console.log('Influencer registration data:', { ...data, socialMediaFields, baseLocation, desiredLocation });
+        // Validate social media platforms
+        if (!socialMediaFields || socialMediaFields.length === 0) {
+          toast.error('Please add at least one social media platform');
+          return;
+        }
+        
+        // Validate at least one platform has both platform_id and handle
+        const validPlatforms = socialMediaFields.filter(p => p.platform_id && p.handle);
+        if (validPlatforms.length === 0) {
+          toast.error('Please complete at least one social media platform with platform and handle');
+          return;
+        }
+        
+        // Validate base location
+        if (!baseLocation || !baseLocation.latitude || !baseLocation.longitude) {
+          toast.error('Please select your base location on the map');
+          return;
+        }
+        
+        // Prepare influencer registration data
+        const influencerData = {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          username: data.username,
+          email: data.email,
+          password: data.password,
+          bio: data.bio,
+          profile_image_url: data.profile_image_url,
+          website_url: data.website_url,
+          languages: data.languages,
+          base_country_id: baseLocation.countryId || 1, // Use selected country from CountrySelect
+          collaboration_country_ids: [],
+          
+          social_media_platforms: validPlatforms.map(platform => ({
+            social_media_platform_id: platform.platform_id,
+            handle: platform.handle,
+            bio_url: null,
+            follower_count: null,
+            is_verified: false
+          })),
+          
+          base_location: {
+            latitude: baseLocation.latitude,
+            longitude: baseLocation.longitude,
+            city_name: baseLocation.cityName,
+            country_code: baseLocation.countryCode,
+            country_name: baseLocation.countryName,
+            region_name: baseLocation.region_name,
+            region_code: baseLocation.region_code
+          },
+          
+          desired_location: desiredLocation ? {
+            latitude: desiredLocation.latitude,
+            longitude: desiredLocation.longitude,
+            city_name: desiredLocation.cityName,
+            country_code: desiredLocation.countryCode,
+            country_name: desiredLocation.countryName,
+            region_name: desiredLocation.region_name,
+            region_code: desiredLocation.region_code
+          } : null
+        };
+        
+        // Remove null desired_location if not set
+        if (!influencerData.desired_location) {
+          delete influencerData.desired_location;
+        }
+        
+        toast.loading('Creating your influencer profile...');
+        
+        // Import apiClient
+        const { apiClient } = await import('@/lib/api');
+        
+        // Call the API
+        await apiClient.createInfluencerPublic(influencerData);
+        
+        toast.dismiss();
+        toast.success('Influencer profile created successfully! Please login to continue.');
+        
+        // Redirect to login page
+        setTimeout(() => {
+          window.location.href = '/auth/login';
+        }, 2000);
+        
       } else if (activeTab === 'business') {
-        // TODO: Handle business registration  
-        toast.success('Business registration form submitted (API integration pending)');
-        console.log('Business registration data:', { ...data, targetMarkets, businessLocation, desiredInfluencerLocation });
+        // Validate business location
+        if (!businessLocation || !businessLocation.latitude || !businessLocation.longitude) {
+          toast.error('Please select your business location on the map');
+          return;
+        }
+        
+        // Prepare business registration data
+        const businessData = {
+          name: data.businessName,
+          contact_email: data.contactEmail,
+          contact_phone: data.contactPhone,
+          industry: data.industry,
+          description: data.businessDescription,
+          website_url: data.websiteUrl,
+          base_country_id: businessLocation.countryId || 1,
+          collaboration_country_ids: [],
+          
+          // User creation fields
+          first_name: data.firstName,
+          last_name: data.lastName,
+          username: data.username,
+          password: data.password,
+          
+          // Location fields
+          business_location: {
+            latitude: businessLocation.latitude,
+            longitude: businessLocation.longitude,
+            city_name: businessLocation.cityName,
+            country_code: businessLocation.countryCode,
+            country_name: businessLocation.countryName,
+            region_name: businessLocation.region_name,
+            region_code: businessLocation.region_code
+          },
+          
+          desired_influencer_location: desiredInfluencerLocation ? {
+            latitude: desiredInfluencerLocation.latitude,
+            longitude: desiredInfluencerLocation.longitude,
+            city_name: desiredInfluencerLocation.cityName,
+            country_code: desiredInfluencerLocation.countryCode,
+            country_name: desiredInfluencerLocation.countryName,
+            region_name: desiredInfluencerLocation.region_name,
+            region_code: desiredInfluencerLocation.region_code
+          } : undefined
+        };
+        
+        // Remove undefined desired_influencer_location if not set
+        if (!businessData.desired_influencer_location) {
+          delete businessData.desired_influencer_location;
+        }
+        
+        toast.loading('Creating your business profile...');
+        
+        // Import apiClient
+        const { apiClient } = await import('@/lib/api');
+        
+        // Call the API
+        await apiClient.createBusinessPublic(businessData);
+        
+        toast.dismiss();
+        toast.success('Business profile created successfully! Please login to continue.');
+        
+        // Redirect to login page
+        setTimeout(() => {
+          window.location.href = '/auth/login';
+        }, 2000);
       }
-    } catch (error) {
-      // Error is handled by the useAuth hook
+    } catch (error: any) {
+      toast.dismiss();
+      const errorMessage = error.response?.data?.detail || error.message || 'Registration failed';
+      toast.error(errorMessage);
+      console.error('Registration error:', error);
     }
   };
 
   const addSocialMediaField = () => {
-    setSocialMediaFields([...socialMediaFields, { platform: '', handle: '' }]);
+    setSocialMediaFields([...socialMediaFields, { platform_id: 0, platform_name: '', handle: '' }]);
   };
 
   const removeSocialMediaField = (index: number) => {
     setSocialMediaFields(socialMediaFields.filter((_, i) => i !== index));
   };
 
-  const updateSocialMediaField = (index: number, field: 'platform' | 'handle', value: string) => {
+  const updateSocialMediaField = (index: number, field: 'platform_id' | 'platform_name' | 'handle', value: string | number) => {
     const updated = [...socialMediaFields];
-    updated[index][field] = value;
-    setSocialMediaFields(updated);
-  };
-
-  const addTargetMarket = () => {
-    const newMarket = prompt('Enter target market/country:');
-    if (newMarket && !targetMarkets.includes(newMarket)) {
-      setTargetMarkets([...targetMarkets, newMarket]);
+    if (field === 'platform_id') {
+      const platformId = value as number;
+      const platform = socialMediaPlatforms.find(p => p.id === platformId);
+      updated[index].platform_id = platformId;
+      updated[index].platform_name = platform?.name || '';
+    } else if (field === 'handle') {
+      updated[index].handle = value as string;
     }
-  };
-
-  const removeTargetMarket = (index: number) => {
-    setTargetMarkets(targetMarkets.filter((_, i) => i !== index));
+    setSocialMediaFields(updated);
   };
 
   return (
@@ -224,7 +403,6 @@ export default function RegisterPage() {
                   setActiveTab('user');
                   reset();
                   setSocialMediaFields([]);
-                  setTargetMarkets([]);
                 }}
                 className={`flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
                   activeTab === 'user'
@@ -241,7 +419,6 @@ export default function RegisterPage() {
                   setActiveTab('influencer');
                   reset();
                   setSocialMediaFields([]);
-                  setTargetMarkets([]);
                 }}
                 className={`flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
                   activeTab === 'influencer'
@@ -258,7 +435,6 @@ export default function RegisterPage() {
                   setActiveTab('business');
                   reset();
                   setSocialMediaFields([]);
-                  setTargetMarkets([]);
                 }}
                 className={`flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
                   activeTab === 'business'
@@ -564,13 +740,16 @@ export default function RegisterPage() {
                         <div>
                           <label className="label-dark text-sm">Platform</label>
                           <select
-                            value={field.platform}
-                            onChange={(e) => updateSocialMediaField(index, 'platform', e.target.value)}
+                            value={field.platform_id}
+                            onChange={(e) => updateSocialMediaField(index, 'platform_id', parseInt(e.target.value))}
                             className="input-dark text-sm"
+                            disabled={loadingPlatforms}
                           >
-                            <option value="">Select platform</option>
+                            <option value="">
+                              {loadingPlatforms ? 'Loading platforms...' : 'Select platform'}
+                            </option>
                             {socialMediaPlatforms.map((platform) => (
-                              <option key={platform.name} value={platform.name.toLowerCase()}>
+                              <option key={platform.id} value={platform.id}>
                                 {platform.name}
                               </option>
                             ))}
@@ -584,10 +763,7 @@ export default function RegisterPage() {
                             value={field.handle}
                             onChange={(e) => updateSocialMediaField(index, 'handle', e.target.value)}
                             className="input-dark text-sm"
-                            placeholder={
-                              socialMediaPlatforms.find(p => p.name.toLowerCase() === field.platform)?.placeholder || 
-                              'Enter your handle'
-                            }
+                            placeholder={`Enter your @username or profile URL`}
                           />
                         </div>
                       </div>
@@ -1001,127 +1177,6 @@ export default function RegisterPage() {
                         </p>
                       </div>
                     )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Promotion Strategy */}
-              <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <Globe className="w-5 h-5 mr-2 text-cyan-400" />
-                  Promotion Strategy
-                </h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="label-dark">Promotion Scope</label>
-                    <select
-                      {...register('promotionScope', { required: 'Promotion scope is required' })}
-                      className={`input-dark ${errors.promotionScope ? 'input-error' : ''}`}
-                    >
-                      <option value="">Select promotion scope</option>
-                      <option value="local">Local promotion only</option>
-                      <option value="international">International promotion only</option>
-                      <option value="both">Both local and international</option>
-                    </select>
-                    {errors.promotionScope && (
-                      <p className="form-error">{errors.promotionScope.message}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="label-dark">Target Markets</label>
-                      <button
-                        type="button"
-                        onClick={addTargetMarket}
-                        className="text-cyan-400 hover:text-cyan-300 text-sm font-medium flex items-center space-x-1"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span>Add Market</span>
-                      </button>
-                    </div>
-                    
-                    {targetMarkets.length === 0 ? (
-                      <div className="text-center py-4 border-2 border-dashed border-slate-600/50 rounded-lg">
-                        <Globe className="w-6 h-6 text-slate-400 mx-auto mb-2" />
-                        <p className="text-slate-400 text-sm">No target markets added</p>
-                        <button
-                          type="button"
-                          onClick={addTargetMarket}
-                          className="mt-2 text-cyan-400 hover:text-cyan-300 text-sm"
-                        >
-                          Add your first target market
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {targetMarkets.map((market, index) => (
-                          <div
-                            key={index}
-                            className="bg-slate-700/50 rounded-lg px-3 py-2 border border-slate-600/30 flex items-center space-x-2"
-                          >
-                            <span className="text-white text-sm">{market}</span>
-                            <button
-                              type="button"
-                              onClick={() => removeTargetMarket(index)}
-                              className="text-red-400 hover:text-red-300"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="label-dark">Additional Questions</label>
-                    
-                    <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/30 space-y-3">
-                      <div>
-                        <p className="text-white text-sm mb-2">Do you have existing marketing materials?</p>
-                        <label className="flex items-center space-x-2">
-                        <input
-                          name="hasMarketingMaterials"
-                          type="checkbox"
-                          className="checkbox-dark"
-                        />
-                          <span className="text-slate-300 text-sm">Yes, we have brand guidelines and marketing assets</span>
-                        </label>
-                      </div>
-
-                      <div>
-                        <p className="text-white text-sm mb-2">Budget range for influencer collaborations?</p>
-                        <select
-                          name="budgetRange"
-                          className="input-dark text-sm"
-                        >
-                          <option value="">Select budget range</option>
-                          <option value="under-1000">Under $1,000/month</option>
-                          <option value="1000-5000">$1,000 - $5,000/month</option>
-                          <option value="5000-10000">$5,000 - $10,000/month</option>
-                          <option value="10000-25000">$10,000 - $25,000/month</option>
-                          <option value="over-25000">Over $25,000/month</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <p className="text-white text-sm mb-2">Preferred collaboration types?</p>
-                        <div className="space-y-2">
-                          {['Product reviews', 'Brand partnerships', 'Event promotion', 'Content creation', 'Sponsored posts'].map((type) => (
-                            <label key={type} className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                value={type}
-                                className="checkbox-dark"
-                              />
-                              <span className="text-slate-300 text-sm">{type}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>

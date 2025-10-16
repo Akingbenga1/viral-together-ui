@@ -45,7 +45,12 @@ import {
   InfluencerCoachingSession,
   CreateCoachingSessionData,
   InfluencerCoachingMessage,
-  SendMessageData
+  SendMessageData,
+  Collaboration,
+  CreateCollaborationData,
+  UpdateCollaborationData,
+  CollaborationApprovalRequest,
+  CollaborationApprovalResponse
 } from '@/types';
 import {
   GeocodeRequest,
@@ -141,7 +146,7 @@ class ApiClient {
         if (error.response?.status === 401) {
           // Check if current route is public to avoid showing session expired on public pages
           const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-          const publicRoutes = ['/', '/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy'];
+          const publicRoutes = ['/', '/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy', '/auth/forgot-password', '/auth/reset-password'];
           const isPublicRoute = publicRoutes.includes(currentPath) || currentPath.startsWith('/blog');
           
           // Only show session expired message and redirect for protected routes
@@ -953,12 +958,12 @@ class ApiClient {
   }
 
   // Forgot Password endpoint
-  async forgotPassword(email: string): Promise<{ message: string }> {
-    const response = await this.client.post('/auth/forgot-password', { email });
+  async forgotPassword(emailOrUsername: string): Promise<{ message: string; success: boolean }> {
+    const response = await this.client.post('/auth/forgot-password', { email_or_username: emailOrUsername });
     return response.data;
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string; success: boolean }> {
     const response = await this.client.post('/auth/reset-password', { token, new_password: newPassword });
     return response.data;
   }
@@ -995,6 +1000,428 @@ class ApiClient {
     message: string;
   }> {
     const response = await this.client.get(`/non-ai-recommendations/influencer/${influencerId}/status`);
+    return response.data;
+  }
+
+  // Promotion API methods
+  async createPromotion(promotionData: {
+    business_id: number;
+    promotion_name: string;
+    promotion_item: string;
+    description?: string;
+    start_date: string;
+    end_date: string;
+    discount?: number;
+    budget?: number;
+    spent_amount?: number;
+    status?: string;
+    target_audience?: string;
+    social_media_platform_id: number;
+  }): Promise<{
+    id: number;
+    business_id: number;
+    promotion_name: string;
+    promotion_item: string;
+    description?: string;
+    start_date: string;
+    end_date: string;
+    discount?: number;
+    budget?: number;
+    spent_amount?: number;
+    status?: string;
+    target_audience?: string;
+    social_media_platform_id: number;
+    created_at: string;
+    updated_at: string;
+  }> {
+    const response = await this.client.post('/promotions/', promotionData);
+    return response.data;
+  }
+
+  async getPromotions(): Promise<Array<{
+    id: number;
+    business_id: number;
+    promotion_name: string;
+    promotion_item: string;
+    description?: string;
+    start_date: string;
+    end_date: string;
+    discount?: number;
+    budget?: number;
+    spent_amount?: number;
+    status?: string;
+    target_audience?: string;
+    social_media_platform_id: number;
+    created_at: string;
+    updated_at: string;
+  }>> {
+    const response = await this.client.get('/promotions');
+    return response.data;
+  }
+
+  async getPromotion(promotionId: number): Promise<{
+    id: number;
+    business_id: number;
+    promotion_name: string;
+    promotion_item: string;
+    description?: string;
+    start_date: string;
+    end_date: string;
+    discount?: number;
+    budget?: number;
+    spent_amount?: number;
+    status?: string;
+    target_audience?: string;
+    social_media_platform_id: number;
+    created_at: string;
+    updated_at: string;
+  }> {
+    const response = await this.client.get(`/promotions/${promotionId}`);
+    return response.data;
+  }
+
+  async updatePromotionStatus(promotionId: number, status: string): Promise<{
+    id: number;
+    business_id: number;
+    promotion_name: string;
+    promotion_item: string;
+    description?: string;
+    start_date: string;
+    end_date: string;
+    discount?: number;
+    budget?: number;
+    spent_amount?: number;
+    status?: string;
+    target_audience?: string;
+    social_media_platform_id: number;
+    created_at: string;
+    updated_at: string;
+  }> {
+    const response = await this.client.patch(`/promotions/${promotionId}/status`, { status });
+    return response.data;
+  }
+
+  async updatePromotionSpent(promotionId: number, spentAmount: number): Promise<{
+    id: number;
+    business_id: number;
+    promotion_name: string;
+    promotion_item: string;
+    description?: string;
+    start_date: string;
+    end_date: string;
+    discount?: number;
+    budget?: number;
+    spent_amount?: number;
+    status?: string;
+    target_audience?: string;
+    social_media_platform_id: number;
+    created_at: string;
+    updated_at: string;
+  }> {
+    const response = await this.client.patch(`/promotions/${promotionId}/spent`, { spent_amount: spentAmount });
+    return response.data;
+  }
+
+  async getPromotionInfluencers(promotionId: number): Promise<Array<{
+    collaboration_id: number;
+    influencer_id: number;
+    influencer_name: string;
+    influencer_email?: string;
+    collaboration_status: string;
+    collaboration_type: string;
+    proposed_amount?: number;
+    negotiated_amount?: number;
+    deliverables?: string;
+    contract_signed: boolean;
+    payment_status: string;
+    created_at: string;
+    updated_at: string;
+  }>> {
+    const response = await this.client.get(`/promotions/${promotionId}/influencers`);
+    return response.data;
+  }
+
+  async updatePromotion(promotionId: number, promotionData: {
+    business_id: number;
+    promotion_name: string;
+    promotion_item: string;
+    description?: string;
+    start_date: string;
+    end_date: string;
+    discount?: number;
+    budget?: number;
+    target_audience?: string;
+    social_media_platform_id: number;
+  }): Promise<{
+    id: number;
+    business_id: number;
+    promotion_name: string;
+    promotion_item: string;
+    description?: string;
+    start_date: string;
+    end_date: string;
+    discount?: number;
+    budget?: number;
+    spent_amount?: number;
+    status?: string;
+    target_audience?: string;
+    social_media_platform_id: number;
+    created_at: string;
+    updated_at: string;
+  }> {
+    const response = await this.client.put(`/promotions/${promotionId}`, promotionData);
+    return response.data;
+  }
+
+  // Collaboration API methods
+  async getCollaborations(): Promise<Collaboration[]> {
+    const response = await this.client.get('/collaborations');
+    return response.data;
+  }
+
+  async getCollaboration(collaborationId: number): Promise<Collaboration> {
+    const response = await this.client.get(`/collaborations/${collaborationId}`);
+    return response.data;
+  }
+
+  async createCollaboration(collaborationData: CreateCollaborationData): Promise<Collaboration> {
+    const response = await this.client.post('/collaborations', collaborationData);
+    return response.data;
+  }
+
+  async updateCollaboration(collaborationId: number, collaborationData: UpdateCollaborationData): Promise<Collaboration> {
+    const response = await this.client.put(`/collaborations/${collaborationId}`, collaborationData);
+    return response.data;
+  }
+
+  async deleteCollaboration(collaborationId: number): Promise<{ detail: string }> {
+    const response = await this.client.delete(`/collaborations/${collaborationId}`);
+    return response.data;
+  }
+
+  async approveCollaboration(collaborationId: number, influencerId: number): Promise<CollaborationApprovalResponse> {
+    const response = await this.client.post(`/collaborations/${collaborationId}/approve`, {
+      influencer_id: influencerId
+    });
+    return response.data;
+  }
+
+  async rejectCollaboration(collaborationId: number, influencerId: number, reason?: string): Promise<CollaborationApprovalResponse> {
+    const response = await this.client.post(`/collaborations/${collaborationId}/reject`, {
+      influencer_id: influencerId,
+      reason: reason
+    });
+    return response.data;
+  }
+
+  async resetCollaboration(collaborationId: number, influencerId: number): Promise<CollaborationApprovalResponse> {
+    const response = await this.client.post(`/collaborations/${collaborationId}/reset`, {
+      influencer_id: influencerId
+    });
+    return response.data;
+  }
+
+  async getBusinessPromotionsWithCollaborations(businessOwnerId: number): Promise<Array<{
+    id: number;
+    uuid?: string;
+    business_id: number;
+    promotion_name: string;
+    promotion_item: string;
+    description?: string;
+    start_date: string;
+    end_date: string;
+    discount?: number;
+    budget?: number;
+    spent_amount?: number;
+    status?: string;
+    target_audience?: string;
+    social_media_platform_id: number;
+    created_at: string;
+    updated_at: string;
+    collaboration_stats: {
+      total: number;
+      active: number;
+      approved: number;
+      pending: number;
+      rejected: number;
+    };
+  }>> {
+    const response = await this.client.post('/business/promotions-with-collaborations', {
+      business_owner_id: businessOwnerId
+    });
+    return response.data;
+  }
+
+  async getCollaborationMessages(collaborationId: number): Promise<Array<{
+    id: number;
+    collaboration_id: number;
+    sender_type: string;
+    sender_name: string;
+    message: string;
+    timestamp: string;
+    read: boolean;
+  }>> {
+    const response = await this.client.get(`/collaborations/${collaborationId}/messages`);
+    return response.data;
+  }
+
+  async getCollaborationAnalytics(collaborationId: number): Promise<{
+    collaboration_id: number;
+    status: string;
+    collaboration_type: string;
+    financial: {
+      proposed_amount: number;
+      negotiated_amount: number;
+      final_amount: number;
+      payment_status: string;
+      budget_allocation: number;
+      spent_amount: number;
+    };
+    timeline: {
+      created_at: string | null;
+      started_at: string | null;
+      completed_at: string | null;
+      deadline: string | null;
+      duration_days: number;
+      updated_at: string | null;
+    };
+    deliverables: {
+      description: string;
+      contract_signed: boolean;
+      terms_and_conditions: string | null;
+    };
+    entities: {
+      business_name: string;
+      business_id: number;
+      influencer_name: string;
+      influencer_id: number;
+      promotion_name: string;
+      promotion_id: number;
+    };
+    performance: {
+      influencer_followers: number;
+      influencer_growth_rate: number;
+      influencer_successful_campaigns: number;
+      influencer_rate_per_post: number;
+    };
+  }> {
+    const response = await this.client.get(`/collaborations/${collaborationId}/analytics`);
+    return response.data;
+  }
+
+  async getPromotionDetailsWithCollaborationMetadata(promotionId: number): Promise<{
+    promotion: {
+      id: number;
+      uuid: string | null;
+      business_id: number;
+      promotion_name: string;
+      promotion_item: string;
+      description: string | null;
+      start_date: string | null;
+      end_date: string | null;
+      discount: string | null;
+      budget: string | null;
+      spent_amount: string | null;
+      status: string | null;
+      target_audience: string | null;
+      social_media_platform_id: number;
+      created_at: string | null;
+      updated_at: string | null;
+    };
+    business: {
+      id: number;
+      name: string;
+      description: string | null;
+      website: string | null;
+      industry: string | null;
+      created_at: string | null;
+    };
+    collaboration_metadata: {
+      statistics: {
+        total_collaborations: number;
+        active_collaborations: number;
+        approved_collaborations: number;
+        pending_collaborations: number;
+        rejected_collaborations: number;
+      };
+      active_influencers: Array<{
+        influencer_id: number;
+        influencer_name: string;
+        collaboration_id: number;
+        collaboration_status: string;
+        collaboration_type: string;
+        proposed_amount: string | null;
+        negotiated_amount: string | null;
+        created_at: string | null;
+      }>;
+    };
+    collaboration_documents: Array<{
+      id: number;
+      type: string;
+      subtype: string;
+      file_path: string;
+      generated_at: string | null;
+      created_at: string | null;
+      parameters: any;
+    }>;
+  }> {
+    const response = await this.client.get(`/collaborations/promotion-details/${promotionId}`);
+    return response.data;
+  }
+
+  async getPromotionMessages(promotionId: number): Promise<Array<{
+    id: number;
+    promotion_id: number;
+    collaboration_id: number | null;
+    sender_type: string;
+    sender_name: string;
+    message: string;
+    timestamp: string;
+    read: boolean;
+  }>> {
+    const response = await this.client.get(`/collaborations/promotion-messages/${promotionId}`);
+    return response.data;
+  }
+
+  async getPromotionAnalytics(promotionId: number): Promise<{
+    promotion_id: number;
+    promotion_name: string;
+    business_name: string;
+    statistics: {
+      total_collaborations: number;
+      approved_collaborations: number;
+      pending_collaborations: number;
+      active_collaborations: number;
+      rejected_collaborations: number;
+      total_amount: number;
+    };
+    charts: {
+      approved_influencers_per_month: Array<{
+        month: string;
+        approved_influencers: number;
+      }>;
+      influencer_amount_distribution: Array<{
+        influencer_id: number;
+        influencer_name: string;
+        amount: number;
+        percentage: number;
+      }>;
+    };
+  }> {
+    const response = await this.client.get(`/collaborations/promotion-analytics/${promotionId}`);
+    return response.data;
+  }
+
+  async getPromotionDocuments(promotionId: number): Promise<Array<{
+    id: number;
+    type: string;
+    subtype: string;
+    file_path: string;
+    generated_at: string | null;
+    created_at: string | null;
+    parameters: any;
+  }>> {
+    const response = await this.client.get(`/collaborations/promotion-documents/${promotionId}`);
     return response.data;
   }
 

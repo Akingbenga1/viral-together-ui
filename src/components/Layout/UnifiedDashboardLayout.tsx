@@ -78,6 +78,21 @@ const getNavigationForRole = (user: any, userRoles: any[]) => {
     navigation.push({ name: 'Analytics', href: '/dashboard/analytics', icon: TrendingUp, roles: ['user', 'influencer', 'business', 'professional_influencer', 'business_influencer', 'moderator'] });
   }
 
+  // Business Locations - Available to businesses only (moved up for business users)
+  if (hasAnyRole(['business', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
+    navigation.push({ name: 'Locations', href: '/business/locations', icon: MapPin, roles: ['business', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
+  }
+
+  // Business Collaborations - Available to businesses (moved up for business users)
+  if (hasAnyRole(['business', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
+    navigation.push({ name: 'Collaborations', href: '/business/collaborations', icon: Handshake, roles: ['business', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
+  }
+
+  // Business Promotions - Available to businesses (moved up for business users)
+  if (hasAnyRole(['business', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
+    navigation.push({ name: 'Promotions', href: '/business/promotions', icon: Megaphone, roles: ['business', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
+  }
+
   // Influencers Directory - Available to businesses and admins
   if (hasAnyRole(['business', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
     navigation.push({ name: 'Influencers', href: '/dashboard/influencers', icon: Users, roles: ['business', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
@@ -88,17 +103,19 @@ const getNavigationForRole = (user: any, userRoles: any[]) => {
     navigation.push({ name: 'Search', href: '/dashboard/search', icon: Search, roles: ['business', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
   }
 
-  // AI Recommendations - Available to all
-  navigation.push({ name: 'AI Recommendations', href: '/dashboard/recommendations', icon: Brain, roles: ['user', 'influencer', 'business', 'professional_influencer', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
-
-  // Rate Cards - Available to influencers and businesses
-  if (hasAnyRole(['influencer', 'professional_influencer', 'business', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
-    navigation.push({ name: 'Rate Cards', href: '/dashboard/rate-cards', icon: CreditCard, roles: ['influencer', 'professional_influencer', 'business', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
+  // AI Recommendations - Available to influencers only
+  if (hasAnyRole(['influencer', 'professional_influencer', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
+    navigation.push({ name: 'AI Recommendations', href: '/dashboard/recommendations', icon: Brain, roles: ['influencer', 'professional_influencer', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
   }
 
-  // Location Management - Available to influencers, businesses and admins
-  if (hasAnyRole(['influencer', 'professional_influencer', 'business', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
-    navigation.push({ name: 'Locations', href: '/dashboard/location-management', icon: MapPin, roles: ['influencer', 'professional_influencer', 'business', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
+  // Rate Cards - Available to influencers only
+  if (hasAnyRole(['influencer', 'professional_influencer', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
+    navigation.push({ name: 'Rate Cards', href: '/dashboard/rate-cards', icon: CreditCard, roles: ['influencer', 'professional_influencer', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
+  }
+
+  // Location Management - Available to influencers and admins
+  if (hasAnyRole(['influencer', 'professional_influencer', 'business_influencer', 'moderator', 'admin', 'super_admin'])) {
+    navigation.push({ name: 'Locations', href: '/dashboard/location-management', icon: MapPin, roles: ['influencer', 'professional_influencer', 'business_influencer', 'moderator', 'admin', 'super_admin'] });
   }
 
   // Coaching - Available to influencers

@@ -76,10 +76,10 @@ const InfluencerDetailsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading influencer details...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+          <p className="text-slate-300">Loading influencer details...</p>
         </div>
       </div>
     );
@@ -87,10 +87,10 @@ const InfluencerDetailsPage: React.FC = () => {
 
   if (!influencer) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Influencer Not Found</h2>
-          <p className="text-gray-600 mb-6">The influencer you&apos;re looking for doesn&apos;t exist.</p>
+          <h2 className="text-2xl font-bold text-white mb-4">Influencer Not Found</h2>
+          <p className="text-slate-400 mb-6">The influencer you&apos;re looking for doesn&apos;t exist.</p>
           <Link href="/">
             <Button variant="secondary">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -103,11 +103,11 @@ const InfluencerDetailsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-slate-800/50 backdrop-blur-sm shadow-lg border-b border-slate-700/50">
         <div className="container mx-auto px-4 py-4">
-          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-primary-600 transition-colors">
+          <Link href="/" className="inline-flex items-center text-slate-300 hover:text-cyan-400 transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Search
           </Link>
@@ -117,44 +117,45 @@ const InfluencerDetailsPage: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Hero Section */}
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-            <div className="relative h-48 bg-gradient-to-r from-primary-600 to-purple-600">
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl overflow-hidden mb-8 border border-slate-700/50">
+            <div className="relative h-48 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600">
+              <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
             </div>
             
             <div className="relative px-8 pb-8">
               <div className="flex flex-col md:flex-row items-start md:items-end justify-between -mt-16 mb-6">
                 <div className="flex items-end space-x-6">
-                  <div className="w-32 h-32 bg-white rounded-full shadow-lg border-4 border-white flex items-center justify-center">
-                    <Users className="w-16 h-16 text-primary-600" />
+                  <div className="w-32 h-32 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full shadow-2xl border-4 border-slate-800 flex items-center justify-center ring-4 ring-slate-700/30">
+                    <Users className="w-16 h-16 text-white" />
                   </div>
                   <div className="mb-4">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    <h1 className="text-3xl font-bold text-white mb-2 drop-shadow-lg">
                       {influencer.user ? `${influencer.user.first_name || ''} ${influencer.user.last_name || ''}`.trim() || influencer.user.username : 'Unknown Influencer'}
                     </h1>
-                    <div className="flex items-center space-x-4 text-gray-600">
+                    <div className="flex items-center space-x-4 text-slate-300">
                       <div className="flex items-center">
-                        <MapPin className="w-4 h-4 mr-1" />
+                        <MapPin className="w-4 h-4 mr-1 text-cyan-400" />
                         <span>{influencer.base_country.name}</span>
                       </div>
                       <div className="flex items-center">
-                        <Star className="w-4 h-4 mr-1 text-yellow-400" />
-                        <span>4.8</span>
+                        <Star className="w-4 h-4 mr-1 text-yellow-400 fill-yellow-400" />
+                        <span className="text-white font-medium">4.8</span>
                       </div>
                       <div className="flex items-center">
-                        <Users className="w-4 h-4 mr-1" />
+                        <Calendar className="w-4 h-4 mr-1 text-cyan-400" />
                         <span>{influencer.total_posts || 0} posts</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex space-x-3">
+                <div className="flex space-x-3 mt-4 md:mt-0">
                   <Button
                     onClick={handleContactInfluencer}
                     isLoading={isContacting}
                     size="lg"
-                    className="px-8"
+                    className="px-8 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-cyan-500/50 transition-all duration-300"
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
                     Contact Influencer
@@ -168,67 +169,80 @@ const InfluencerDetailsPage: React.FC = () => {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
               {/* About Section */}
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">About</h2>
-                <p className="text-gray-700 leading-relaxed">
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700/50">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                  <Users className="w-6 h-6 mr-2 text-cyan-400" />
+                  About
+                </h2>
+                <p className="text-slate-300 leading-relaxed">
                   {influencer.bio || 'This influencer hasn\'t added a bio yet.'}
                 </p>
               </div>
 
               {/* Performance Metrics */}
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Performance Metrics</h2>
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700/50">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                  <TrendingUp className="w-6 h-6 mr-2 text-cyan-400" />
+                  Performance Metrics
+                </h2>
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl p-6">
+                  <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-xl p-6 border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">Total Posts</h3>
-                      <TrendingUp className="w-5 h-5 text-primary-600" />
+                      <h3 className="font-semibold text-white">Total Posts</h3>
+                      <Calendar className="w-5 h-5 text-cyan-400" />
                     </div>
-                    <p className="text-3xl font-bold text-primary-600">{influencer.total_posts || 0}</p>
+                    <p className="text-3xl font-bold text-cyan-400">{influencer.total_posts || 0}</p>
+                    <p className="text-xs text-slate-400 mt-1">Content created</p>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-6">
+                  <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl p-6 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">Growth Rate</h3>
-                      <TrendingUp className="w-5 h-5 text-purple-600" />
+                      <h3 className="font-semibold text-white">Growth Rate</h3>
+                      <TrendingUp className="w-5 h-5 text-purple-400" />
                     </div>
-                    <p className="text-3xl font-bold text-purple-600">{influencer.growth_rate || 0}%</p>
+                    <p className="text-3xl font-bold text-purple-400">{influencer.growth_rate || 0}%</p>
+                    <p className="text-xs text-slate-400 mt-1">Audience growth</p>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-6">
+                  <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-xl p-6 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">Successful Campaigns</h3>
-                      <Star className="w-5 h-5 text-green-600" />
+                      <h3 className="font-semibold text-white">Successful Campaigns</h3>
+                      <Star className="w-5 h-5 text-emerald-400" />
                     </div>
-                    <p className="text-3xl font-bold text-green-600">{influencer.successful_campaigns || 0}</p>
+                    <p className="text-3xl font-bold text-emerald-400">{influencer.successful_campaigns || 0}</p>
+                    <p className="text-xs text-slate-400 mt-1">Completed projects</p>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-6">
+                  <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl p-6 border border-amber-500/20 hover:border-amber-500/40 transition-all duration-300">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">Rate per Post</h3>
-                      <DollarSign className="w-5 h-5 text-orange-600" />
+                      <h3 className="font-semibold text-white">Rate per Post</h3>
+                      <DollarSign className="w-5 h-5 text-amber-400" />
                     </div>
-                    <p className="text-3xl font-bold text-orange-600">${influencer.rate_per_post || 0}</p>
+                    <p className="text-3xl font-bold text-amber-400">${influencer.rate_per_post || 0}</p>
+                    <p className="text-xs text-slate-400 mt-1">Average pricing</p>
                   </div>
                 </div>
               </div>
 
               {/* Collaboration Countries */}
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Available for Collaboration In</h2>
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700/50">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                  <Globe className="w-6 h-6 mr-2 text-cyan-400" />
+                  Available for Collaboration In
+                </h2>
                 <div className="flex flex-wrap gap-3">
                   {influencer.collaboration_countries.length > 0 ? (
                     influencer.collaboration_countries.map((country) => (
                       <span
                         key={country.id}
-                        className="inline-flex items-center px-4 py-2 bg-primary-100 text-primary-800 rounded-full text-sm font-medium"
+                        className="inline-flex items-center px-4 py-2 bg-cyan-500/10 text-cyan-300 rounded-full text-sm font-medium border border-cyan-500/20 hover:bg-cyan-500/20 transition-colors duration-200"
                       >
                         <Globe className="w-4 h-4 mr-2" />
                         {country.name}
                       </span>
                     ))
                   ) : (
-                    <span className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium">
+                    <span className="inline-flex items-center px-4 py-2 bg-slate-700/50 text-slate-300 rounded-full text-sm font-medium border border-slate-600">
                       <Globe className="w-4 h-4 mr-2" />
                       Available Globally
                     </span>
@@ -240,25 +254,28 @@ const InfluencerDetailsPage: React.FC = () => {
             {/* Sidebar */}
             <div className="space-y-8">
               {/* Contact Information */}
-              <div className="bg-white rounded-2xl shadow-xl p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Contact Information</h3>
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-6 border border-slate-700/50">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center">
+                  <Mail className="w-5 h-5 mr-2 text-cyan-400" />
+                  Contact Information
+                </h3>
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <Mail className="w-5 h-5 text-gray-500" />
-                    <span className="text-gray-700">contact@influencer.com</span>
+                  <div className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600/30">
+                    <Mail className="w-5 h-5 text-cyan-400" />
+                    <span className="text-slate-300">contact@influencer.com</span>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Phone className="w-5 h-5 text-gray-500" />
-                    <span className="text-gray-700">+1 (555) 123-4567</span>
+                  <div className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600/30">
+                    <Phone className="w-5 h-5 text-cyan-400" />
+                    <span className="text-slate-300">+1 (555) 123-4567</span>
                   </div>
                   {influencer.website_url && (
-                    <div className="flex items-center space-x-3">
-                      <ExternalLink className="w-5 h-5 text-gray-500" />
+                    <div className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600/30 hover:border-cyan-500/50 transition-colors">
+                      <ExternalLink className="w-5 h-5 text-cyan-400" />
                       <a 
                         href={influencer.website_url} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-primary-600 hover:text-primary-700 transition-colors"
+                        className="text-cyan-400 hover:text-cyan-300 transition-colors"
                       >
                         Visit Website
                       </a>
@@ -268,45 +285,58 @@ const InfluencerDetailsPage: React.FC = () => {
               </div>
 
               {/* Languages */}
-              <div className="bg-white rounded-2xl shadow-xl p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Languages</h3>
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-6 border border-slate-700/50">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center">
+                  <Globe className="w-5 h-5 mr-2 text-cyan-400" />
+                  Languages
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {influencer.languages ? (
                     influencer.languages.split(',').map((language, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                        className="px-3 py-1 bg-slate-700/50 text-slate-300 rounded-full text-sm border border-slate-600/30 hover:bg-slate-700 transition-colors"
                       >
                         {language.trim()}
                       </span>
                     ))
                   ) : (
-                    <span className="text-gray-500">Not specified</span>
+                    <span className="text-slate-400">Not specified</span>
                   )}
                 </div>
               </div>
 
               {/* Availability Status */}
-              <div className="bg-white rounded-2xl shadow-xl p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Availability</h3>
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full ${influencer.availability ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  <span className={`font-medium ${influencer.availability ? 'text-green-700' : 'text-red-700'}`}>
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-6 border border-slate-700/50">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center">
+                  <Calendar className="w-5 h-5 mr-2 text-cyan-400" />
+                  Availability
+                </h3>
+                <div className={`flex items-center space-x-3 p-4 rounded-lg ${
+                  influencer.availability 
+                    ? 'bg-emerald-500/10 border border-emerald-500/20' 
+                    : 'bg-red-500/10 border border-red-500/20'
+                }`}>
+                  <div className={`w-3 h-3 rounded-full ${influencer.availability ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
+                  <span className={`font-medium ${influencer.availability ? 'text-emerald-400' : 'text-red-400'}`}>
                     {influencer.availability ? 'Available for Projects' : 'Currently Unavailable'}
                   </span>
                 </div>
               </div>
 
               {/* Social Media Platforms */}
-              <div className="bg-white rounded-2xl shadow-xl p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Social Media</h3>
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-6 border border-slate-700/50">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center">
+                  <Globe className="w-5 h-5 mr-2 text-cyan-400" />
+                  Social Media
+                </h3>
                 <div className="space-y-3">
                   {['Instagram', 'YouTube', 'TikTok', 'Twitter'].map((platform) => {
                     const IconComponent = getPlatformIcon(platform);
                     return (
-                      <div key={platform} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <IconComponent className="w-5 h-5 text-gray-600" />
-                        <span className="text-gray-700">{platform}</span>
+                      <div key={platform} className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600/30 hover:border-cyan-500/50 hover:bg-slate-700/50 transition-all duration-200">
+                        <IconComponent className="w-5 h-5 text-cyan-400" />
+                        <span className="text-slate-300">{platform}</span>
                       </div>
                     );
                   })}

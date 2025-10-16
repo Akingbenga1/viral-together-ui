@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import UnauthenticatedLayout from '@/components/UnauthenticatedLayout';
 
 interface ForgotPasswordForm {
-  email: string;
+  email_or_username: string;
 }
 
 export default function ForgotPasswordPage() {
@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotPasswordForm) => {
     setIsLoading(true);
     try {
-      const response = await apiClient.forgotPassword(data.email);
+      const response = await apiClient.forgotPassword(data.email_or_username);
       toast.success(response.message || 'Reset link sent successfully!');
       setIsSubmitted(true);
     } catch (error: any) {
@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
             </h1>
             <p className="text-form-text-muted text-sm">
               We've sent a password reset link to{' '}
-              <span className="text-cyan-400 font-medium">{getValues('email')}</span>
+              <span className="text-cyan-400 font-medium">{getValues('email_or_username')}</span>
             </p>
           </div>
           
@@ -67,7 +67,7 @@ export default function ForgotPasswordPage() {
                 onClick={async () => {
                   setIsLoading(true);
                   try {
-                    const response = await apiClient.forgotPassword(getValues('email'));
+                    const response = await apiClient.forgotPassword(getValues('email_or_username'));
                     toast.success(response.message || 'Reset link sent again!');
                   } catch (error: any) {
                     const errorMessage = error.response?.data?.detail || error.message || 'Failed to resend email';
@@ -111,32 +111,32 @@ export default function ForgotPasswordPage() {
             Forgot your password?
           </h1>
           <p className="text-form-text-muted text-sm">
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address or username and we'll send you a link to reset your password.
           </p>
         </div>
         
         <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-2">
-            <label htmlFor="email" className="label-dark">
-              Email address
+            <label htmlFor="email_or_username" className="label-dark">
+              Email address or Username
             </label>
             <div className="relative">
               <input
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address'
+                {...register('email_or_username', {
+                  required: 'Email or username is required',
+                  minLength: {
+                    value: 3,
+                    message: 'Must be at least 3 characters long'
                   }
                 })}
-                type="email"
-                className={`input-dark pl-10 ${errors.email ? 'input-error' : ''}`}
-                placeholder="Enter your email address"
+                type="text"
+                className={`input-dark pl-10 ${errors.email_or_username ? 'input-error' : ''}`}
+                placeholder="Enter your email address or username"
               />
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-form-text-placeholder" />
             </div>
-            {errors.email && (
-              <p className="form-error">{errors.email.message}</p>
+            {errors.email_or_username && (
+              <p className="form-error">{errors.email_or_username.message}</p>
             )}
           </div>
 

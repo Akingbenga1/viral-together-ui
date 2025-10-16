@@ -354,6 +354,81 @@ export interface CreateInfluencersTargetsData {
   content_creation_tips?: string[];
 }
 
+// Collaboration types
+export interface Collaboration {
+  id: number;
+  influencer_id: number;
+  promotion_id: number;
+  status: string;
+  proposed_amount?: number;
+  negotiated_amount?: number;
+  negotiable?: boolean;
+  collaboration_type: string;
+  deliverables?: string;
+  deadline?: string;
+  terms_and_conditions?: string;
+  contract_signed: boolean;
+  payment_status: string;
+  started_at?: string;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateCollaborationData {
+  influencer_id: number;
+  promotion_id: number;
+  status?: string;
+  proposed_amount?: number;
+  negotiated_amount?: number;
+  negotiable?: boolean;
+  collaboration_type: string;
+  deliverables?: string;
+  deadline?: string;
+  terms_and_conditions?: string;
+  contract_signed?: boolean;
+  payment_status?: string;
+  started_at?: string;
+  completed_at?: string;
+}
+
+export interface UpdateCollaborationData {
+  influencer_id?: number;
+  promotion_id?: number;
+  status?: string;
+  proposed_amount?: number;
+  negotiated_amount?: number;
+  negotiable?: boolean;
+  collaboration_type?: string;
+  deliverables?: string;
+  deadline?: string;
+  terms_and_conditions?: string;
+  contract_signed?: boolean;
+  payment_status?: string;
+  started_at?: string;
+  completed_at?: string;
+}
+
+export interface CollaborationApprovalRequest {
+  business_id: number;
+}
+
+export interface CollaborationApprovalResponse {
+  message: string;
+  collaboration_id: number;
+  previous_status: string;
+  new_status: string;
+  business_name: string;
+  business_id: number;
+  influencer_name: string;
+  influencer_id: number;
+  promotion_title: string;
+  promotion_id: number;
+  collaboration_type: string;
+  approved_by: number;
+  notification_triggered: boolean;
+}
+
 // Export influencer coaching types
 export * from './influencerCoaching';
 
