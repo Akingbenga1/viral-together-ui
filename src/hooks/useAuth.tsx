@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
           }
           
-          const publicRoutes = ['/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy'];
+          const publicRoutes = ['/auth/login', '/auth/register', '/pricing', '/partners', '/about', '/people', '/help', '/contact', '/privacy', '/auth/forgot-password', '/auth/reset-password'];
           const isPublicRoute = publicRoutes.includes(currentPath) || currentPath.startsWith('/blog');
           
           // Only check authentication for protected routes

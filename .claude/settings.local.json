@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -rf .next)",
+      "Bash(rm -rf node_modules)",
+      "Bash(npm install)",
+      "Bash(npm run build)",
+      "Bash(npm run start)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :3000)",
+      "Bash(powershell -Command \"Get-Content app.log -Tail 100\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -247,7 +247,7 @@ export default function SubscriptionPage() {
                     <div>
                       <div className="text-sm text-slate-400">Amount</div>
                       <div className="text-sm font-medium text-white">
-                        £{plans.find(p => p.id === userSubscription.plan_id)?.price_per_month || 0}/month
+                        ${plans.find(p => p.id === userSubscription.plan_id)?.price_per_month || 0}/month
                       </div>
                     </div>
                   </div>
@@ -298,7 +298,7 @@ export default function SubscriptionPage() {
                         {formatDate(userSubscription.current_period_end)}
                       </p>
                       <p className="text-sm text-slate-400 mt-1">
-                        £{plans.find(p => p.id === userSubscription.plan_id)?.price_per_month || 0} will be charged
+                        ${plans.find(p => p.id === userSubscription.plan_id)?.price_per_month || 0} will be charged
                       </p>
                     </div>
 
@@ -372,7 +372,7 @@ export default function SubscriptionPage() {
 
                       <div className="mb-6">
                         <div className="flex items-baseline">
-                          <span className="text-3xl font-bold text-white">£{plan.price_per_month}</span>
+                          <span className="text-3xl font-bold text-white">${plan.price_per_month}</span>
                           <span className="text-slate-400 ml-1">/month</span>
                         </div>
                         <p className="text-sm text-slate-400 mt-1">

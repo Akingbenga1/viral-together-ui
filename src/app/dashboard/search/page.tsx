@@ -108,7 +108,7 @@ export default function SearchPage() {
         </div>
         <div className="text-right">
           <div className="text-xl font-bold text-emerald-400">
-            £{influencer.rate_per_post}
+            ${influencer.rate_per_post}
           </div>
           <div className="text-sm text-slate-400">per post</div>
         </div>
@@ -322,7 +322,7 @@ export default function SearchPage() {
 
                         <div>
                           <label className="label-dark">
-                            Min Rate (£)
+                            Min Rate ($)
                           </label>
                           <input
                             type="number"
@@ -335,7 +335,7 @@ export default function SearchPage() {
 
                         <div>
                           <label className="label-dark">
-                            Max Rate (£)
+                            Max Rate ($)
                           </label>
                           <input
                             type="number"
