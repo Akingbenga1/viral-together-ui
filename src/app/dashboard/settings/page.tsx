@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Mail, Lock, Bell, Shield, Globe, Save, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Bell, Shield, Globe, Save, Eye, EyeOff, Brain } from 'lucide-react';
 import UnifiedDashboardLayout from '@/components/Layout/UnifiedDashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 export default function SettingsPage() {
   const { user, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications' | 'privacy'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'ai' | 'security' | 'notifications' | 'privacy'>('profile');
 
   // Profile form state
   const [profileForm, setProfileForm] = useState({
@@ -160,6 +160,7 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: 'profile', name: 'Profile', icon: User },
+    { id: 'ai', name: 'AI Settings', icon: Brain },
     { id: 'security', name: 'Security', icon: Lock },
     { id: 'notifications', name: 'Notifications', icon: Bell },
     { id: 'privacy', name: 'Privacy', icon: Shield },
@@ -293,6 +294,29 @@ export default function SettingsPage() {
                       <Save className="h-4 w-4" />
                       <span>{isLoading ? 'Saving...' : 'Save Changes'}</span>
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'ai' && (
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-b-2xl border border-slate-700/50 border-t-0 p-6">
+                  <div className="flex items-center mb-6">
+                    <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center mr-3">
+                      <Brain className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white">AI Settings</h3>
+                  </div>
+                  
+                  {/* Feature Coming Soon */}
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-full flex items-center justify-center mb-6">
+                      <Brain className="w-10 h-10 text-white" />
+                    </div>
+                    <h4 className="text-2xl font-bold text-white mb-3">Coming Soon</h4>
+                    <p className="text-slate-400 text-center max-w-md leading-relaxed">
+                      We&apos;re working hard to bring you AI-powered features and settings. 
+                      This section will allow you to customize AI recommendations, content generation preferences, and more.
+                    </p>
                   </div>
                 </div>
               )}

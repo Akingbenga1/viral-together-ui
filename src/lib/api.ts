@@ -923,6 +923,46 @@ class ApiClient {
     return response.data;
   }
 
+  // Influencer-specific analytics
+  async getInfluencerUserGrowthByMonth(influencerId: number): Promise<{
+    success: boolean;
+    year: number;
+    data: Array<{
+      month: string;
+      month_number: number;
+      followers: number;
+      engagement_rate: number;
+    }>;
+  }> {
+    const response = await this.client.get(`/api/analytics/influencer/${influencerId}/user-growth-by-month`);
+    return response.data;
+  }
+
+  async getInfluencerRevenueGrowthByMonth(influencerId: number): Promise<{
+    success: boolean;
+    year: number;
+    data: Array<{
+      month: string;
+      month_number: number;
+      revenue: number;
+      campaigns_completed: number;
+    }>;
+  }> {
+    const response = await this.client.get(`/api/analytics/influencer/${influencerId}/revenue-growth-by-month`);
+    return response.data;
+  }
+
+  // Forgot Password endpoint
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const response = await this.client.post('/auth/forgot-password', { email });
+    return response.data;
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    const response = await this.client.post('/auth/reset-password', { token, new_password: newPassword });
+    return response.data;
+  }
+
 }
 
 export const apiClient = new ApiClient();

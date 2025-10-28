@@ -1,0 +1,24 @@
+# Additional requirements for new functionality
+# Add these to your existing requirements.txt file
+
+# Email functionality (if not already present)
+emails==0.6.0
+jinja2==3.1.2
+
+# Additional security for password reset tokens (if not already present)  
+cryptography==41.0.7
+
+# Background task processing (FastAPI includes basic support, but for production consider)
+# celery==5.3.4  # Uncomment if you want robust background task processing
+# redis==5.0.1   # Uncomment if using Redis as Celery broker
+
+# Enhanced email templates (optional)
+# premailer==3.10.0  # For inline CSS in emails
+# beautifulsoup4==4.12.2  # For HTML parsing in email service
+
+# Date/time utilities (if not already present)
+python-dateutil==2.8.2
+
+# For development/testing
+httpx==0.25.2  # For async HTTP testing
+pytest-asyncio==0.21.1  # For async test support

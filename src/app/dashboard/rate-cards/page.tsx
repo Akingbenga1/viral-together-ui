@@ -340,7 +340,7 @@ export default function RateCardsPage() {
                 
                 <div className="min-w-0">
                   <h3 className="text-xl lg:text-2xl font-bold text-white mb-1 truncate">
-                    £{rateCards.length > 0 
+                    ${rateCards.length > 0 
                       ? Math.round(rateCards.reduce((sum, rc) => sum + rc.base_rate, 0) / rateCards.length)
                       : 0}
                   </h3>
@@ -367,7 +367,7 @@ export default function RateCardsPage() {
                 
                 <div className="min-w-0">
                   <h3 className="text-xl lg:text-2xl font-bold text-white mb-1 truncate">
-                    £{rateCards.reduce((sum, rc) => sum + calculateTotalRate(rc), 0).toLocaleString()}
+                    ${rateCards.reduce((sum, rc) => sum + calculateTotalRate(rc), 0).toLocaleString()}
                   </h3>
                   <p className="text-slate-400 text-sm truncate">Total Value</p>
                   <p className="text-slate-500 text-xs mt-1 truncate">Combined portfolio value</p>

@@ -126,25 +126,19 @@ export default function PricingPage() {
       {/* Pricing Cards */}
       <section className="py-20 px-4">
         <div className="container mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {pricingPlans.map((plan, index) => {
+          <div className="grid md:grid-cols-1 gap-8 max-w-2xl mx-auto">
+            {pricingPlans.filter(plan => plan.monthlyPrice === 50).map((plan, index) => {
               const IconComponent = plan.icon;
               return (
                 <div
                   key={plan.name}
-                  className={`relative rounded-2xl border-2 p-8 ${
-                    plan.popular
-                      ? 'border-primary-500 bg-gradient-to-br from-primary-50 to-purple-50 shadow-xl'
-                      : 'border-gray-200 bg-white shadow-lg hover:shadow-xl transition-shadow'
-                  }`}
+                  className="relative rounded-2xl border-2 p-8 border-primary-500 bg-gradient-to-br from-primary-50 to-purple-50 shadow-xl"
                 >
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-primary-500 text-white px-4 py-2 rounded-full text-sm font-medium">
-                        Most Popular
-                      </span>
-                    </div>
-                  )}
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-primary-500 text-white px-4 py-2 rounded-full text-sm font-medium">
+                      Professional Plan
+                    </span>
+                  </div>
                   
                   <div className="text-center mb-8">
                     <div className="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -177,12 +171,8 @@ export default function PricingPage() {
                   </ul>
                   
                   <Link
-                    href="/auth/register"
-                    className={`w-full block text-center py-3 px-6 rounded-lg font-medium transition-colors ${
-                      plan.popular
-                        ? 'bg-primary-500 text-white hover:bg-primary-600'
-                        : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                    }`}
+                    href="/subscription"
+                    className="w-full block text-center py-3 px-6 rounded-lg font-medium transition-colors bg-primary-500 text-white hover:bg-primary-600"
                   >
                     Get Started
                   </Link>

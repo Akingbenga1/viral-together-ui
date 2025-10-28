@@ -17,7 +17,10 @@ import {
   FileText,
   Brain,
   GraduationCap,
-  MapPin
+  MapPin,
+  Handshake,
+  Megaphone,
+  Target
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -31,15 +34,30 @@ const getNavigation = (isSuperAdmin: boolean, isInfluencer: boolean) => {
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Influencers', href: '/dashboard/influencers', icon: Users },
     { name: 'Search', href: '/dashboard/search', icon: Search },
-    { name: 'Rate Cards', href: '/dashboard/rate-cards', icon: CreditCard },
     { name: 'Analytics', href: '/dashboard/analytics', icon: TrendingUp },
     { name: 'AI Recommendations', href: '/dashboard/recommendations', icon: Brain },
+    { name: 'Rate Cards', href: '/dashboard/rate-cards', icon: CreditCard },
     { name: 'Location Management', href: '/dashboard/location-management', icon: MapPin },
   ];
 
   // Add coaching for influencers
   if (isInfluencer) {
     baseNavigation.push({ name: 'Coaching', href: '/dashboard/coaching', icon: GraduationCap });
+  }
+
+  // Add collaborations for influencers
+  if (isInfluencer) {
+    baseNavigation.push({ name: 'Collaborations', href: '/dashboard/collaborations', icon: Handshake });
+  }
+
+  // Add promotions for influencers
+  if (isInfluencer) {
+    baseNavigation.push({ name: 'Promotions', href: '/dashboard/promotions', icon: Megaphone });
+  }
+
+  // Add social targets for influencers
+  if (isInfluencer) {
+    baseNavigation.push({ name: 'Social Targets', href: '/dashboard/social-targets', icon: Target });
   }
 
   baseNavigation.push(
@@ -87,10 +105,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </div>
           <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
             <div className="flex-shrink-0 flex items-center px-4">
-              <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-white" />
-              </div>
-              <span className="ml-2 text-xl font-bold text-gray-900">Viral Together</span>
+              <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+                <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <span className="ml-2 text-xl font-bold text-gray-900">Viral Together</span>
+              </Link>
             </div>
             <nav className="mt-5 px-2 space-y-1">
               {navigation.map((item) => {
@@ -117,21 +137,22 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </nav>
           </div>
           <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-white">
+            <div className="flex items-center w-full">
+              <button 
+                className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center hover:bg-primary-600 transition-colors group cursor-pointer"
+                onClick={logout}
+                title="Sign out"
+              >
+                <span className="text-sm font-medium text-white group-hover:hidden">
                   {user?.username?.charAt(0).toUpperCase()}
                 </span>
-              </div>
-              <div className="ml-3">
+                <LogOut className="w-4 h-4 text-white hidden group-hover:block" />
+              </button>
+              <div className="ml-3 flex-1">
                 <p className="text-sm font-medium text-gray-700">{user?.username}</p>
-                <button
-                  onClick={logout}
-                  className="text-xs text-gray-500 hover:text-gray-700 flex items-center"
-                >
-                  <LogOut className="w-3 h-3 mr-1" />
-                  Sign out
-                </button>
+                <p className="text-xs text-gray-500">
+                  {user?.roles?.[0]?.name?.replace('_', ' ')?.toUpperCase() || 'USER'}
+                </p>
               </div>
             </div>
           </div>
@@ -144,10 +165,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <div className="flex flex-col h-0 flex-1 border-r border-gray-200 bg-white">
             <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
               <div className="flex items-center flex-shrink-0 px-4">
-                <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-white" />
-                </div>
-                <span className="ml-2 text-xl font-bold text-gray-900">Viral Together</span>
+                <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+                  <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="ml-2 text-xl font-bold text-gray-900">Viral Together</span>
+                </Link>
               </div>
               <nav className="mt-5 flex-1 px-2 space-y-1">
                 {navigation.map((item) => {
@@ -175,20 +198,21 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
             <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
               <div className="flex items-center w-full">
-                <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-white">
+                <button 
+                  className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center hover:bg-primary-600 transition-colors group cursor-pointer"
+                  onClick={logout}
+                  title="Sign out"
+                >
+                  <span className="text-sm font-medium text-white group-hover:hidden">
                     {user?.username?.charAt(0).toUpperCase()}
                   </span>
-                </div>
+                  <LogOut className="w-4 h-4 text-white hidden group-hover:block" />
+                </button>
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-gray-700">{user?.username}</p>
-                  <button
-                    onClick={logout}
-                    className="text-xs text-gray-500 hover:text-gray-700 flex items-center"
-                  >
-                    <LogOut className="w-3 h-3 mr-1" />
-                    Sign out
-                  </button>
+                  <p className="text-xs text-gray-500">
+                    {user?.roles?.[0]?.name?.replace('_', ' ')?.toUpperCase() || 'USER'}
+                  </p>
                 </div>
               </div>
             </div>

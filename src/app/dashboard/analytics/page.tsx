@@ -9,58 +9,91 @@ import { Influencer, Business, UserSubscription } from '@/types';
 import toast from 'react-hot-toast';
 
 export default function AnalyticsPage() {
-  const { user } = useAuth();
+  const { user, userRoles } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [influencers, setInfluencers] = useState<Influencer[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
+  const [influencerAnalytics, setInfluencerAnalytics] = useState({
+    userGrowth: [],
+    revenueGrowth: []
+  });
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
+  
+  // Check if user is an influencer
+  const isInfluencer = userRoles?.some(role => 
+    ['influencer', 'professional_influencer', 'business_influencer'].includes(role.name)
+  );
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [influencersData, businessesData, subscriptionsData] = await Promise.all([
-          apiClient.getInfluencers(),
-          apiClient.getAllBusinesses(),
-          apiClient.getAllSubscriptions(),
-        ]);
-        
-        setInfluencers(influencersData);
-        setBusinesses(businessesData);
-        setSubscriptions(subscriptionsData);
+        if (isInfluencer && user?.id) {
+          // Fetch influencer-specific analytics
+          const [userGrowthData, revenueGrowthData] = await Promise.all([
+            apiClient.getInfluencerUserGrowthByMonth(user.id),
+            apiClient.getInfluencerRevenueGrowthByMonth(user.id),
+          ]);
+          
+          setInfluencerAnalytics({
+            userGrowth: userGrowthData.data || [],
+            revenueGrowth: revenueGrowthData.data || []
+          });
+        } else {
+          // Fetch general analytics for non-influencers
+          const [influencersData, businessesData, subscriptionsData] = await Promise.all([
+            apiClient.getInfluencers(),
+            apiClient.getAllBusinesses(),
+            apiClient.getAllSubscriptions(),
+          ]);
+          
+          setInfluencers(influencersData);
+          setBusinesses(businessesData);
+          setSubscriptions(subscriptionsData);
+        }
       } catch (error) {
         console.error('Failed to fetch analytics data:', error);
         toast.error('Failed to load analytics data');
+        
+        // Fallback to mock data for influencer charts
+        if (isInfluencer) {
+          setInfluencerAnalytics({
+            userGrowth: [
+              { month: 'Jan', month_number: 1, followers: 98000, engagement_rate: 3.8 },
+              { month: 'Feb', month_number: 2, followers: 105000, engagement_rate: 4.1 },
+              { month: 'Mar', month_number: 3, followers: 112000, engagement_rate: 4.3 },
+              { month: 'Apr', month_number: 4, followers: 118000, engagement_rate: 4.2 },
+              { month: 'May', month_number: 5, followers: 125000, engagement_rate: 4.4 },
+              { month: 'Jun', month_number: 6, followers: 132000, engagement_rate: 4.6 },
+            ],
+            revenueGrowth: [
+              { month: 'Jan', month_number: 1, revenue: 2800, campaigns_completed: 4 },
+              { month: 'Feb', month_number: 2, revenue: 3200, campaigns_completed: 5 },
+              { month: 'Mar', month_number: 3, revenue: 3600, campaigns_completed: 6 },
+              { month: 'Apr', month_number: 4, revenue: 4100, campaigns_completed: 7 },
+              { month: 'May', month_number: 5, revenue: 4500, campaigns_completed: 8 },
+              { month: 'Jun', month_number: 6, revenue: 5200, campaigns_completed: 9 },
+            ]
+          });
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [isInfluencer, user?.id]);
 
-  // Calculate metrics
+  // Calculate metrics for non-influencer users
   const totalInfluencers = influencers.length;
   const activeInfluencers = influencers.filter(inf => inf.availability).length;
   const totalBusinesses = businesses.length;
   const activeSubscriptions = subscriptions.filter(sub => sub.status === 'active').length;
   const totalRevenue = subscriptions
     .filter(sub => sub.status === 'active')
-    .reduce((sum, sub) => sum + 50, 0); // Assuming £50 average subscription
+    .reduce((sum, sub) => sum + 50, 0); // Assuming $50 average subscription
 
-  const avgInfluencerRate = influencers.length > 0 
-    ? Math.round(influencers.reduce((sum, inf) => sum + (inf.rate_per_post || 0), 0) / influencers.length)
-    : 0;
-
-  const avgGrowthRate = influencers.length > 0
-    ? Math.round(influencers.reduce((sum, inf) => sum + (inf.growth_rate || 0), 0) / influencers.length)
-    : 0;
-
-  const avgSuccessfulCampaigns = influencers.length > 0
-    ? Math.round(influencers.reduce((sum, inf) => sum + (inf.successful_campaigns || 0), 0) / influencers.length)
-    : 0;
-
-  // Mock data for charts (in a real app, this would come from the API)
+  // Mock data for general charts (for non-influencer users)
   const mockChartData = {
     userGrowth: [
       { month: 'Jan', users: 120, influencers: 45, businesses: 25 },
@@ -87,7 +120,53 @@ export default function AnalyticsPage() {
     ],
   };
 
-  const stats = [
+  // Stats for influencer vs general users
+  const stats = isInfluencer ? [
+    {
+      name: 'Total Followers',
+      value: influencerAnalytics.userGrowth.length > 0 
+        ? influencerAnalytics.userGrowth[influencerAnalytics.userGrowth.length - 1].followers?.toLocaleString() || '0'
+        : '125,000',
+      icon: Users,
+      gradient: 'from-cyan-400 to-teal-500',
+      description: 'Across all platforms',
+      change: '+12%',
+      changeType: 'increase',
+    },
+    {
+      name: 'Engagement Rate',
+      value: `${influencerAnalytics.userGrowth.length > 0 
+        ? influencerAnalytics.userGrowth[influencerAnalytics.userGrowth.length - 1].engagement_rate?.toFixed(1) || '4.2'
+        : '4.2'}%`,
+      icon: TrendingUp,
+      gradient: 'from-emerald-400 to-cyan-500',
+      description: 'Average engagement',
+      change: '+0.4%',
+      changeType: 'increase',
+    },
+    {
+      name: 'Monthly Revenue',
+      value: `$${influencerAnalytics.revenueGrowth.length > 0 
+        ? influencerAnalytics.revenueGrowth[influencerAnalytics.revenueGrowth.length - 1].revenue?.toLocaleString() || '5,200'
+        : '5,200'}`,
+      icon: DollarSign,
+      gradient: 'from-amber-400 to-orange-500',
+      description: 'From collaborations',
+      change: '+18%',
+      changeType: 'increase',
+    },
+    {
+      name: 'Campaigns',
+      value: influencerAnalytics.revenueGrowth.length > 0 
+        ? influencerAnalytics.revenueGrowth[influencerAnalytics.revenueGrowth.length - 1].campaigns_completed || 9
+        : 9,
+      icon: Target,
+      gradient: 'from-purple-400 to-pink-500',
+      description: 'Completed this month',
+      change: '+3',
+      changeType: 'increase',
+    },
+  ] : [
     {
       name: 'Total Users',
       value: totalInfluencers + totalBusinesses,
@@ -108,7 +187,7 @@ export default function AnalyticsPage() {
     },
     {
       name: 'Total Revenue',
-      value: `£${totalRevenue.toLocaleString()}`,
+      value: `$${totalRevenue.toLocaleString()}`,
       icon: DollarSign,
       gradient: 'from-amber-400 to-orange-500',
       description: 'Monthly recurring revenue',
@@ -123,33 +202,6 @@ export default function AnalyticsPage() {
       description: 'Current subscribers',
       change: '+5%',
       changeType: 'increase',
-    },
-  ];
-
-  const metrics = [
-    {
-      name: 'Average Influencer Rate',
-      value: `£${avgInfluencerRate}`,
-      description: 'Per post across all influencers',
-      icon: DollarSign,
-    },
-    {
-      name: 'Average Growth Rate',
-      value: `${avgGrowthRate}%`,
-      description: 'Monthly follower growth',
-      icon: TrendingUp,
-    },
-    {
-      name: 'Average Campaigns',
-      value: avgSuccessfulCampaigns,
-      description: 'Successful campaigns per influencer',
-      icon: Target,
-    },
-    {
-      name: 'Platform Engagement',
-      value: '4.2%',
-      description: 'Average engagement rate',
-      icon: Activity,
     },
   ];
 
@@ -248,82 +300,134 @@ export default function AnalyticsPage() {
             ))}
           </div>
 
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
-            {metrics.map((metric) => (
-              <div
-                key={metric.name}
-                className="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 min-w-0"
-              >
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center shadow-lg">
-                    <metric.icon className="w-5 h-5 lg:w-6 lg:h-6 text-cyan-400" />
-                  </div>
-                  <div className="ml-4 min-w-0 flex-1">
-                    <h4 className="text-sm font-semibold text-white truncate">
-                      {metric.name}
-                    </h4>
-                    <p className="text-xl lg:text-2xl font-bold text-white truncate">
-                      {metric.value}
-                    </p>
-                    <p className="text-xs text-slate-400 truncate">
-                      {metric.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
 
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8">
-            {/* User Growth Chart */}
-            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-              <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
-                <TrendingUp className="w-5 h-5 mr-2 text-cyan-400" />
-                User Growth
-              </h3>
-              <div className="space-y-4">
-                {mockChartData.userGrowth.map((data) => (
-                  <div key={data.month} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
-                    <span className="text-sm font-medium text-white">{data.month}</span>
-                    <div className="flex flex-wrap gap-3">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-cyan-500 rounded-full"></div>
-                        <span className="text-xs text-slate-300">{data.users} users</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                        <span className="text-xs text-slate-300">{data.influencers} influencers</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                        <span className="text-xs text-slate-300">{data.businesses} businesses</span>
-                      </div>
-                    </div>
+            {isInfluencer ? (
+              <>
+                {/* Monthly User Growth Chart for Influencer */}
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                  <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                    <Users className="w-5 h-5 mr-2 text-cyan-400" />
+                    Monthly User Growth
+                  </h3>
+                  <div className="space-y-3">
+                    {influencerAnalytics.userGrowth.map((data, index) => {
+                      const maxFollowers = Math.max(...influencerAnalytics.userGrowth.map(d => d.followers || 0));
+                      const barWidth = ((data.followers || 0) / maxFollowers) * 100;
+                      
+                      return (
+                        <div key={data.month} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-white">{data.month}</span>
+                            <div className="flex items-center space-x-4">
+                              <span className="text-sm font-semibold text-cyan-400">
+                                {data.followers?.toLocaleString() || '0'} followers
+                              </span>
+                              <span className="text-xs text-slate-400">
+                                {data.engagement_rate?.toFixed(1) || '0'}% engagement
+                              </span>
+                            </div>
+                          </div>
+                          <div className="w-full bg-slate-700/30 rounded-full h-3">
+                            <div 
+                              className="bg-gradient-to-r from-cyan-500 to-teal-500 h-3 rounded-full transition-all duration-1000 ease-out"
+                              style={{ width: `${barWidth}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {/* Revenue Chart */}
-            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-              <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
-                <DollarSign className="w-5 h-5 mr-2 text-cyan-400" />
-                Monthly Revenue
-              </h3>
-              <div className="space-y-4">
-                {mockChartData.revenue.map((data) => (
-                  <div key={data.month} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
-                    <span className="text-sm font-medium text-white">{data.month}</span>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                      <span className="text-sm font-semibold text-emerald-400">£{data.revenue.toLocaleString()}</span>
-                    </div>
+                {/* Monthly Revenue Growth Chart for Influencer */}
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                  <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                    <DollarSign className="w-5 h-5 mr-2 text-cyan-400" />
+                    Monthly Revenue Growth
+                  </h3>
+                  <div className="space-y-3">
+                    {influencerAnalytics.revenueGrowth.map((data, index) => {
+                      const maxRevenue = Math.max(...influencerAnalytics.revenueGrowth.map(d => d.revenue || 0));
+                      const barWidth = ((data.revenue || 0) / maxRevenue) * 100;
+                      
+                      return (
+                        <div key={data.month} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-white">{data.month}</span>
+                            <div className="flex items-center space-x-4">
+                              <span className="text-sm font-semibold text-emerald-400">
+                                ${data.revenue?.toLocaleString() || '0'}
+                              </span>
+                              <span className="text-xs text-slate-400">
+                                {data.campaigns_completed || 0} campaigns
+                              </span>
+                            </div>
+                          </div>
+                          <div className="w-full bg-slate-700/30 rounded-full h-3">
+                            <div 
+                              className="bg-gradient-to-r from-emerald-500 to-green-500 h-3 rounded-full transition-all duration-1000 ease-out"
+                              style={{ width: `${barWidth}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* General User Growth Chart */}
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                  <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                    <TrendingUp className="w-5 h-5 mr-2 text-cyan-400" />
+                    User Growth
+                  </h3>
+                  <div className="space-y-4">
+                    {mockChartData.userGrowth.map((data) => (
+                      <div key={data.month} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                        <span className="text-sm font-medium text-white">{data.month}</span>
+                        <div className="flex flex-wrap gap-3">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 bg-cyan-500 rounded-full"></div>
+                            <span className="text-xs text-slate-300">{data.users} users</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                            <span className="text-xs text-slate-300">{data.influencers} influencers</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                            <span className="text-xs text-slate-300">{data.businesses} businesses</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* General Revenue Chart */}
+                <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                  <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+                    <DollarSign className="w-5 h-5 mr-2 text-cyan-400" />
+                    Monthly Revenue
+                  </h3>
+                  <div className="space-y-4">
+                    {mockChartData.revenue.map((data) => (
+                      <div key={data.month} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl border border-slate-600/30">
+                        <span className="text-sm font-medium text-white">{data.month}</span>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                          <span className="text-sm font-semibold text-emerald-400">${data.revenue.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Platform Engagement */}
@@ -371,8 +475,8 @@ export default function AnalyticsPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="text-sm font-bold text-emerald-400">
-                        £{influencer.rate_per_post || 0}
+                        <div className="text-sm font-bold text-emerald-400">
+                        ${influencer.rate_per_post || 0}
                       </div>
                     </div>
                   ))}
